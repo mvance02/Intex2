@@ -1,0 +1,6 @@
+@HopeHaven.API_HostAddress = http://localhost:5161
+
+GET {{HopeHaven.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
