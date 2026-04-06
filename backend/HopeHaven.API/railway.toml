@@ -1,9 +1,4 @@
-[build]
-builder = "nixpacks"
-buildCommand = "dotnet publish -c Release -o out"
-
 [deploy]
-startCommand = "dotnet out/HopeHaven.API.dll"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
