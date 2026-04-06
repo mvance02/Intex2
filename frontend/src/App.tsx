@@ -13,6 +13,9 @@ import LandingPage from './pages/public/LandingPage';
 import ImpactDashboard from './pages/public/ImpactDashboard';
 import LoginPage from './pages/public/LoginPage';
 import PrivacyPage from './pages/public/PrivacyPage';
+import ReferralPage from './pages/public/ReferralPage';
+import DonatePage from './pages/public/DonatePage';
+import SocialMediaPage from './pages/public/SocialMediaPage';
 import NotFound from './pages/NotFound';
 
 // Admin pages — lazy loaded (code split, only fetched after login)
@@ -49,7 +52,10 @@ export default function App() {
                 <Route path="/"        element={<LandingPage />} />
                 <Route path="/impact"  element={<ImpactDashboard />} />
                 <Route path="/login"   element={<LoginPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/privacy"      element={<PrivacyPage />} />
+                <Route path="/referral"     element={<ReferralPage />} />
+                <Route path="/donate"       element={<DonatePage />} />
+                <Route path="/social-media" element={<SocialMediaPage />} />
               </Route>
 
               {/* Admin — protected + lazy */}
