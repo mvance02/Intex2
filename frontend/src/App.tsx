@@ -31,6 +31,11 @@ const ReportsAnalytics   = lazy(() => import('./pages/admin/ReportsAnalytics'));
 const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
 const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
 
+// Donor pages — lazy loaded
+const DonorLayout    = lazy(() => import('./components/shared/DonorLayout'));
+const DonorDashboard = lazy(() => import('./pages/donor/DonorDashboard'));
+const DonorDonations = lazy(() => import('./pages/donor/DonorDonations'));
+
 function PageFallback() {
   return (
     <div className="flex items-center justify-center h-64">
@@ -39,10 +44,15 @@ function PageFallback() {
   );
 }
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+function ProtectedRoute({ children, requiredRoles }: { children: React.ReactNode; requiredRoles?: string[] }) {
+  const { isAuthenticated, isLoading, authSession } = useAuth();
   if (isLoading) return <PageFallback />;
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (requiredRoles && requiredRoles.length > 0) {
+    const hasRole = authSession.roles.some(r => requiredRoles.includes(r));
+    if (!hasRole) return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
 }
 
 export default function App() {
@@ -65,10 +75,50 @@ export default function App() {
                   <Route path="/donate"       element={<DonatePage />} />
                 </Route>
 
+                {/* Donor — protected + lazy */}
+                <Route
+                  element={
+                    <ProtectedRoute requiredRoles={['Donor', 'Admin']}>
+                      <Suspense fallback={<PageFallback />}>
+                        <DonorLayout />
+                      </Suspense>
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route
+                    path="/donor"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <DonorDashboard />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/donor/donations"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <DonorDonations />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/donor/donate"
+                    element={<DonatePage />}
+                  />
+                  <Route
+                    path="/donor/manage-mfa"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <ManageMFAPage />
+                      </Suspense>
+                    }
+                  />
+                </Route>
+
                 {/* Admin — protected + lazy */}
                 <Route
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRoles={['Admin']}>
                       <AdminLayout />
                     </ProtectedRoute>
                   }

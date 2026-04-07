@@ -11,7 +11,7 @@ import {
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { refreshAuthState } = useAuth();
+  const { isAuthenticated, authSession, refreshAuthState } = useAuth();
 
   const [email, setEmail]               = useState('');
   const [password, setPassword]         = useState('');
@@ -26,6 +26,17 @@ export default function LoginPage() {
     getExternalProviders().then(setProviders).catch(() => setProviders([]));
   }, []);
 
+  // Redirect authenticated users to their dashboard based on role
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (authSession.roles.includes('Admin')) {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/donor', { replace: true });
+      }
+    }
+  }, [isAuthenticated, authSession.roles, navigate]);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setServerError('');
@@ -37,7 +48,7 @@ export default function LoginPage() {
         recoveryCode  || undefined,
       );
       await refreshAuthState();
-      navigate('/admin', { replace: true });
+      // Redirect is handled by the useEffect above
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed. Please try again.';
       setServerError(msg);
@@ -55,8 +66,8 @@ export default function LoginPage() {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-teal-100 mb-4">
               <span className="text-2xl" aria-hidden="true">🏠</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">Staff Login</h1>
-            <p className="text-sm text-gray-500 mt-1">Hope Haven case management portal</p>
+            <h1 className="text-2xl font-bold text-gray-800">Sign In</h1>
+            <p className="text-sm text-gray-500 mt-1">Hope Haven portal</p>
           </div>
 
           {/* Server error */}
@@ -179,7 +190,7 @@ export default function LoginPage() {
                   <button
                     key={p.name}
                     type="button"
-                    onClick={() => window.location.assign(buildExternalLoginUrl(p.name, '/admin'))}
+                    onClick={() => window.location.assign(buildExternalLoginUrl(p.name, '/'))}
                     className="w-full py-2.5 px-4 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                   >
                     Continue with {p.displayName}

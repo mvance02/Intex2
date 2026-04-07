@@ -43,6 +43,8 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthPolicies.ManageContent,
         policy => policy.RequireRole(AuthRoles.Admin));
+    options.AddPolicy(AuthPolicies.DonorAccess,
+        policy => policy.RequireRole(AuthRoles.Donor, AuthRoles.Admin));
 });
 
 // ── Password policy (NIST: length over complexity) ───────────────────────────

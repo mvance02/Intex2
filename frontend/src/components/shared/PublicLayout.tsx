@@ -10,7 +10,7 @@ export default function PublicLayout() {
           <Link to="/donate"   className="hover:text-teal-200 transition-colors">Donate</Link>
           <Link to="/referral" className="hover:text-teal-200 transition-colors">Get Help</Link>
           <Link to="/login" className="bg-white text-teal-700 px-4 py-1.5 rounded-full hover:bg-teal-50 transition-colors">
-            Staff Login
+            Login
           </Link>
         </div>
       </nav>

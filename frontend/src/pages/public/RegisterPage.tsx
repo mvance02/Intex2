@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registerUser } from '../../utils/authAPI';
+import { assignDefaultRole, registerUser } from '../../utils/authAPI';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await registerUser(email, password);
+      await assignDefaultRole(email);
       setSuccessMessage('Registration succeeded. Redirecting to login…');
       setTimeout(() => navigate('/login'), 1000);
     } catch (err) {
