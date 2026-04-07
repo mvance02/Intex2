@@ -8,6 +8,7 @@ import {
   Home,
   BarChart2,
   Share2,
+  UserCog,
   Menu,
   X,
   LogOut,
@@ -22,6 +23,7 @@ const navItems = [
   { label: 'Home Visits',        path: '/admin/visits',             Icon: Home },
   { label: 'Reports',            path: '/admin/reports',            Icon: BarChart2 },
   { label: 'Social Media',       path: '/admin/social-media',       Icon: Share2 },
+  { label: 'Users',              path: '/admin/users',              Icon: UserCog },
 ];
 
 export default function AdminLayout() {

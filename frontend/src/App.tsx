@@ -30,6 +30,7 @@ const HomeVisitations    = lazy(() => import('./pages/admin/HomeVisitations'));
 const ReportsAnalytics   = lazy(() => import('./pages/admin/ReportsAnalytics'));
 const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
 const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
+const UserManagement     = lazy(() => import('./pages/admin/UserManagement'));
 
 // Donor pages — lazy loaded
 const DonorLayout    = lazy(() => import('./components/shared/DonorLayout'));
@@ -191,6 +192,14 @@ export default function App() {
                     element={
                       <Suspense fallback={<PageFallback />}>
                         <SocialMediaPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <UserManagement />
                       </Suspense>
                     }
                   />
