@@ -90,6 +90,7 @@ public class AuthController(
                 { UserName = email, Email = email, EmailConfirmed = true };
             var cr = await userManager.CreateAsync(user);
             if (!cr.Succeeded) return Redirect(ErrorUrl("Unable to create local account."));
+            await userManager.AddToRoleAsync(user, AuthRoles.Donor);
         }
 
         var lr = await userManager.AddLoginAsync(user, info);
