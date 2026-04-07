@@ -152,4 +152,20 @@ if (app.Environment.IsDevelopment() &&
     await SeedData.SeedAsync(db, csvPath);
 }
 
+// ── Fix auto-increment sequences (needed after CSV seeding inserts explicit IDs) ──
+using (var fixScope = app.Services.CreateScope())
+{
+    var fixDb = fixScope.ServiceProvider.GetRequiredService<HopeHavenDbContext>();
+    var tables = new[] { ("supporters", "supporter_id"), ("donations", "donation_id") };
+    foreach (var (table, col) in tables)
+    {
+        try
+        {
+            await fixDb.Database.ExecuteSqlRawAsync(
+                $"SELECT setval(pg_get_serial_sequence('{table}', '{col}'), COALESCE((SELECT MAX(\"{col}\") FROM \"{table}\"), 0) + 1, false)");
+        }
+        catch { /* table may not exist yet or column is IDENTITY — safe to skip */ }
+    }
+}
+
 app.Run();
