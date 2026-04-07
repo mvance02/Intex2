@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HopeHaven.API.Data;
@@ -10,7 +10,9 @@ namespace HopeHaven.API.Controllers;
 [ApiController]
 [Route("api/my-donations")]
 [Authorize]
-public class MyDonationsController(HopeHavenDbContext db) : ControllerBase
+public class MyDonationsController(
+    HopeHavenDbContext db,
+    UserManager<ApplicationUser> userManager) : ControllerBase
 {
     /// <summary>
     /// Get the logged-in user's donation history.
@@ -18,9 +20,10 @@ public class MyDonationsController(HopeHavenDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetMyDonations()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var identityUser = await userManager.GetUserAsync(User);
+        var email = identityUser?.Email;
         if (string.IsNullOrEmpty(email))
-            return Unauthorized(new { message = "No email claim found." });
+            return Unauthorized(new { message = "Unable to resolve user email." });
 
         var supporter = await db.Supporters
             .Include(s => s.Donations)
@@ -53,9 +56,10 @@ public class MyDonationsController(HopeHavenDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateDonation([FromBody] CreateMyDonationRequest request)
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
+        var identityUser = await userManager.GetUserAsync(User);
+        var email = identityUser?.Email;
         if (string.IsNullOrEmpty(email))
-            return Unauthorized(new { message = "No email claim found." });
+            return Unauthorized(new { message = "Unable to resolve user email." });
 
         // Find or create supporter
         var supporter = await db.Supporters.FirstOrDefaultAsync(s => s.Email == email);
