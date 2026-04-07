@@ -60,10 +60,21 @@ builder.Services.Configure<IdentityOptions>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly     = true;
-    options.Cookie.SameSite     = SameSiteMode.Lax;
+    options.Cookie.SameSite     = SameSiteMode.None;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.ExpireTimeSpan      = TimeSpan.FromDays(7);
     options.SlidingExpiration   = true;
+    // Return 401/403 instead of redirecting to a login page (this is an API)
+    options.Events.OnRedirectToLogin = ctx =>
+    {
+        ctx.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = ctx =>
+    {
+        ctx.Response.StatusCode = 403;
+        return Task.CompletedTask;
+    };
 });
 
 // ── Controllers + OpenAPI ──────────────────────────────────────────────────
