@@ -14,6 +14,118 @@ const PLATFORM_COLORS: Record<string, string> = {
   TikTok:    'bg-gray-100 text-gray-700',
 };
 
+const PLATFORM_CARD_COLORS: Record<string, { bg: string; border: string; badge: string; text: string }> = {
+  Instagram: { bg: 'bg-pink-50', border: 'border-pink-200', badge: 'bg-pink-100 text-pink-700', text: 'text-pink-700' },
+  Facebook:  { bg: 'bg-blue-50', border: 'border-blue-200', badge: 'bg-blue-100 text-blue-700', text: 'text-blue-700' },
+  Twitter:   { bg: 'bg-sky-50',  border: 'border-sky-200',  badge: 'bg-sky-100 text-sky-700',   text: 'text-sky-700'  },
+  YouTube:   { bg: 'bg-red-50',  border: 'border-red-200',  badge: 'bg-red-100 text-red-700',   text: 'text-red-700'  },
+  TikTok:    { bg: 'bg-gray-50', border: 'border-gray-200', badge: 'bg-gray-100 text-gray-700', text: 'text-gray-700' },
+};
+
+const PLATFORMS = ['Instagram', 'Facebook', 'Twitter', 'YouTube', 'TikTok'] as const;
+
+interface PlatformStats {
+  platform: string;
+  postCount: number;
+  totalLikes: number;
+  totalComments: number;
+  totalShares: number;
+  avgEngagementRate: number;
+  bestPostLikes: number;
+  bestPostCaption: string | null;
+  totalReach: number;
+  totalImpressions: number;
+}
+
+function computePlatformStats(posts: SocialMediaPost[]): PlatformStats[] {
+  return PLATFORMS.map(platform => {
+    const platformPosts = posts.filter(p => p.platform === platform);
+    const postCount = platformPosts.length;
+    const totalLikes = platformPosts.reduce((sum, p) => sum + (p.likes ?? 0), 0);
+    const totalComments = platformPosts.reduce((sum, p) => sum + (p.comments ?? 0), 0);
+    const totalShares = platformPosts.reduce((sum, p) => sum + (p.shares ?? 0), 0);
+    const totalImpressions = platformPosts.reduce((sum, p) => sum + (p.impressions ?? 0), 0);
+    const totalReach = platformPosts.reduce((sum, p) => sum + (p.reach ?? 0), 0);
+
+    const avgEngagementRate =
+      postCount > 0
+        ? platformPosts.reduce((sum, p) => sum + (p.engagementRate ?? 0), 0) / postCount
+        : 0;
+
+    const bestPost = platformPosts.reduce<SocialMediaPost | null>((best, p) => {
+      if (best === null) return p;
+      return (p.likes ?? 0) > (best.likes ?? 0) ? p : best;
+    }, null);
+
+    return {
+      platform,
+      postCount,
+      totalLikes,
+      totalComments,
+      totalShares,
+      avgEngagementRate,
+      bestPostLikes: bestPost?.likes ?? 0,
+      bestPostCaption: bestPost?.caption ?? null,
+      totalReach,
+      totalImpressions,
+    };
+  });
+}
+
+function PlatformAnalyticsCard({ stats }: { stats: PlatformStats }) {
+  const colors = PLATFORM_CARD_COLORS[stats.platform] ?? {
+    bg: 'bg-gray-50', border: 'border-gray-200', badge: 'bg-gray-100 text-gray-700', text: 'text-gray-700',
+  };
+
+  return (
+    <div className={`${colors.bg} ${colors.border} border rounded-2xl p-4 flex flex-col gap-3`}>
+      <div className="flex items-center justify-between">
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${colors.badge}`}>
+          {stats.platform}
+        </span>
+        <span className="text-xs text-gray-400">{stats.postCount} posts</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-center">
+        <div className="flex flex-col">
+          <span className={`text-base font-bold ${colors.text}`}>{stats.totalLikes.toLocaleString()}</span>
+          <span className="text-[10px] text-gray-400">Likes</span>
+        </div>
+        <div className="flex flex-col">
+          <span className={`text-base font-bold ${colors.text}`}>{stats.totalComments.toLocaleString()}</span>
+          <span className="text-[10px] text-gray-400">Comments</span>
+        </div>
+        <div className="flex flex-col">
+          <span className={`text-base font-bold ${colors.text}`}>{stats.totalShares.toLocaleString()}</span>
+          <span className="text-[10px] text-gray-400">Shares</span>
+        </div>
+        <div className="flex flex-col">
+          <span className={`text-base font-bold ${colors.text}`}>
+            {stats.avgEngagementRate > 0 ? `${stats.avgEngagementRate.toFixed(1)}%` : '—'}
+          </span>
+          <span className="text-[10px] text-gray-400">Avg. Engagement</span>
+        </div>
+      </div>
+
+      {stats.bestPostLikes > 0 && (
+        <div className="border-t border-gray-200 pt-2">
+          <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Best Post</p>
+          <p className="text-xs text-gray-600 line-clamp-2">
+            {stats.bestPostCaption ?? '—'}
+          </p>
+          <p className={`text-xs font-semibold mt-0.5 ${colors.text}`}>
+            {stats.bestPostLikes.toLocaleString()} likes
+          </p>
+        </div>
+      )}
+
+      {stats.postCount === 0 && (
+        <p className="text-xs text-gray-400 text-center py-2">No posts yet</p>
+      )}
+    </div>
+  );
+}
+
 function PostCard({ post }: { post: SocialMediaPost }) {
   const platformColor = PLATFORM_COLORS[post.platform ?? ''] ?? 'bg-gray-100 text-gray-600';
 
@@ -79,12 +191,24 @@ function Metric({ icon, value, label }: { icon: React.ReactNode; value: number |
 
 export default function SocialMediaPage() {
   const [posts, setPosts] = useState<SocialMediaPost[]>([]);
+  const [allPosts, setAllPosts] = useState<SocialMediaPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [platform, setPlatform] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Fetch all posts once for analytics
+  useEffect(() => {
+    setAnalyticsLoading(true);
+    apiFetch<PaginatedResponse<SocialMediaPost>>('/api/socialmediaposts?page=1&pageSize=1000')
+      .then(data => setAllPosts(data.items))
+      .catch(() => setAllPosts([]))
+      .finally(() => setAnalyticsLoading(false));
+  }, []);
+
+  // Paginated fetch for the post grid
   useEffect(() => {
     document.title = 'Social Media — Hope Haven';
     setLoading(true);
@@ -100,6 +224,10 @@ export default function SocialMediaPage() {
       .finally(() => setLoading(false));
   }, [page, platform]);
 
+  const platformStats = computePlatformStats(allPosts);
+  const totalReach = platformStats.reduce((sum, s) => sum + s.totalReach, 0);
+  const totalImpressions = platformStats.reduce((sum, s) => sum + s.totalImpressions, 0);
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="mb-10">
@@ -108,6 +236,42 @@ export default function SocialMediaPage() {
           Follow our campaigns and help us spread awareness about the work we do to protect and restore the lives of survivors.
         </p>
       </div>
+
+      {/* Platform Analytics Section */}
+      {!analyticsLoading && allPosts.length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">Platform Analytics</h2>
+
+          {/* Total Reach & Impressions summary bar */}
+          <div className="flex gap-4 flex-wrap mb-5">
+            <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-xl px-5 py-3">
+              <Eye size={18} className="text-teal-600" />
+              <div>
+                <p className="text-[10px] font-medium text-teal-600 uppercase tracking-wide">Total Reach</p>
+                <p className="text-lg font-bold text-teal-700">
+                  {totalReach > 0 ? totalReach.toLocaleString() : '—'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-3">
+              <Share2 size={18} className="text-indigo-600" />
+              <div>
+                <p className="text-[10px] font-medium text-indigo-600 uppercase tracking-wide">Total Impressions</p>
+                <p className="text-lg font-bold text-indigo-700">
+                  {totalImpressions > 0 ? totalImpressions.toLocaleString() : '—'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Per-platform cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {platformStats.map(stats => (
+              <PlatformAnalyticsCard key={stats.platform} stats={stats} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Filter */}
       <div className="flex gap-2 flex-wrap mb-8">

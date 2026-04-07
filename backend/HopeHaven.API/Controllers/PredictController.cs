@@ -4,35 +4,58 @@ namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PredictController : ControllerBase
+public class PredictController(IHttpClientFactory httpClientFactory, ILogger<PredictController> logger)
+    : ControllerBase
 {
-    // IS 455 — ML inference placeholder
-    // Wire to Flask/FastAPI inference service once ML pipeline is ready
-    // builder.Services.AddHttpClient("MLService", c => c.BaseAddress = new Uri(config["ML:BaseUrl"]!));
-
-    [HttpPost("risk")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
-    public IActionResult PredictRisk([FromBody] object payload)
+    /// <summary>
+    /// GET /api/predict/reintegration/{residentId}
+    /// Proxies to the FastAPI ML sidecar and returns the readiness score + type prediction.
+    /// Returns 503 if the ML service is unavailable so the UI can degrade gracefully.
+    /// </summary>
+    [HttpGet("reintegration/{residentId:int}")]
+    public async Task<IActionResult> GetReintegrationPrediction(int residentId)
     {
-        // TODO (IS 455): Call ML service and return predicted risk level + confidence score
-        // var client = httpClientFactory.CreateClient("MLService");
-        // var result = await client.PostAsJsonAsync("/predict/risk", payload);
-        return StatusCode(501, new { message = "ML risk prediction not yet implemented. Coming in IS 455." });
+        var client = httpClientFactory.CreateClient("MLService");
+        try
+        {
+            // FastAPI endpoint: POST /predict/{resident_id}
+            var response = await client.PostAsync($"/predict/{residentId}", content: null);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return NotFound(new { message = $"Resident {residentId} not found in ML service." });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogWarning("ML service returned {Status} for resident {Id}", response.StatusCode, residentId);
+                return StatusCode(503, new { message = "ML service returned an error. Check that the sidecar is running." });
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            return Content(json, "application/json");
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "ML service unreachable for resident {Id}", residentId);
+            return StatusCode(503, new { message = "ML service is not reachable. Run: uvicorn api:app --port 8001 in ml-pipelines/." });
+        }
     }
 
-    [HttpPost("reintegration")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
-    public IActionResult PredictReintegration([FromBody] object payload)
+    /// <summary>
+    /// GET /api/predict/health — check whether the ML sidecar is up.
+    /// </summary>
+    [HttpGet("health")]
+    public async Task<IActionResult> MlHealth()
     {
-        // TODO (IS 455): Predict reintegration readiness score
-        return StatusCode(501, new { message = "ML reintegration prediction not yet implemented. Coming in IS 455." });
-    }
-
-    [HttpPost("outcomes")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
-    public IActionResult PredictOutcomes([FromBody] object payload)
-    {
-        // TODO (IS 455): Predict resident outcomes based on current indicators
-        return StatusCode(501, new { message = "ML outcome prediction not yet implemented. Coming in IS 455." });
+        var client = httpClientFactory.CreateClient("MLService");
+        try
+        {
+            var response = await client.GetAsync("/health");
+            var json = await response.Content.ReadAsStringAsync();
+            return Content(json, "application/json");
+        }
+        catch (HttpRequestException)
+        {
+            return StatusCode(503, new { status = "ML service unreachable" });
+        }
     }
 }

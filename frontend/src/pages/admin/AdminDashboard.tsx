@@ -40,6 +40,40 @@ const QUICK_ACTIONS: { label: string; to: string }[] = [
   { label: 'View Reports', to: '/admin/reports' },
 ];
 
+function CapacityGauge({ name, region, status, occupancy, capacity }: {
+  name: string; region: string; status: string; occupancy: number; capacity: number;
+}) {
+  const pct = capacity > 0 ? (occupancy / capacity) * 100 : 0;
+  const color = pct > 90 ? '#dc2626' : pct > 70 ? '#d97706' : '#0d9488';
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (pct / 100) * circumference;
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col items-center gap-3">
+      <div className="relative w-28 h-28">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="#f3f4f6" strokeWidth="8" />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke={color} strokeWidth="8"
+            strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
+            className="transition-all duration-1000" />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-lg font-bold text-gray-800">{occupancy}/{capacity}</span>
+          <span className="text-xs text-gray-400">{Math.round(pct)}%</span>
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="font-semibold text-gray-800 text-sm">{name}</p>
+        <p className="text-xs text-gray-400">{region}</p>
+      </div>
+      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+        status?.toLowerCase() === 'active' ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500'
+      }`}>{status}</span>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(true);
@@ -148,105 +182,73 @@ export default function AdminDashboard() {
         )}
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Activity */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Recent Activity
-          </h2>
-          {activityLoading && (
-            <div className="flex justify-center py-10">
-              <LoadingSpinner />
-            </div>
-          )}
-          {activityError && (
-            <ErrorAlert message={activityError} onRetry={fetchActivity} />
-          )}
-          {!activityLoading && !activityError && (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-50">
-              {activity.length === 0 && (
-                <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p>
-              )}
-              {activity.map((item, idx) => (
-                <div key={idx} className="flex items-start gap-3 px-5 py-4">
-                  <span
-                    className={`mt-1.5 h-2.5 w-2.5 rounded-full flex-shrink-0 ${ACTIVITY_DOT[item.type]}`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 leading-snug">{item.description}</p>
-                    <p className="text-xs text-gray-400 mt-0.5 capitalize">
-                      {item.type} · {relativeDate(item.date)}
-                    </p>
-                  </div>
+      {/* Recent Activity — full-width on its own row */}
+      <section>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Recent Activity
+        </h2>
+        {activityLoading && (
+          <div className="flex justify-center py-10">
+            <LoadingSpinner />
+          </div>
+        )}
+        {activityError && (
+          <ErrorAlert message={activityError} onRetry={fetchActivity} />
+        )}
+        {!activityLoading && !activityError && (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+            {activity.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p>
+            )}
+            {activity.map((item, idx) => (
+              <div key={idx} className="flex items-start gap-3 px-5 py-4">
+                <span
+                  className={`mt-1.5 h-2.5 w-2.5 rounded-full flex-shrink-0 ${ACTIVITY_DOT[item.type]}`}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800 leading-snug">{item.description}</p>
+                  <p className="text-xs text-gray-400 mt-0.5 capitalize">
+                    {item.type} · {relativeDate(item.date)}
+                  </p>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Safehouse Capacity — full-width gauge grid */}
+      <section>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Safehouse Capacity
+        </h2>
+        {safehousesLoading && (
+          <div className="flex justify-center py-10">
+            <LoadingSpinner />
+          </div>
+        )}
+        {safehousesError && (
+          <ErrorAlert message={safehousesError} onRetry={fetchSafehouses} />
+        )}
+        {!safehousesLoading && !safehousesError && (
+          safehouses.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-8">No safehouses found.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {safehouses.map((s) => (
+                <CapacityGauge
+                  key={s.safehouseId}
+                  name={s.name ?? '—'}
+                  region={s.region ?? '—'}
+                  status={s.status ?? '—'}
+                  occupancy={s.currentOccupancy ?? 0}
+                  capacity={s.capacityGirls ?? 0}
+                />
               ))}
             </div>
-          )}
-        </section>
-
-        {/* Safehouse Summary */}
-        <section>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Safehouse Summary
-          </h2>
-          {safehousesLoading && (
-            <div className="flex justify-center py-10">
-              <LoadingSpinner />
-            </div>
-          )}
-          {safehousesError && (
-            <ErrorAlert message={safehousesError} onRetry={fetchSafehouses} />
-          )}
-          {!safehousesLoading && !safehousesError && (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-              {safehouses.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8">No safehouses found.</p>
-              ) : (
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                    <tr>
-                      <th className="px-4 py-3 text-left font-medium">Name</th>
-                      <th className="px-4 py-3 text-left font-medium">Region</th>
-                      <th className="px-4 py-3 text-left font-medium">Status</th>
-                      <th className="px-4 py-3 text-right font-medium">Occupancy</th>
-                      <th className="px-4 py-3 text-right font-medium">Residents</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {safehouses.map((s) => (
-                      <tr key={s.safehouseId} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 font-medium text-gray-800">
-                          {s.name ?? '—'}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500">{s.region ?? '—'}</td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                              s.status?.toLowerCase() === 'active'
-                                ? 'bg-teal-50 text-teal-700'
-                                : 'bg-gray-100 text-gray-500'
-                            }`}
-                          >
-                            {s.status ?? '—'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right text-gray-600">
-                          {s.currentOccupancy != null && s.capacityGirls != null
-                            ? `${s.currentOccupancy} / ${s.capacityGirls}`
-                            : '—'}
-                        </td>
-                        <td className="px-4 py-3 text-right font-medium text-gray-800">
-                          {s.activeResidents}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-        </section>
-      </div>
+          )
+        )}
+      </section>
     </div>
   );
 }

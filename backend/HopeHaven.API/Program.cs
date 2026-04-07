@@ -38,9 +38,9 @@ builder.Services.AddCors(options =>
 // builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 //     .AddCookie(options => { options.SlidingExpiration = true; });
 
-// ── ML INFERENCE PLACEHOLDER (IS 455) ─────────────────────────────────────
-// builder.Services.AddHttpClient("MLService", c =>
-//     c.BaseAddress = new Uri(builder.Configuration["MLServiceUrl"] ?? ""));
+// ── ML Inference (IS 455) ─────────────────────────────────────────────────
+builder.Services.AddHttpClient("MLService", c =>
+    c.BaseAddress = new Uri(builder.Configuration["ML:BaseUrl"] ?? "http://localhost:8001"));
 
 var app = builder.Build();
 

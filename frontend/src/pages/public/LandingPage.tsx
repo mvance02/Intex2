@@ -1,10 +1,51 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, HeartPulse, GraduationCap } from 'lucide-react';
+import { Home, HeartPulse, GraduationCap, Utensils } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
 import type { DashboardMetrics } from '../../types/models';
+import heroBg from '../../assets/lighthousepic1.webp';
+import missionImg from '../../assets/lighthousepic2.jpeg';
+import ctaBg from '../../assets/lighthousepic3.jpg';
 
-function StatBadge({ value, label }: { value: string | number; label: string }) {
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
+
+function useCountUp(end: number, duration = 2000): number {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (end <= 0) return;
+    let startTime: number | null = null;
+    let rafId: number;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * end));
+      if (progress < 1) rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [end, duration]);
+  return count;
+}
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function AnimatedStatBadge({ value, label }: { value: number | null; label: string }) {
+  const animated = useCountUp(value ?? 0);
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-3xl font-bold text-white">
+        {value === null ? '—' : animated.toLocaleString()}
+      </span>
+      <span className="text-sm text-teal-100">{label}</span>
+    </div>
+  );
+}
+
+function DonationStatBadge({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="text-3xl font-bold text-white">{value}</span>
@@ -12,6 +53,142 @@ function StatBadge({ value, label }: { value: string | number; label: string }) 
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Safehouse data
+// ---------------------------------------------------------------------------
+
+const SAFEHOUSES = [
+  { name: 'Quezon City',       region: 'Luzon',    x: 51.5, y: 28.5 },
+  { name: 'Angeles City',      region: 'Luzon',    x: 48.5, y: 26.2 },
+  { name: 'Baguio City',       region: 'Luzon',    x: 49.0, y: 21.5 },
+  { name: 'Iloilo City',       region: 'Visayas',  x: 42.0, y: 51.0 },
+  { name: 'Cebu City',         region: 'Visayas',  x: 55.0, y: 50.5 },
+  { name: 'Tacloban',          region: 'Visayas',  x: 62.5, y: 47.5 },
+  { name: 'Cagayan de Oro',    region: 'Mindanao', x: 55.5, y: 61.0 },
+  { name: 'Davao City',        region: 'Mindanao', x: 60.5, y: 70.5 },
+  { name: 'General Santos',    region: 'Mindanao', x: 55.0, y: 77.0 },
+] as const;
+
+const REGION_COLOR: Record<string, string> = {
+  Luzon:    '#2dd4bf',
+  Visayas:  '#34d399',
+  Mindanao: '#60a5fa',
+};
+
+// ---------------------------------------------------------------------------
+// Philippines SVG map (simplified main island groups)
+// ---------------------------------------------------------------------------
+
+function PhilippinesMap() {
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      className="w-full h-full"
+      aria-label="Map of the Philippines showing safehouse locations"
+    >
+      {/* Luzon */}
+      <path
+        d="M 48 10 L 44 14 L 40 18 L 39 22 L 41 26 L 44 28 L 46 32 L 48 36 L 52 38 L 56 36 L 58 32 L 57 27 L 55 23 L 54 18 L 52 13 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/30"
+      />
+      {/* Luzon lower peninsula */}
+      <path
+        d="M 46 32 L 44 36 L 43 40 L 45 43 L 48 44 L 51 43 L 52 40 L 52 38"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/30"
+      />
+      {/* Mindoro */}
+      <path
+        d="M 40 42 L 37 44 L 36 48 L 38 51 L 41 50 L 42 46 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/20"
+      />
+      {/* Palawan */}
+      <path
+        d="M 22 48 L 19 53 L 18 58 L 20 63 L 23 65 L 26 63 L 28 58 L 27 52 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/20"
+      />
+      {/* Panay */}
+      <path
+        d="M 38 48 L 35 51 L 35 55 L 38 57 L 42 56 L 44 53 L 43 49 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/25"
+      />
+      {/* Negros */}
+      <path
+        d="M 44 50 L 43 54 L 44 58 L 46 61 L 49 60 L 50 56 L 49 52 L 47 50 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/25"
+      />
+      {/* Cebu */}
+      <path
+        d="M 51 47 L 50 51 L 51 55 L 53 57 L 56 55 L 56 51 L 54 48 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/25"
+      />
+      {/* Leyte / Samar */}
+      <path
+        d="M 58 44 L 56 48 L 57 52 L 60 54 L 64 53 L 66 49 L 65 45 L 62 43 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/25"
+      />
+      {/* Mindanao */}
+      <path
+        d="M 46 58 L 43 61 L 42 66 L 44 71 L 48 75 L 52 78 L 57 79 L 62 77 L 66 73 L 68 68 L 67 63 L 64 59 L 60 57 L 55 57 L 50 57 Z"
+        fill="none"
+        stroke="#0f766e"
+        strokeWidth="0.6"
+        className="fill-teal-900/30"
+      />
+
+      {/* Safehouse pins */}
+      {SAFEHOUSES.map(({ name, region, x, y }) => (
+        <g key={name}>
+          {/* Glow ring */}
+          <circle
+            cx={x}
+            cy={y}
+            r="2.2"
+            fill={REGION_COLOR[region]}
+            opacity="0.25"
+          />
+          {/* Core dot */}
+          <circle
+            cx={x}
+            cy={y}
+            r="1.1"
+            fill={REGION_COLOR[region]}
+            stroke="white"
+            strokeWidth="0.3"
+          />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default function LandingPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -23,22 +200,32 @@ export default function LandingPage() {
       .catch(() => null);
   }, []);
 
-  const ytd = metrics
-    ? `₱${Number(metrics.ytdDonations).toLocaleString('en-PH', { maximumFractionDigits: 0 })}`
+  const ytdRaw = metrics ? Number(metrics.ytdDonations) : null;
+  const ytdDisplay = ytdRaw !== null
+    ? `₱${ytdRaw.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`
     : '—';
 
   return (
     <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-teal-800">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-900 via-teal-800 to-teal-600 opacity-90" />
-        <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 text-center text-white">
-          <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight mb-6">
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Hero — background image + dark overlay                              */}
+      {/* ------------------------------------------------------------------ */}
+      <section
+        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url(${heroBg})` }}
+      >
+        <div className="absolute inset-0 bg-teal-950/65" />
+        <div className="relative z-10 max-w-3xl mx-auto px-6 py-24 text-center text-white">
+          <p className="text-teal-300 text-sm font-semibold tracking-widest uppercase mb-4">
+            Hope Haven Philippines
+          </p>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
             Safe Homes for Girls Who Deserve a Future
           </h1>
-          <p className="text-lg text-teal-100 mb-10 max-w-xl mx-auto">
-            Hope Haven provides shelter, healing, and hope to girls who have experienced abuse and
-            trafficking in the Philippines.
+          <p className="text-lg text-teal-100 mb-10 max-w-xl mx-auto leading-relaxed">
+            We provide shelter, healing, and hope to girls who have experienced abuse and
+            trafficking across the Philippines.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
@@ -47,84 +234,251 @@ export default function LandingPage() {
             >
               See Our Impact
             </Link>
-            <a
-              href="mailto:donate@hopehaven.org"
+            <Link
+              to="/donate"
               className="px-7 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             >
               Support a Girl
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats bar */}
-      <section className="bg-teal-700 py-8 px-6" aria-label="Key statistics">
+      {/* ------------------------------------------------------------------ */}
+      {/* Stats bar — animated count-up                                       */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="bg-teal-700 py-10 px-6" aria-label="Key statistics">
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
-          <StatBadge value={metrics?.activeResidents ?? '—'} label="Girls in Our Care" />
-          <StatBadge value={metrics?.activeSafehouses ?? '—'} label="Active Safehouses" />
-          <StatBadge value={metrics?.totalSupporters ?? '—'} label="Generous Supporters" />
-          <StatBadge value={ytd} label="Raised This Year" />
+          <AnimatedStatBadge value={metrics?.activeResidents ?? null}  label="Girls in Our Care" />
+          <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
+          <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" />
+          <DonationStatBadge value={ytdDisplay} label="Raised This Year" />
         </div>
       </section>
 
-      {/* Mission section */}
-      <section className="max-w-5xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Three Pillars</h2>
-          <p className="text-gray-500 mb-6 leading-relaxed">
-            Every girl who comes through our doors receives a comprehensive programme built on three
-            foundations — Caring, Healing, and Teaching.
-          </p>
-          <ul className="space-y-5">
+      {/* ------------------------------------------------------------------ */}
+      {/* Donor Impact Translator                                             */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="bg-white py-20 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">Your Impact in Action</h2>
+            <p className="text-gray-500 max-w-lg mx-auto">
+              Every peso goes directly to the girls in our care. Here is what your gift provides.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { Icon: Home,        color: 'bg-teal-50 text-teal-600',  title: 'Caring',   desc: 'Safe housing, nutritious meals, and daily pastoral care.' },
-              { Icon: HeartPulse,  color: 'bg-rose-50 text-rose-600',  title: 'Healing',  desc: 'Trauma-informed counselling and regular health monitoring.' },
-              { Icon: GraduationCap, color: 'bg-blue-50 text-blue-600', title: 'Teaching', desc: 'Education support and life-skills training toward reintegration.' },
-            ].map(({ Icon, color, title, desc }) => (
-              <li key={title} className="flex gap-4 items-start">
-                <div className={`p-2.5 rounded-xl shrink-0 ${color}`} aria-hidden="true">
-                  <Icon size={20} />
+              {
+                Icon: Utensils,
+                amount: '₱250',
+                impact: '1 day of nutritious meals for a resident',
+                color: 'bg-amber-50 text-amber-600 border-amber-100',
+                iconBg: 'bg-amber-100',
+              },
+              {
+                Icon: Home,
+                amount: '₱500',
+                impact: '1 day of safe housing and pastoral care',
+                color: 'bg-teal-50 text-teal-600 border-teal-100',
+                iconBg: 'bg-teal-100',
+              },
+              {
+                Icon: HeartPulse,
+                amount: '₱1,200',
+                impact: '1 trauma counseling session with a licensed therapist',
+                color: 'bg-rose-50 text-rose-600 border-rose-100',
+                iconBg: 'bg-rose-100',
+              },
+              {
+                Icon: GraduationCap,
+                amount: '₱3,500',
+                impact: '1 full month of schooling and life-skills training',
+                color: 'bg-blue-50 text-blue-600 border-blue-100',
+                iconBg: 'bg-blue-100',
+              },
+            ].map(({ Icon, amount, impact, color, iconBg }) => (
+              <div
+                key={amount}
+                className={`rounded-2xl border p-6 flex flex-col items-center text-center gap-4 ${color}`}
+              >
+                <div className={`p-3 rounded-full ${iconBg}`}>
+                  <Icon size={24} />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-700">{title}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{desc}</p>
-                </div>
-              </li>
+                <p className="text-2xl font-extrabold">{amount}</p>
+                <p className="text-sm leading-relaxed opacity-80">{impact}</p>
+              </div>
             ))}
-          </ul>
-        </div>
-
-        <div className="bg-teal-50 rounded-2xl p-8 flex flex-col gap-4">
-          <h3 className="text-xl font-bold text-teal-800">Make a Difference Today</h3>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            Your support funds safe beds, trained social workers, school supplies, and the daily
-            care that gives girls a second chance at a full life.
-          </p>
-          <Link
-            to="/impact"
-            className="mt-2 px-6 py-3 bg-teal-600 text-white text-sm font-semibold rounded-full text-center hover:bg-teal-700 transition-colors"
-          >
-            View Impact Reports →
-          </Link>
+          </div>
+          <div className="text-center mt-10">
+            <Link
+              to="/donate"
+              className="inline-block px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+            >
+              Make a Donation
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* CTA strip */}
-      <section className="bg-gray-50 py-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-3">Real Stories, Real Change</h2>
-          <p className="text-gray-500 mb-8 max-w-xl mx-auto">
-            Every statistic represents a girl whose life has changed. Explore our impact dashboard
-            to see the full picture.
-          </p>
-          <Link
-            to="/impact"
-            className="px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
-          >
-            Explore Impact →
-          </Link>
+      {/* ------------------------------------------------------------------ */}
+      {/* Three Pillars — with mission image                                  */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="bg-gray-50 py-20 px-6">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-14 items-center">
+          <div>
+            <p className="text-teal-600 text-sm font-semibold tracking-widest uppercase mb-3">
+              How We Help
+            </p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Three Pillars</h2>
+            <p className="text-gray-500 mb-8 leading-relaxed">
+              Every girl who comes through our doors receives a comprehensive programme built on three
+              foundations — Caring, Healing, and Teaching.
+            </p>
+            <ul className="space-y-6">
+              {[
+                {
+                  Icon: Home,
+                  colorClasses: 'bg-teal-50 text-teal-600',
+                  title: 'Caring',
+                  desc: 'Safe housing, nutritious meals, and daily pastoral care from trained staff.',
+                },
+                {
+                  Icon: HeartPulse,
+                  colorClasses: 'bg-rose-50 text-rose-600',
+                  title: 'Healing',
+                  desc: 'Trauma-informed counselling, health monitoring, and psychosocial support.',
+                },
+                {
+                  Icon: GraduationCap,
+                  colorClasses: 'bg-blue-50 text-blue-600',
+                  title: 'Teaching',
+                  desc: 'Education support, life-skills training, and a path toward reintegration.',
+                },
+              ].map(({ Icon, colorClasses, title, desc }) => (
+                <li key={title} className="flex gap-4 items-start">
+                  <div className={`p-2.5 rounded-xl shrink-0 ${colorClasses}`} aria-hidden="true">
+                    <Icon size={20} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-700">{title}</p>
+                    <p className="text-sm text-gray-500 mt-1">{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="relative">
+            <img
+              src={missionImg}
+              alt="Hope Haven residents and staff"
+              className="rounded-2xl object-cover w-full h-80 md:h-96 shadow-lg"
+            />
+            <div className="absolute -bottom-5 -left-5 bg-teal-600 text-white rounded-2xl px-6 py-4 shadow-xl hidden md:block">
+              <p className="text-2xl font-extrabold">9</p>
+              <p className="text-xs text-teal-100 mt-0.5">Safehouses across<br />the Philippines</p>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Philippines Safehouse Map                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="bg-gray-900 py-20 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-teal-400 text-sm font-semibold tracking-widest uppercase mb-3">
+              Nationwide Presence
+            </p>
+            <h2 className="text-3xl font-bold text-white mb-3">
+              Our Safehouses Across the Philippines
+            </h2>
+            <p className="text-gray-400 max-w-lg mx-auto">
+              From northern Luzon to southern Mindanao, Hope Haven maintains nine safe homes
+              so that no girl is ever too far from help.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-5 gap-10 items-center">
+            {/* Map */}
+            <div className="md:col-span-3 flex justify-center">
+              <div className="w-72 h-96 relative">
+                <PhilippinesMap />
+              </div>
+            </div>
+
+            {/* Safehouse list */}
+            <div className="md:col-span-2 space-y-3">
+              {(['Luzon', 'Visayas', 'Mindanao'] as const).map((region) => (
+                <div key={region}>
+                  <p
+                    className="text-xs font-bold tracking-widest uppercase mb-2"
+                    style={{ color: REGION_COLOR[region] }}
+                  >
+                    {region}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {SAFEHOUSES.filter((s) => s.region === region).map((s) => (
+                      <li key={s.name} className="flex items-center gap-2.5">
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: REGION_COLOR[region] }}
+                        />
+                        <span className="text-sm text-gray-300">{s.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <div className="pt-4 border-t border-gray-700 mt-4">
+                <Link
+                  to="/impact"
+                  className="text-teal-400 text-sm font-semibold hover:text-teal-300 transition-colors"
+                >
+                  View impact by region →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* CTA strip — lighthousepic3.jpg background                          */}
+      {/* ------------------------------------------------------------------ */}
+      <section
+        className="relative py-28 px-6 bg-cover bg-center"
+        style={{ backgroundImage: `url(${ctaBg})` }}
+      >
+        <div className="absolute inset-0 bg-teal-950/70" />
+        <div className="relative z-10 max-w-3xl mx-auto text-center text-white">
+          <p className="text-teal-300 text-sm font-semibold tracking-widest uppercase mb-4">
+            Stories of Transformation
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Real Stories, Real Change</h2>
+          <p className="text-teal-100 mb-10 max-w-xl mx-auto leading-relaxed">
+            Every statistic represents a girl whose life has been transformed. Explore our impact
+            dashboard to see the full picture behind the numbers.
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link
+              to="/impact"
+              className="px-8 py-3 bg-white text-teal-800 font-semibold rounded-full hover:bg-teal-50 transition-colors"
+            >
+              Explore Impact →
+            </Link>
+            <Link
+              to="/donate"
+              className="px-8 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
+            >
+              Give Now
+            </Link>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }

@@ -5,6 +5,9 @@ import {
   PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
+import { FileDown } from 'lucide-react'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 import { apiFetch } from '../../utils/api'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import ErrorAlert from '../../components/shared/ErrorAlert'
@@ -250,6 +253,112 @@ export default function ReportsAnalytics() {
     fetchAll(appliedStart, appliedEnd)
   }
 
+  function generatePDF() {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(13, 148, 136); // teal
+    doc.text('Hope Haven Impact Report', 20, 25);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Reporting Period: ${appliedStart} \u2014 ${appliedEnd}`, 20, 33);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-PH')}`, 20, 39);
+
+    // Line separator
+    doc.setDrawColor(13, 148, 136);
+    doc.line(20, 43, 190, 43);
+
+    let y = 55;
+
+    // Annual Summary
+    if (annualData) {
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text('Annual Summary', 20, y);
+      y += 10;
+
+      const summaryRows = [
+        ['Total Donations', formatPeso(annualData.totalDonations)],
+        ['Donation Count', annualData.donationCount.toString()],
+        ['Sessions Logged', annualData.sessionCount.toString()],
+        ['Visits Conducted', annualData.visitCount.toString()],
+        ['Incidents Reported', annualData.incidentCount.toString()],
+        ['Reintegrations', annualData.reintegrationCount.toString()],
+      ];
+
+      (doc as any).autoTable({
+        startY: y,
+        head: [['Metric', 'Value']],
+        body: summaryRows,
+        theme: 'grid',
+        headStyles: { fillColor: [13, 148, 136] },
+        margin: { left: 20, right: 20 },
+      });
+      y = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Safehouse Comparison
+    if (safehouseData) {
+      doc.setFontSize(14);
+      doc.text('Safehouse Overview', 20, y);
+      y += 10;
+
+      const rows = safehouseData.safehouses.map(s => [
+        s.name ?? '',
+        s.region ?? '',
+        `${s.activeResidents}/${s.capacityGirls ?? 0}`,
+        s.openIncidents.toString(),
+        s.highRiskResidents.toString(),
+      ]);
+
+      (doc as any).autoTable({
+        startY: y,
+        head: [['Safehouse', 'Region', 'Occupancy', 'Open Incidents', 'High Risk']],
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [13, 148, 136] },
+        margin: { left: 20, right: 20 },
+      });
+      y = (doc as any).lastAutoTable.finalY + 15;
+    }
+
+    // Reintegration Stats
+    if (reintData) {
+      if (y > 240) { doc.addPage(); y = 25; }
+      doc.setFontSize(14);
+      doc.text('Reintegration Outcomes', 20, y);
+      y += 10;
+
+      const rows = reintData.byType.map(r => [
+        r.reintegrationType ?? 'Unknown',
+        r.count.toString(),
+        r.reintegratedCount.toString(),
+      ]);
+
+      (doc as any).autoTable({
+        startY: y,
+        head: [['Type', 'Total', 'Reintegrated']],
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [13, 148, 136] },
+        margin: { left: 20, right: 20 },
+      });
+    }
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text('Hope Haven Foundation \u2014 Confidential Impact Report', 20, 285);
+      doc.text(`Page ${i} of ${pageCount}`, 170, 285);
+    }
+
+    doc.save(`HopeHaven_Impact_Report_${appliedStart}-${appliedEnd}.pdf`);
+  }
+
   // ── Derived chart data ──────────────────────────────────────────────────────
 
   const trendChartData = donationData?.trends.map((p) => ({
@@ -316,6 +425,14 @@ export default function ReportsAnalytics() {
             className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-md hover:bg-teal-700 disabled:opacity-50 transition-colors"
           >
             Apply
+          </button>
+          <button
+            onClick={generatePDF}
+            disabled={loading || !annualData}
+            className="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded-md hover:bg-gray-900 disabled:opacity-50 transition-colors flex items-center gap-2"
+          >
+            <FileDown size={16} />
+            Generate Impact Report
           </button>
         </div>
       </div>

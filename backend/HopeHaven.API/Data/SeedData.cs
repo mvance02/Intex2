@@ -55,6 +55,7 @@ public static class SeedData
             HasHeaderRecord = true,
             MissingFieldFound = null,
             BadDataFound = null,
+            HeaderValidated = null,
             PrepareHeaderForMatch = args => args.Header.Replace("_", "").ToLowerInvariant(),
         };
 
@@ -99,6 +100,14 @@ public static class SeedData
         csv.Context.TypeConverterCache.AddConverter<bool>(new TruthyBoolConverter());
         csv.Context.TypeConverterCache.AddConverter<int?>(new NullableIntFromDoubleConverter());
         csv.Context.TypeConverterCache.AddConverter<string>(new NullIfEmptyStringConverter());
+
+        // Auto-map but clear ReferenceMaps (navigation properties) to prevent
+        // EF Core identity conflicts when multiple rows share the same FK value.
+        var map = csv.Context.AutoMap<T>();
+        foreach (var refMap in map.ReferenceMaps.ToList())
+            map.ReferenceMaps.Remove(refMap);
+        csv.Context.RegisterClassMap(map);
+
         var records = csv.GetRecords<T>().ToList();
         await dbSet.AddRangeAsync(records);
         await db.SaveChangesAsync();

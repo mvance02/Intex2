@@ -10,6 +10,31 @@ import type { Resident, Safehouse, PaginatedResponse } from '../../types/models'
 
 const PAGE_SIZE = 20
 
+type ReadinessLabel = 'High' | 'Medium' | 'Low'
+interface ReadinessPrediction {
+  readiness_score: number
+  readiness_label: ReadinessLabel
+  predicted_type: string
+}
+
+function ReadinessBadge({ score }: { score: ReadinessPrediction | null | 'loading' }) {
+  if (score === 'loading') return <span className="text-gray-400 text-xs">…</span>
+  if (!score) return <span className="text-gray-300 text-xs">—</span>
+  const map: Record<ReadinessLabel, string> = {
+    High:   'bg-green-100 text-green-700',
+    Medium: 'bg-yellow-100 text-yellow-700',
+    Low:    'bg-red-100 text-red-700',
+  }
+  return (
+    <span
+      className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${map[score.readiness_label]}`}
+      title={`${Math.round(score.readiness_score * 100)}% — ${score.predicted_type}`}
+    >
+      {score.readiness_label} ({Math.round(score.readiness_score * 100)}%)
+    </span>
+  )
+}
+
 function RiskBadge({ level }: { level: string | null }): React.ReactElement {
   const map: Record<string, string> = {
     Critical: 'bg-red-100 text-red-700',
@@ -38,34 +63,46 @@ function StatusBadge({ status }: { status: string | null }): React.ReactElement 
   )
 }
 
-const COLUMNS: Column<Resident>[] = [
-  { key: 'caseControlNo', header: 'Case No', sortable: true },
-  { key: 'internalCode', header: 'Internal Code', sortable: true },
-  {
-    key: 'safehouse',
-    header: 'Safehouse',
-    render: (r) => r.safehouse?.name ?? '—',
-  },
-  { key: 'caseCategory', header: 'Category', sortable: true },
-  {
-    key: 'caseStatus',
-    header: 'Status',
-    render: (r) => <StatusBadge status={r.caseStatus} />,
-  },
-  {
-    key: 'currentRiskLevel',
-    header: 'Risk Level',
-    render: (r) => <RiskBadge level={r.currentRiskLevel} />,
-  },
-  { key: 'assignedSocialWorker', header: 'Social Worker', sortable: true },
-  {
-    key: 'dateOfAdmission',
-    header: 'Date Admitted',
-    sortable: true,
-    render: (r) =>
-      r.dateOfAdmission ? new Date(r.dateOfAdmission).toLocaleDateString() : '—',
-  },
-]
+// Columns are built inside the component so readiness scores (fetched async) can be referenced
+function buildColumns(
+  readiness: Map<number, ReadinessPrediction | 'loading'>,
+): Column<Resident>[] {
+  return [
+    { key: 'caseControlNo', header: 'Case No', sortable: true },
+    { key: 'internalCode', header: 'Internal Code', sortable: true },
+    {
+      key: 'safehouse',
+      header: 'Safehouse',
+      render: (r) => r.safehouse?.name ?? '—',
+    },
+    { key: 'caseCategory', header: 'Category', sortable: true },
+    {
+      key: 'caseStatus',
+      header: 'Status',
+      render: (r) => <StatusBadge status={r.caseStatus} />,
+    },
+    {
+      key: 'currentRiskLevel',
+      header: 'Risk Level',
+      render: (r) => <RiskBadge level={r.currentRiskLevel} />,
+    },
+    {
+      key: 'residentId',
+      header: 'Readiness',
+      render: (r) => (
+        <ReadinessBadge score={readiness.get(r.residentId) ?? null} />
+      ),
+    },
+    { key: 'assignedSocialWorker', header: 'Social Worker', sortable: true },
+    {
+      key: 'dateOfAdmission',
+      header: 'Date Admitted',
+      sortable: true,
+      render: (r) =>
+        r.dateOfAdmission ? new Date(r.dateOfAdmission).toLocaleDateString() : '—',
+    },
+  ]
+}
 
 export default function CaseloadInventory() {
   const navigate = useNavigate()
@@ -76,6 +113,7 @@ export default function CaseloadInventory() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [readiness, setReadiness] = useState<Map<number, ReadinessPrediction | 'loading'>>(new Map())
 
   const [search, setSearch] = useState('')
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
@@ -94,6 +132,29 @@ export default function CaseloadInventory() {
       })
   }, [])
 
+  const fetchReadinessScores = useCallback((items: Resident[]) => {
+    // Mark all as loading, then fire parallel requests
+    setReadiness((prev) => {
+      const next = new Map(prev)
+      items.forEach((r) => next.set(r.residentId, 'loading'))
+      return next
+    })
+    items.forEach((r) => {
+      apiFetch<ReadinessPrediction>(`/api/predict/reintegration/${r.residentId}`)
+        .then((pred) => {
+          setReadiness((prev) => new Map(prev).set(r.residentId, pred))
+        })
+        .catch(() => {
+          // ML service unavailable — silently remove the loading state
+          setReadiness((prev) => {
+            const next = new Map(prev)
+            next.delete(r.residentId)
+            return next
+          })
+        })
+    })
+  }, [])
+
   const fetchResidents = useCallback(() => {
     setLoading(true)
     setError(null)
@@ -110,6 +171,7 @@ export default function CaseloadInventory() {
       .then((data) => {
         setResidents(data.items)
         setTotalPages(data.totalPages)
+        fetchReadinessScores(data.items)
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Failed to load residents.')
@@ -195,7 +257,7 @@ export default function CaseloadInventory() {
         <SkeletonLoader rows={8} columns={8} />
       ) : (
         <DataTable<Resident>
-          columns={COLUMNS}
+          columns={buildColumns(readiness)}
           data={residents}
           rowKey={(r) => r.residentId}
           onRowClick={(r) => navigate(`/admin/residents/${r.residentId}`)}
