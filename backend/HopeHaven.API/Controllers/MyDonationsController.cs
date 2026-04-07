@@ -9,7 +9,7 @@ namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/my-donations")]
-[Authorize(AuthenticationSchemes = "Identity.Application")]
+[Authorize]
 public class MyDonationsController(
     HopeHavenDbContext db,
     UserManager<ApplicationUser> userManager) : ControllerBase

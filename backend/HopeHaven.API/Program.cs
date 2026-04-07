@@ -23,6 +23,14 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
+// Default auth scheme = cookies (AddIdentityApiEndpoints registers both Bearer
+// and Cookie; we want [Authorize] on controllers to use cookies by default)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultChallengeScheme    = IdentityConstants.ApplicationScheme;
+});
+
 // ── Google OAuth (only activates when user-secrets are configured) ───────────
 var googleClientId     = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
