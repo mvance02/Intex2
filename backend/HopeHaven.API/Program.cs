@@ -1,4 +1,7 @@
 using HopeHaven.API.Data;
+using HopeHaven.API.Infrastructure;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +13,58 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // ── Database (PostgreSQL via Supabase) ─────────────────────────────────────
 builder.Services.AddDbContext<HopeHavenDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+
+// ── Identity DbContext (separate database) ──────────────────────────────────
+builder.Services.AddDbContext<AuthIdentityDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("IdentityConnection")));
+
+// ── ASP.NET Core Identity ────────────────────────────────────────────────────
+builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AuthIdentityDbContext>();
+
+// ── Google OAuth (only activates when user-secrets are configured) ───────────
+var googleClientId     = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId     = googleClientId;
+            options.ClientSecret = googleClientSecret;
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+            options.CallbackPath = "/signin-google";
+        });
+}
+
+// ── Authorization policies ───────────────────────────────────────────────────
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicies.ManageContent,
+        policy => policy.RequireRole(AuthRoles.Admin));
+});
+
+// ── Password policy (NIST: length over complexity) ───────────────────────────
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit           = false;
+    options.Password.RequireLowercase       = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase       = false;
+    options.Password.RequiredLength         = 14;
+    options.Password.RequiredUniqueChars    = 1;
+});
+
+// ── Cookie security ───────────────────────────────────────────────────────────
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly     = true;
+    options.Cookie.SameSite     = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan      = TimeSpan.FromDays(7);
+    options.SlidingExpiration   = true;
+});
 
 // ── Controllers + OpenAPI ──────────────────────────────────────────────────
 builder.Services.AddControllers()
@@ -31,24 +86,26 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ── AUTH PLACEHOLDER (IS 414) ──────────────────────────────────────────────
-// builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => { ... })
-//     .AddEntityFrameworkStores<HopeHavenDbContext>()
-//     .AddDefaultTokenProviders();
-// builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//     .AddCookie(options => { options.SlidingExpiration = true; });
-
 // ── ML Inference (IS 455) ─────────────────────────────────────────────────
 builder.Services.AddHttpClient("MLService", c =>
     c.BaseAddress = new Uri(builder.Configuration["ML:BaseUrl"] ?? "http://localhost:8001"));
 
 var app = builder.Build();
 
+// ── Seed Identity roles and default admin ─────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    await AuthIdentityGenerator.GenerateDefaultIdentityAsync(
+        scope.ServiceProvider, app.Configuration);
+}
+
 // ── Pipeline ───────────────────────────────────────────────────────────────
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseSecurityHeaders();
 
 // HTTPS redirect only in dev — Railway terminates TLS at the proxy layer
 if (app.Environment.IsDevelopment())
@@ -57,10 +114,11 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("AllowFrontend");
 
-// app.UseAuthentication();  // IS 414
-// app.UseAuthorization();   // IS 414
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
+app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 // ── Seed (dev only) ────────────────────────────────────────────────────────
