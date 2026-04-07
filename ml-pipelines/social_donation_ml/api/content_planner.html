@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Content planner — Lighthouse admin</title>
+  <style>
+    :root {
+      --bg: #0a0f18;
+      --card: #121a2a;
+      --elev: #182236;
+      --text: #eef3ff;
+      --muted: #8b9cb8;
+      --accent: #4ec8ff;
+      --good: #6ee7a8;
+      --warn: #f5c15c;
+      --border: #2a3d5c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #1a2840 0%, var(--bg) 55%);
+      color: var(--text);
+      padding: 20px 16px 48px;
+      line-height: 1.45;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 0; }
+    .hero h1 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .hero p {
+      color: var(--muted);
+      margin: 0 0 20px;
+      font-size: 15px;
+    }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    .section h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin: 0 0 12px;
+      font-weight: 800;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .hint { font-size: 11px; color: #5d6d8a; margin-top: 4px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--elev);
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      touch-action: manipulation;
+      position: relative;
+      z-index: 2;
+    }
+    /* Keep native dropdown usable in WebKit / embedded browsers */
+    select {
+      appearance: auto;
+      -webkit-appearance: menulist;
+    }
+    input[type="number"],
+    input[type="range"] {
+      cursor: auto;
+    }
+    input[type="range"] { z-index: 2; }
+    input[type="range"] { padding: 0; height: 32px; }
+    .hour-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .hour-val {
+      min-width: 88px;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--accent);
+    }
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .presets button {
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--elev);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .presets button:hover { border-color: var(--accent); color: var(--accent); }
+    .chk {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .chk input { width: auto; }
+    .chk label { margin: 0; color: var(--text); font-size: 14px; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .btn {
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #2a9de0, #4ec8ff);
+      color: #051018;
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--border);
+    }
+    .loading { font-size: 14px; color: var(--muted); margin-top: 12px; display: none; }
+    .loading.on { display: block; }
+    #results {
+      display: none;
+      margin-top: 20px;
+    }
+    #results.visible { display: block; }
+    .cards {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: var(--elev);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .card .big {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 4px 0 2px;
+    }
+    .card .lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .badge.high { background: rgba(110, 231, 168, 0.15); color: var(--good); }
+    .badge.mid { background: rgba(245, 193, 92, 0.15); color: var(--warn); }
+    .badge.low { background: rgba(139, 156, 184, 0.15); color: var(--muted); }
+    .best-hour {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--good);
+    }
+    .err {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255, 100, 100, 0.1);
+      border: 1px solid rgba(255, 100, 100, 0.35);
+      color: #ffb4b4;
+      display: none;
+    }
+    .err.visible { display: block; }
+    details {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    details pre {
+      margin: 8px 0 0;
+      padding: 10px;
+      background: #0c1220;
+      border-radius: 8px;
+      overflow: auto;
+      font-size: 11px;
+      color: #b8c5d9;
+    }
+    footer {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #5d6d8a;
+      max-width: 52ch;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Plan a post</h1>
+      <p>Describe the post you’re thinking of. We’ll estimate <strong>donation referrals</strong>, <strong>estimated gift value</strong>, and whether it looks like a <strong>strong</strong> post compared to history — before you publish.</p>
+      <p class="hint" id="optionsBanner" style="display:none;color:var(--warn)"></p>
+    </div>
+
+    <div class="section">
+      <h2>Quick presets</h2>
+      <div class="presets">
+        <button type="button" data-preset="fundraiser">Fundraising appeal</button>
+        <button type="button" data-preset="education">Education story</button>
+        <button type="button" data-preset="thanks">Thank supporters</button>
+      </div>
+    </div>
+
+    <form id="f">
+      <div class="section">
+        <h2>Where &amp; when</h2>
+        <div class="row">
+          <div>
+            <label for="platform">Platform</label>
+            <select id="platform" name="platform">
+              <option selected>Instagram</option><option>Facebook</option><option>WhatsApp</option><option>LinkedIn</option><option>TikTok</option><option>Twitter</option><option>YouTube</option>
+            </select>
+          </div>
+          <div>
+            <label for="day_of_week">Day</label>
+            <select id="day_of_week" name="day_of_week">
+              <option>Monday</option><option selected>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+            </select>
+          </div>
+        </div>
+        <label for="hourRange">Time to post</label>
+        <div class="hour-row">
+          <input type="range" id="hourRange" min="0" max="23" value="18" />
+          <span class="hour-val" id="hourLabel">6:00 PM</span>
+        </div>
+        <p class="hint">Drag the slider — we use the hour only (matches how the model was trained).</p>
+      </div>
+
+      <div class="section">
+        <h2>Content</h2>
+        <div class="row">
+          <div>
+            <label for="post_type">Post type</label>
+            <select id="post_type" name="post_type">
+              <option>FundraisingAppeal</option><option>EducationalContent</option><option>EventPromotion</option><option>ThankYou</option><option>ImpactStory</option><option>Campaign</option>
+            </select>
+          </div>
+          <div>
+            <label for="media_type">Format</label>
+            <select id="media_type" name="media_type">
+              <option>Carousel</option><option>Photo</option><option>Video</option><option>Reel</option><option>Text</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="content_topic">Topic</label>
+            <select id="content_topic" name="content_topic">
+              <option>Education</option><option>Health</option><option>AwarenessRaising</option><option>Reintegration</option><option>SafehouseLife</option><option>DonorImpact</option><option>EventRecap</option><option>Gratitude</option><option>CampaignLaunch</option>
+            </select>
+          </div>
+          <div>
+            <label for="sentiment_tone">Tone</label>
+            <select id="sentiment_tone" name="sentiment_tone">
+              <option>Hopeful</option><option>Grateful</option><option>Urgent</option><option>Emotional</option><option>Celebratory</option><option>Informative</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="caption_length">Caption length (characters)</label>
+            <input type="number" id="caption_length" min="0" value="280" />
+          </div>
+          <div>
+            <label for="num_hashtags">Hashtags</label>
+            <input type="number" id="num_hashtags" min="0" value="3" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="mentions_count">@Mentions</label>
+            <input type="number" id="mentions_count" min="0" value="0" />
+          </div>
+          <div>
+            <label for="call_to_action_type">Call to action</label>
+            <select id="call_to_action_type" name="call_to_action_type">
+              <option>DonateNow</option><option>LearnMore</option><option>ShareStory</option><option>SignUp</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Extras</h2>
+        <div class="chk">
+          <input type="checkbox" id="has_call_to_action" checked />
+          <label for="has_call_to_action">Include a clear call to action</label>
+        </div>
+        <div class="chk">
+          <input type="checkbox" id="features_resident_story" />
+          <label for="features_resident_story">Highlights a resident story</label>
+        </div>
+        <div class="chk">
+          <input type="checkbox" id="is_boosted" />
+          <label for="is_boosted">Paid boost</label>
+        </div>
+        <div class="row">
+          <div>
+            <label for="boost_budget_php">Boost budget (PHP)</label>
+            <input type="number" id="boost_budget_php" min="0" step="500" value="0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" id="btnScore">Get scores</button>
+        <button type="button" class="btn btn-secondary" id="btnCombo">Scores + best hour</button>
+      </div>
+      <p class="loading" id="loading">Working…</p>
+    </form>
+
+    <div class="err" id="errBox"></div>
+
+    <div id="results">
+      <div class="cards">
+        <div class="card">
+          <div class="lbl">Predicted donation referrals</div>
+          <div class="big" id="rRef">—</div>
+          <p class="hint" id="rRefNote"></p>
+        </div>
+        <div class="card">
+          <div class="lbl">Estimated donation value (model)</div>
+          <div class="big" id="rVal">—</div>
+          <p class="hint">PHP, from the same pipeline as your reports</p>
+        </div>
+        <div class="card">
+          <div class="lbl">Compared to past top posts</div>
+          <div id="rBand" class="badge mid">—</div>
+          <p class="hint" id="rProb"></p>
+        </div>
+        <div class="card" id="bestCard" style="display:none;">
+          <div class="lbl">Suggested posting hour (model sweep 7 AM – 9 PM)</div>
+          <div class="best-hour" id="rBest">—</div>
+          <p class="hint" id="rBestSub"></p>
+        </div>
+      </div>
+      <details>
+        <summary>Technical details</summary>
+        <pre id="rawJson"></pre>
+      </details>
+    </div>
+
+    <footer>
+      Estimates are from historical patterns, not guarantees. For staff use only. If numbers look wrong, retrain with <code>python train_export.py</code> after updating data.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function hourLabel(h) {
+      const hr = ((h + 11) % 12) + 1;
+      const ampm = h >= 12 ? "PM" : "AM";
+      return hr + ":00 " + ampm;
+    }
+
+    function gather() {
+      return {
+        platform: $("platform").value,
+        day_of_week: $("day_of_week").value,
+        post_hour: Number($("hourRange").value),
+        post_type: $("post_type").value,
+        media_type: $("media_type").value,
+        content_topic: $("content_topic").value,
+        sentiment_tone: $("sentiment_tone").value,
+        num_hashtags: Number($("num_hashtags").value),
+        mentions_count: Number($("mentions_count").value),
+        has_call_to_action: $("has_call_to_action").checked,
+        call_to_action_type: $("call_to_action_type").value,
+        features_resident_story: $("features_resident_story").checked,
+        caption_length: Number($("caption_length").value),
+        is_boosted: $("is_boosted").checked,
+        boost_budget_php: Number($("boost_budget_php").value),
+      };
+    }
+
+    const FALLBACK_OPTIONS = {
+      platform: ["Facebook", "Instagram", "LinkedIn", "TikTok", "Twitter", "WhatsApp", "YouTube"],
+      day_of_week: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      post_type: ["Campaign", "EducationalContent", "EventPromotion", "FundraisingAppeal", "ImpactStory", "ThankYou"],
+      media_type: ["Carousel", "Photo", "Reel", "Text", "Video"],
+      content_topic: [
+        "AwarenessRaising", "CampaignLaunch", "DonorImpact", "Education", "EventRecap",
+        "Gratitude", "Health", "Reintegration", "SafehouseLife",
+      ],
+      sentiment_tone: ["Celebratory", "Emotional", "Grateful", "Hopeful", "Informative", "Urgent"],
+      call_to_action_type: ["DonateNow", "LearnMore", "ShareStory", "SignUp"],
+    };
+
+    function fillSelect(el, options, selected) {
+      if (!el || !Array.isArray(options) || options.length === 0) return;
+      const prev = el.value;
+      el.innerHTML = "";
+      options.forEach((v) => {
+        const o = document.createElement("option");
+        o.value = o.textContent = v;
+        el.appendChild(o);
+      });
+      const pick = options.includes(selected) ? selected : options.includes(prev) ? prev : options[0];
+      el.value = pick;
+    }
+
+    async function loadOptions() {
+      const banner = $("optionsBanner");
+      const data = { ...FALLBACK_OPTIONS };
+      try {
+        const r = await fetch("/field-options");
+        if (r.ok) {
+          const j = await r.json();
+          if (j && typeof j === "object") {
+            for (const k of Object.keys(FALLBACK_OPTIONS)) {
+              if (Array.isArray(j[k]) && j[k].length) data[k] = j[k];
+            }
+          }
+        } else {
+          banner.style.display = "block";
+          banner.textContent =
+            "Could not refresh lists from the server — using built-in choices. Open this page from the app URL (e.g. http://127.0.0.1:8002/), not by double-clicking the HTML file.";
+        }
+      } catch (e) {
+        banner.style.display = "block";
+        banner.textContent =
+          "Offline or wrong URL — using built-in choices. Run uvicorn and open http://127.0.0.1:8002/ in your browser.";
+        console.warn(e);
+      }
+      fillSelect($("platform"), data.platform, "Instagram");
+      fillSelect($("day_of_week"), data.day_of_week, "Tuesday");
+      fillSelect($("post_type"), data.post_type, "FundraisingAppeal");
+      fillSelect($("media_type"), data.media_type, "Carousel");
+      fillSelect($("content_topic"), data.content_topic, "Education");
+      fillSelect($("sentiment_tone"), data.sentiment_tone, "Hopeful");
+      fillSelect($("call_to_action_type"), data.call_to_action_type, "DonateNow");
+    }
+
+    const presets = {
+      fundraiser: {
+        post_type: "FundraisingAppeal",
+        media_type: "Carousel",
+        content_topic: "Education",
+        sentiment_tone: "Urgent",
+        call_to_action_type: "DonateNow",
+        num_hashtags: 4,
+        caption_length: 320,
+        has_call_to_action: true,
+        features_resident_story: true,
+      },
+      education: {
+        post_type: "EducationalContent",
+        media_type: "Photo",
+        content_topic: "Education",
+        sentiment_tone: "Hopeful",
+        call_to_action_type: "LearnMore",
+        num_hashtags: 3,
+        caption_length: 220,
+        has_call_to_action: true,
+        features_resident_story: false,
+      },
+      thanks: {
+        post_type: "ThankYou",
+        media_type: "Video",
+        content_topic: "Gratitude",
+        sentiment_tone: "Grateful",
+        call_to_action_type: "ShareStory",
+        num_hashtags: 2,
+        caption_length: 180,
+        has_call_to_action: false,
+        features_resident_story: false,
+      },
+    };
+
+    function applyPreset(name) {
+      const p = presets[name];
+      if (!p) return;
+      if ($("post_type") && [...$("post_type").options].some((o) => o.value === p.post_type))
+        $("post_type").value = p.post_type;
+      if ($("media_type")) $("media_type").value = p.media_type;
+      if ($("content_topic")) $("content_topic").value = p.content_topic;
+      if ($("sentiment_tone")) $("sentiment_tone").value = p.sentiment_tone;
+      if ($("call_to_action_type")) $("call_to_action_type").value = p.call_to_action_type;
+      $("num_hashtags").value = p.num_hashtags;
+      $("caption_length").value = p.caption_length;
+      $("has_call_to_action").checked = p.has_call_to_action;
+      $("features_resident_story").checked = p.features_resident_story;
+    }
+
+    function showError(msg) {
+      const box = $("errBox");
+      box.textContent = msg;
+      box.classList.add("visible");
+    }
+    function clearError() {
+      $("errBox").classList.remove("visible");
+    }
+
+    function renderPredict(j) {
+      const ref = j.predicted_donation_referrals;
+      const val = j.predicted_estimated_donation_value_php;
+      $("rRef").textContent = typeof ref === "number" ? ref.toFixed(1) : "—";
+      $("rVal").textContent =
+        typeof val === "number"
+          ? "₱ " +
+            val.toLocaleString(undefined, { maximumFractionDigits: 0 })
+          : "—";
+      const thr = j.training_threshold_referrals;
+      $("rRefNote").textContent =
+        typeof thr === "number"
+          ? "Training data: “high” posts had about " + thr + "+ referrals (top quarter)."
+          : "";
+
+      const band = $("rBand");
+      band.textContent = j.performance_band_label || "—";
+      band.className = "badge " + (j.performance_band_key || "mid");
+      const ph = j.high_performer_probability;
+      $("rProb").textContent =
+        typeof ph === "number"
+          ? "Chance this would rank as a top-quarter post: " + (ph * 100).toFixed(0) + "%"
+          : "";
+
+      $("results").classList.add("visible");
+      $("rawJson").textContent = JSON.stringify(j, null, 2);
+    }
+
+    async function postJson(url, body) {
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail || j));
+      return j;
+    }
+
+    $("hourRange").addEventListener("input", () => {
+      $("hourLabel").textContent = hourLabel(Number($("hourRange").value));
+    });
+    $("hourLabel").textContent = hourLabel(18);
+
+    document.querySelectorAll("[data-preset]").forEach((b) => {
+      b.addEventListener("click", () => applyPreset(b.getAttribute("data-preset")));
+    });
+
+    $("is_boosted").addEventListener("change", () => {
+      $("boost_budget_php").disabled = !$("is_boosted").checked;
+    });
+    $("boost_budget_php").disabled = true;
+
+    document.getElementById("f").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      clearError();
+      $("loading").classList.add("on");
+      $("btnScore").disabled = true;
+      $("bestCard").style.display = "none";
+      try {
+        const j = await postJson("/predict/draft", gather());
+        renderPredict(j);
+      } catch (e) {
+        showError(e.message || String(e));
+      } finally {
+        $("loading").classList.remove("on");
+        $("btnScore").disabled = false;
+      }
+    });
+
+    $("btnCombo").addEventListener("click", async () => {
+      clearError();
+      $("loading").classList.add("on");
+      $("btnCombo").disabled = true;
+      try {
+        const body = gather();
+        const j = await postJson("/predict/draft", body);
+        renderPredict(j);
+        const sw = await postJson("/predict/draft/sweep-hours", body);
+        $("bestCard").style.display = "block";
+        const bh = sw.best_post_hour;
+        $("rBest").textContent = hourLabel(bh);
+        $("rBestSub").textContent =
+          "Predicted referrals at that hour: " + sw.predicted_donation_referrals_at_best;
+        const merged = { predict: j, sweep: sw };
+        $("rawJson").textContent = JSON.stringify(merged, null, 2);
+      } catch (e) {
+        showError(e.message || String(e));
+      } finally {
+        $("loading").classList.remove("on");
+        $("btnCombo").disabled = false;
+      }
+    });
+
+    loadOptions();
+  </script>
+</body>
+</html>
