@@ -8,7 +8,7 @@ namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin", AuthenticationSchemes = "Identity.Application")]
 public class UsersController(
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole> roleManager) : ControllerBase

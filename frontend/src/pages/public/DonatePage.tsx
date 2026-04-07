@@ -296,7 +296,7 @@ export default function DonatePage() {
   async function handleCustomDonate() {
     if (customPhp <= 0) return;
     try {
-      await fetch(`${API}/api/my-donations`, {
+      const res = await fetch(`${API}/api/my-donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -309,7 +309,8 @@ export default function DonatePage() {
           impactUnit: customImpact || undefined,
         }),
       });
-    } catch { /* best effort — still show thank you */ }
+      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
+    } catch (err) { console.error('Donation POST error:', err); }
     setModal({
       type: 'thank-you',
       label: 'Custom Donation',
@@ -326,7 +327,7 @@ export default function DonatePage() {
     if (modal.type !== 'recurring-prompt') return;
     const item = modal.item;
     try {
-      await fetch(`${API}/api/my-donations`, {
+      const res = await fetch(`${API}/api/my-donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -339,7 +340,8 @@ export default function DonatePage() {
           impactUnit: item.impactLine,
         }),
       });
-    } catch { /* best effort */ }
+      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
+    } catch (err) { console.error('Donation POST error:', err); }
     setModal({
       type: 'thank-you',
       label: item.label,
