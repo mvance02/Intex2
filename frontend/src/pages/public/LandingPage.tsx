@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, HeartPulse, GraduationCap, Utensils } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
@@ -76,112 +76,285 @@ const REGION_COLOR: Record<string, string> = {
   Mindanao: '#60a5fa',
 };
 
+// RGB triplets for box-shadow / rgba() usage (matches REGION_COLOR)
+const REGION_GLOW: Record<string, string> = {
+  Luzon:    '45, 212, 191',
+  Visayas:  '52, 211, 153',
+  Mindanao: '96, 165, 250',
+};
+
 // ---------------------------------------------------------------------------
-// Philippines SVG map (simplified main island groups)
+// Philippines SVG map — interactive with hover tooltips and pulse animations
 // ---------------------------------------------------------------------------
 
-function PhilippinesMap() {
+type SafehouseName = typeof SAFEHOUSES[number]['name'];
+
+interface PhilippinesMapProps {
+  hoveredCity: SafehouseName | null;
+  onPinHover: (name: SafehouseName | null) => void;
+}
+
+function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
+  const [tooltip, setTooltip] = useState<{ name: string; region: string; x: number; y: number } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  function handlePinEnter(safehouse: typeof SAFEHOUSES[number], svgX: number, svgY: number) {
+    onPinHover(safehouse.name);
+    setTooltip({ name: safehouse.name, region: safehouse.region, x: svgX, y: svgY });
+  }
+
+  function handlePinLeave() {
+    onPinHover(null);
+    setTooltip(null);
+  }
+
   return (
     <svg
+      ref={svgRef}
       viewBox="0 0 100 100"
       className="w-full h-full"
       aria-label="Map of the Philippines showing safehouse locations"
+      style={{ overflow: 'visible' }}
     >
-      {/* Luzon */}
+      <defs>
+        {/* Ocean gradient background */}
+        <radialGradient id="oceanBg" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stopColor="#0f2a3f" />
+          <stop offset="100%" stopColor="#070e1a" />
+        </radialGradient>
+
+        {/* Island fill gradient */}
+        <linearGradient id="islandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#134e4a" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#0f766e" stopOpacity="0.5" />
+        </linearGradient>
+
+        {/* Per-region glow filters */}
+        {Object.entries(REGION_COLOR).map(([region, color]) => (
+          <filter key={region} id={`glow-${region}`} x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="1.2" result="blur" />
+            <feFlood floodColor={color} floodOpacity="0.8" result="color" />
+            <feComposite in="color" in2="blur" operator="in" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        ))}
+
+        {/* Hover glow — stronger */}
+        {Object.entries(REGION_COLOR).map(([region, color]) => (
+          <filter key={`hover-${region}`} id={`hover-glow-${region}`} x="-150%" y="-150%" width="400%" height="400%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feFlood floodColor={color} floodOpacity="1" result="color" />
+            <feComposite in="color" in2="blur" operator="in" result="coloredBlur" />
+            <feMerge>
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="coloredBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        ))}
+
+        <style>{`
+          @keyframes mapPulse {
+            0%   { r: 2.2; opacity: 0.5; }
+            70%  { r: 4.5; opacity: 0;   }
+            100% { r: 4.5; opacity: 0;   }
+          }
+          @keyframes mapPulse2 {
+            0%   { r: 2.2; opacity: 0.3; }
+            70%  { r: 5.5; opacity: 0;   }
+            100% { r: 5.5; opacity: 0;   }
+          }
+          .pin-pulse-1 { animation: mapPulse  2.4s ease-out infinite; }
+          .pin-pulse-2 { animation: mapPulse2 2.4s ease-out infinite 0.6s; }
+          .pin-core    { transition: r 0.2s ease, filter 0.2s ease; }
+          .pin-group   { cursor: pointer; }
+        `}</style>
+      </defs>
+
+      {/* Ocean background rect */}
+      <rect x="0" y="0" width="100" height="100" fill="url(#oceanBg)" />
+
+      {/* Island shapes */}
+      {/* Luzon main */}
       <path
         d="M 48 10 L 44 14 L 40 18 L 39 22 L 41 26 L 44 28 L 46 32 L 48 36 L 52 38 L 56 36 L 58 32 L 57 27 L 55 23 L 54 18 L 52 13 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/30"
+        fill="url(#islandGrad)"
+        stroke="#2dd4bf"
+        strokeWidth="0.4"
+        strokeOpacity="0.6"
       />
       {/* Luzon lower peninsula */}
       <path
         d="M 46 32 L 44 36 L 43 40 L 45 43 L 48 44 L 51 43 L 52 40 L 52 38"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/30"
+        fill="url(#islandGrad)"
+        stroke="#2dd4bf"
+        strokeWidth="0.4"
+        strokeOpacity="0.6"
       />
       {/* Mindoro */}
       <path
         d="M 40 42 L 37 44 L 36 48 L 38 51 L 41 50 L 42 46 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/20"
+        fill="url(#islandGrad)"
+        stroke="#2dd4bf"
+        strokeWidth="0.35"
+        strokeOpacity="0.4"
       />
       {/* Palawan */}
       <path
         d="M 22 48 L 19 53 L 18 58 L 20 63 L 23 65 L 26 63 L 28 58 L 27 52 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/20"
+        fill="url(#islandGrad)"
+        stroke="#2dd4bf"
+        strokeWidth="0.35"
+        strokeOpacity="0.4"
       />
       {/* Panay */}
       <path
         d="M 38 48 L 35 51 L 35 55 L 38 57 L 42 56 L 44 53 L 43 49 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/25"
+        fill="url(#islandGrad)"
+        stroke="#34d399"
+        strokeWidth="0.35"
+        strokeOpacity="0.5"
       />
       {/* Negros */}
       <path
         d="M 44 50 L 43 54 L 44 58 L 46 61 L 49 60 L 50 56 L 49 52 L 47 50 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/25"
+        fill="url(#islandGrad)"
+        stroke="#34d399"
+        strokeWidth="0.35"
+        strokeOpacity="0.5"
       />
       {/* Cebu */}
       <path
         d="M 51 47 L 50 51 L 51 55 L 53 57 L 56 55 L 56 51 L 54 48 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/25"
+        fill="url(#islandGrad)"
+        stroke="#34d399"
+        strokeWidth="0.35"
+        strokeOpacity="0.5"
       />
       {/* Leyte / Samar */}
       <path
         d="M 58 44 L 56 48 L 57 52 L 60 54 L 64 53 L 66 49 L 65 45 L 62 43 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/25"
+        fill="url(#islandGrad)"
+        stroke="#34d399"
+        strokeWidth="0.35"
+        strokeOpacity="0.5"
       />
       {/* Mindanao */}
       <path
         d="M 46 58 L 43 61 L 42 66 L 44 71 L 48 75 L 52 78 L 57 79 L 62 77 L 66 73 L 68 68 L 67 63 L 64 59 L 60 57 L 55 57 L 50 57 Z"
-        fill="none"
-        stroke="#0f766e"
-        strokeWidth="0.6"
-        className="fill-teal-900/30"
+        fill="url(#islandGrad)"
+        stroke="#60a5fa"
+        strokeWidth="0.4"
+        strokeOpacity="0.6"
       />
 
       {/* Safehouse pins */}
-      {SAFEHOUSES.map(({ name, region, x, y }) => (
-        <g key={name}>
-          {/* Glow ring */}
-          <circle
-            cx={x}
-            cy={y}
-            r="2.2"
-            fill={REGION_COLOR[region]}
-            opacity="0.25"
-          />
-          {/* Core dot */}
-          <circle
-            cx={x}
-            cy={y}
-            r="1.1"
-            fill={REGION_COLOR[region]}
-            stroke="white"
-            strokeWidth="0.3"
-          />
-        </g>
-      ))}
+      {SAFEHOUSES.map((safehouse, i) => {
+        const { name, region, x, y } = safehouse;
+        const color = REGION_COLOR[region];
+        const rgb = REGION_GLOW[region];
+        const isActive = hoveredCity === name;
+        const animDelay = `${(i * 0.3) % 1.8}s`;
+
+        return (
+          <g
+            key={name}
+            className="pin-group"
+            onMouseEnter={() => handlePinEnter(safehouse, x, y)}
+            onMouseLeave={handlePinLeave}
+          >
+            {/* Outer pulse ring 1 */}
+            <circle
+              cx={x}
+              cy={y}
+              r="2.2"
+              fill={color}
+              className="pin-pulse-1"
+              style={{ animationDelay: animDelay }}
+            />
+            {/* Outer pulse ring 2 — staggered */}
+            <circle
+              cx={x}
+              cy={y}
+              r="2.2"
+              fill={color}
+              className="pin-pulse-2"
+              style={{ animationDelay: animDelay }}
+            />
+            {/* Ambient glow halo */}
+            <circle
+              cx={x}
+              cy={y}
+              r={isActive ? 3.5 : 2.0}
+              fill={color}
+              opacity={isActive ? 0.35 : 0.15}
+              style={{
+                transition: 'r 0.2s ease, opacity 0.2s ease',
+                filter: `blur(${isActive ? 1.5 : 0.8}px)`,
+              }}
+            />
+            {/* Core dot */}
+            <circle
+              cx={x}
+              cy={y}
+              r={isActive ? 1.8 : 1.1}
+              fill={color}
+              stroke="white"
+              strokeWidth={isActive ? 0.45 : 0.3}
+              className="pin-core"
+              filter={isActive ? `url(#hover-glow-${region})` : `url(#glow-${region})`}
+              style={{
+                boxShadow: isActive ? `0 0 8px rgba(${rgb}, 0.9)` : undefined,
+              }}
+            />
+          </g>
+        );
+      })}
+
+      {/* Tooltip rendered inside SVG via foreignObject for crisp text */}
+      {tooltip && (() => {
+        const tipX = tooltip.x > 60 ? tooltip.x - 22 : tooltip.x + 3;
+        const tipY = tooltip.y > 75 ? tooltip.y - 9 : tooltip.y - 8;
+        return (
+          <g style={{ pointerEvents: 'none' }}>
+            <rect
+              x={tipX}
+              y={tipY}
+              width="19"
+              height="7.5"
+              rx="1.2"
+              fill="#111827"
+              fillOpacity="0.95"
+              stroke={REGION_COLOR[tooltip.region]}
+              strokeWidth="0.4"
+            />
+            <text
+              x={tipX + 9.5}
+              y={tipY + 3.2}
+              textAnchor="middle"
+              fontSize="1.9"
+              fill="white"
+              fontFamily="system-ui, sans-serif"
+              fontWeight="600"
+            >
+              {tooltip.name}
+            </text>
+            <text
+              x={tipX + 9.5}
+              y={tipY + 5.8}
+              textAnchor="middle"
+              fontSize="1.55"
+              fill={REGION_COLOR[tooltip.region]}
+              fontFamily="system-ui, sans-serif"
+            >
+              {tooltip.region}
+            </text>
+          </g>
+        );
+      })()}
     </svg>
   );
 }
@@ -192,6 +365,7 @@ function PhilippinesMap() {
 
 export default function LandingPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
@@ -404,13 +578,19 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-5 gap-10 items-center">
             {/* Map */}
             <div className="md:col-span-3 flex justify-center">
-              <div className="w-72 h-96 relative">
-                <PhilippinesMap />
+              <div
+                className="w-72 h-96 relative rounded-2xl overflow-visible"
+                style={{
+                  background: 'radial-gradient(ellipse at center, #0f2a3f 0%, #070e1a 100%)',
+                  boxShadow: '0 0 40px rgba(45, 212, 191, 0.08), 0 0 80px rgba(0,0,0,0.6)',
+                }}
+              >
+                <PhilippinesMap hoveredCity={hoveredCity} onPinHover={setHoveredCity} />
               </div>
             </div>
 
             {/* Safehouse list */}
-            <div className="md:col-span-2 space-y-3">
+            <div className="md:col-span-2 space-y-4">
               {(['Luzon', 'Visayas', 'Mindanao'] as const).map((region) => (
                 <div key={region}>
                   <p
@@ -419,20 +599,43 @@ export default function LandingPage() {
                   >
                     {region}
                   </p>
-                  <ul className="space-y-1.5">
-                    {SAFEHOUSES.filter((s) => s.region === region).map((s) => (
-                      <li key={s.name} className="flex items-center gap-2.5">
-                        <span
-                          className="w-2 h-2 rounded-full shrink-0"
-                          style={{ backgroundColor: REGION_COLOR[region] }}
-                        />
-                        <span className="text-sm text-gray-300">{s.name}</span>
-                      </li>
-                    ))}
+                  <ul className="space-y-1">
+                    {SAFEHOUSES.filter((s) => s.region === region).map((s) => {
+                      const isActive = hoveredCity === s.name;
+                      return (
+                        <li
+                          key={s.name}
+                          className="flex items-center gap-2.5 px-2 py-1 rounded-lg cursor-default transition-all duration-150"
+                          style={{
+                            backgroundColor: isActive ? `rgba(${REGION_GLOW[region]}, 0.12)` : 'transparent',
+                          }}
+                          onMouseEnter={() => setHoveredCity(s.name)}
+                          onMouseLeave={() => setHoveredCity(null)}
+                        >
+                          <span
+                            className="rounded-full shrink-0 transition-all duration-150"
+                            style={{
+                              width: isActive ? '10px' : '8px',
+                              height: isActive ? '10px' : '8px',
+                              backgroundColor: REGION_COLOR[region],
+                              boxShadow: isActive
+                                ? `0 0 8px rgba(${REGION_GLOW[region]}, 0.9)`
+                                : 'none',
+                            }}
+                          />
+                          <span
+                            className="text-sm transition-colors duration-150"
+                            style={{ color: isActive ? 'white' : '#d1d5db' }}
+                          >
+                            {s.name}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}
-              <div className="pt-4 border-t border-gray-700 mt-4">
+              <div className="pt-4 border-t border-gray-700">
                 <Link
                   to="/impact"
                   className="text-teal-400 text-sm font-semibold hover:text-teal-300 transition-colors"
