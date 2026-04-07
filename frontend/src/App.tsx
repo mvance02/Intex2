@@ -77,7 +77,7 @@ export default function App() {
                 {/* Donor — protected + lazy */}
                 <Route
                   element={
-                    <ProtectedRoute requiredRoles={['Donor', 'Admin']}>
+                    <ProtectedRoute>
                       <Suspense fallback={<PageFallback />}>
                         <DonorLayout />
                       </Suspense>
