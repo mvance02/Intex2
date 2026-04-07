@@ -1,4 +1,6 @@
 import { useState } from 'react';
+
+const API = import.meta.env.VITE_API_URL ?? '';
 import { Link } from 'react-router-dom';
 import {
   Home,
@@ -291,8 +293,24 @@ export default function DonatePage() {
     customMode === 'usd' ? customNumeric : phpToUsd(customNumeric);
   const customImpact = customUsd > 0 ? getImpactMessage(customUsd) : null;
 
-  function handleCustomDonate() {
+  async function handleCustomDonate() {
     if (customPhp <= 0) return;
+    try {
+      const res = await fetch(`${API}/api/my-donations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount: Math.round(customPhp),
+          currencyCode: 'PHP',
+          isRecurring: false,
+          donationType: 'Monetary',
+          campaignName: 'Custom Donation',
+          impactUnit: customImpact || undefined,
+        }),
+      });
+      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
+    } catch (err) { console.error('Donation POST error:', err); }
     setModal({
       type: 'thank-you',
       label: 'Custom Donation',
@@ -305,12 +323,29 @@ export default function DonatePage() {
     setModal({ type: 'recurring-prompt', item });
   }
 
-  function handleRecurringChoice(recurring: boolean) {
+  async function handleRecurringChoice(recurring: boolean) {
     if (modal.type !== 'recurring-prompt') return;
+    const item = modal.item;
+    try {
+      const res = await fetch(`${API}/api/my-donations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount: item.phpAmount,
+          currencyCode: 'PHP',
+          isRecurring: recurring,
+          donationType: 'Monetary',
+          campaignName: item.label,
+          impactUnit: item.impactLine,
+        }),
+      });
+      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
+    } catch (err) { console.error('Donation POST error:', err); }
     setModal({
       type: 'thank-you',
-      label: modal.item.label,
-      phpAmount: modal.item.phpAmount,
+      label: item.label,
+      phpAmount: item.phpAmount,
       isRecurring: recurring,
     });
   }
