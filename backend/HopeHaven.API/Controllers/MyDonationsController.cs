@@ -56,56 +56,63 @@ public class MyDonationsController(
     [HttpPost]
     public async Task<IActionResult> CreateDonation([FromBody] CreateMyDonationRequest request)
     {
-        var identityUser = await userManager.GetUserAsync(User);
-        var email = identityUser?.Email;
-        if (string.IsNullOrEmpty(email))
-            return Unauthorized(new { message = "Unable to resolve user email." });
-
-        // Find or create supporter
-        var supporter = await db.Supporters.FirstOrDefaultAsync(s => s.Email == email);
-        if (supporter is null)
+        try
         {
-            supporter = new Supporter
+            var identityUser = await userManager.GetUserAsync(User);
+            var email = identityUser?.Email;
+            if (string.IsNullOrEmpty(email))
+                return Unauthorized(new { message = "Unable to resolve user email." });
+
+            // Find or create supporter
+            var supporter = await db.Supporters.FirstOrDefaultAsync(s => s.Email == email);
+            if (supporter is null)
             {
-                DisplayName = email.Split('@')[0],
-                Email = email,
-                SupporterType = "Individual",
-                Status = "Active",
-                CreatedAt = DateTime.UtcNow,
-                FirstDonationDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                AcquisitionChannel = "Website"
+                supporter = new Supporter
+                {
+                    DisplayName = email.Split('@')[0],
+                    Email = email,
+                    SupporterType = "Individual",
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow,
+                    FirstDonationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    AcquisitionChannel = "Website"
+                };
+                db.Supporters.Add(supporter);
+                await db.SaveChangesAsync();
+            }
+
+            var donation = new Donation
+            {
+                SupporterId = supporter.SupporterId,
+                DonationType = request.DonationType ?? "Monetary",
+                DonationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                IsRecurring = request.IsRecurring,
+                CurrencyCode = request.CurrencyCode ?? "PHP",
+                Amount = request.Amount,
+                CampaignName = request.CampaignName,
+                ChannelSource = "Website",
+                Notes = request.Notes,
+                ImpactUnit = request.ImpactUnit
             };
-            db.Supporters.Add(supporter);
+
+            db.Donations.Add(donation);
             await db.SaveChangesAsync();
+
+            return Created($"/api/my-donations", new
+            {
+                donation.DonationId,
+                donation.Amount,
+                donation.CurrencyCode,
+                donation.DonationDate,
+                donation.IsRecurring,
+                donation.CampaignName,
+                donation.DonationType
+            });
         }
-
-        var donation = new Donation
+        catch (Exception ex)
         {
-            SupporterId = supporter.SupporterId,
-            DonationType = request.DonationType ?? "Monetary",
-            DonationDate = DateOnly.FromDateTime(DateTime.UtcNow),
-            IsRecurring = request.IsRecurring,
-            CurrencyCode = request.CurrencyCode ?? "PHP",
-            Amount = request.Amount,
-            CampaignName = request.CampaignName,
-            ChannelSource = "Website",
-            Notes = request.Notes,
-            ImpactUnit = request.ImpactUnit
-        };
-
-        db.Donations.Add(donation);
-        await db.SaveChangesAsync();
-
-        return CreatedAtAction(null, new { id = donation.DonationId }, new
-        {
-            donation.DonationId,
-            donation.Amount,
-            donation.CurrencyCode,
-            donation.DonationDate,
-            donation.IsRecurring,
-            donation.CampaignName,
-            donation.DonationType
-        });
+            return StatusCode(500, new { message = "Failed to save donation.", error = ex.Message, inner = ex.InnerException?.Message });
+        }
     }
 }
 
