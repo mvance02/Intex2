@@ -18,7 +18,6 @@ import LogoutPage from './pages/public/LogoutPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import ReferralPage from './pages/public/ReferralPage';
 import DonatePage from './pages/public/DonatePage';
-import SocialMediaPage from './pages/public/SocialMediaPage';
 import NotFound from './pages/NotFound';
 
 // Admin pages — lazy loaded (code split, only fetched after login)
@@ -30,6 +29,7 @@ const ProcessRecordings  = lazy(() => import('./pages/admin/ProcessRecordings'))
 const HomeVisitations    = lazy(() => import('./pages/admin/HomeVisitations'));
 const ReportsAnalytics   = lazy(() => import('./pages/admin/ReportsAnalytics'));
 const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
+const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
 
 function PageFallback() {
   return (
@@ -63,7 +63,6 @@ export default function App() {
                   <Route path="/privacy"      element={<PrivacyPage />} />
                   <Route path="/referral"     element={<ReferralPage />} />
                   <Route path="/donate"       element={<DonatePage />} />
-                  <Route path="/social-media" element={<SocialMediaPage />} />
                 </Route>
 
                 {/* Admin — protected + lazy */}
@@ -135,6 +134,14 @@ export default function App() {
                     element={
                       <Suspense fallback={<PageFallback />}>
                         <ManageMFAPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/admin/social-media"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <SocialMediaPage />
                       </Suspense>
                     }
                   />

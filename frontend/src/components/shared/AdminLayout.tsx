@@ -7,6 +7,7 @@ import {
   ClipboardList,
   Home,
   BarChart2,
+  Share2,
   Menu,
   X,
   LogOut,
@@ -20,10 +21,11 @@ const navItems = [
   { label: 'Process Recordings', path: '/admin/process-recordings', Icon: ClipboardList },
   { label: 'Home Visits',        path: '/admin/visits',             Icon: Home },
   { label: 'Reports',            path: '/admin/reports',            Icon: BarChart2 },
+  { label: 'Social Media',       path: '/admin/social-media',       Icon: Share2 },
 ];
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
+  const { authSession, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,8 +46,7 @@ export default function AdminLayout() {
   }, [sidebarOpen]);
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    void logout().then(() => navigate('/'));
   };
 
   const currentLabel =
@@ -96,8 +97,8 @@ export default function AdminLayout() {
       </nav>
 
       <div className="px-4 py-4 border-t border-teal-700">
-        <p className="text-sm font-medium text-white truncate">{user?.email}</p>
-        <p className="text-xs mt-0.5 text-teal-400">{user?.role}</p>
+        <p className="text-sm font-medium text-white truncate">{authSession.email}</p>
+        <p className="text-xs mt-0.5 text-teal-400">{authSession.roles[0]}</p>
         <button
           onClick={handleLogout}
           className="mt-3 flex items-center gap-1.5 text-teal-400 hover:text-white transition-colors text-xs font-medium"
@@ -144,7 +145,7 @@ export default function AdminLayout() {
           </button>
 
           <h1 className="text-base font-semibold text-gray-800 flex-1">{currentLabel}</h1>
-          <span className="text-sm text-gray-400 hidden sm:block truncate max-w-48">{user?.email}</span>
+          <span className="text-sm text-gray-400 hidden sm:block truncate max-w-48">{authSession.email}</span>
         </header>
 
         <main className="flex-1 overflow-auto p-4 lg:p-6">

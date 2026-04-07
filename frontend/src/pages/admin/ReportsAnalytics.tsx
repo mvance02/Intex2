@@ -1,13 +1,12 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   LineChart, Line,
-  BarChart, Bar,
-  PieChart, Pie, Cell,
+  BarChart, Bar, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import { FileDown } from 'lucide-react'
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 import { apiFetch } from '../../utils/api'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import ErrorAlert from '../../components/shared/ErrorAlert'
@@ -287,7 +286,7 @@ export default function ReportsAnalytics() {
         ['Reintegrations', annualData.reintegrationCount.toString()],
       ];
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: y,
         head: [['Metric', 'Value']],
         body: summaryRows,
@@ -295,7 +294,7 @@ export default function ReportsAnalytics() {
         headStyles: { fillColor: [13, 148, 136] },
         margin: { left: 20, right: 20 },
       });
-      y = (doc as any).lastAutoTable.finalY + 15;
+      y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
     }
 
     // Safehouse Comparison
@@ -304,7 +303,7 @@ export default function ReportsAnalytics() {
       doc.text('Safehouse Overview', 20, y);
       y += 10;
 
-      const rows = safehouseData.safehouses.map(s => [
+      const shRows = safehouseData.safehouses.map(s => [
         s.name ?? '',
         s.region ?? '',
         `${s.activeResidents}/${s.capacityGirls ?? 0}`,
@@ -312,15 +311,15 @@ export default function ReportsAnalytics() {
         s.highRiskResidents.toString(),
       ]);
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: y,
         head: [['Safehouse', 'Region', 'Occupancy', 'Open Incidents', 'High Risk']],
-        body: rows,
+        body: shRows,
         theme: 'grid',
         headStyles: { fillColor: [13, 148, 136] },
         margin: { left: 20, right: 20 },
       });
-      y = (doc as any).lastAutoTable.finalY + 15;
+      y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
     }
 
     // Reintegration Stats
@@ -330,16 +329,16 @@ export default function ReportsAnalytics() {
       doc.text('Reintegration Outcomes', 20, y);
       y += 10;
 
-      const rows = reintData.byType.map(r => [
+      const reintRows = reintData.byType.map(r => [
         r.reintegrationType ?? 'Unknown',
         r.count.toString(),
         r.reintegratedCount.toString(),
       ]);
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: y,
         head: [['Type', 'Total', 'Reintegrated']],
-        body: rows,
+        body: reintRows,
         theme: 'grid',
         headStyles: { fillColor: [13, 148, 136] },
         margin: { left: 20, right: 20 },
@@ -371,11 +370,13 @@ export default function ReportsAnalytics() {
     count: s.count,
   })) ?? []
 
-  const riskChartData = residentData?.byRiskLevel.map((r) => ({
-    name: r.status ?? 'Unknown',
-    value: r.count,
-    color: riskColor(r.status),
-  })) ?? []
+  const riskChartData = (residentData?.byRiskLevel ?? [])
+    .filter((r) => r.count > 0)
+    .map((r) => ({
+      name: r.status ?? 'Unknown',
+      count: r.count,
+      color: riskColor(r.status),
+    }))
 
   const safehouseChartData = safehouseData?.safehouses.map((sh) => ({
     name: sh.name ?? `Safehouse ${sh.safehouseId}`,
@@ -514,26 +515,21 @@ export default function ReportsAnalytics() {
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-3">By Risk Level</p>
                 <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie
-                      data={riskChartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label={({ name, percent }: { name?: string; percent?: number }) =>
-                        `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`
-                      }
-                      labelLine={false}
-                    >
+                  <BarChart
+                    data={riskChartData}
+                    layout="vertical"
+                    margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={70} />
+                    <Tooltip formatter={(value) => [Number(value), 'Residents']} />
+                    <Bar dataKey="count" name="Residents" radius={[0, 4, 4, 0]}>
                       {riskChartData.map((entry, index) => (
                         <Cell key={`risk-${index}`} fill={entry.color} />
                       ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [Number(value), 'Residents']} />
-                    <Legend />
-                  </PieChart>
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>

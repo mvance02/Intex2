@@ -6,10 +6,9 @@ export default function PublicLayout() {
       <nav className="bg-teal-700 text-white px-6 py-4 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold tracking-tight">Hope Haven</Link>
         <div className="flex gap-6 text-sm font-medium">
-          <Link to="/impact"       className="hover:text-teal-200 transition-colors">Our Impact</Link>
-          <Link to="/donate"       className="hover:text-teal-200 transition-colors">Donate</Link>
-          <Link to="/social-media" className="hover:text-teal-200 transition-colors">Social Media</Link>
-          <Link to="/referral"     className="hover:text-teal-200 transition-colors">Get Help</Link>
+          <Link to="/impact"   className="hover:text-teal-200 transition-colors">Our Impact</Link>
+          <Link to="/donate"   className="hover:text-teal-200 transition-colors">Donate</Link>
+          <Link to="/referral" className="hover:text-teal-200 transition-colors">Get Help</Link>
           <Link to="/login" className="bg-white text-teal-700 px-4 py-1.5 rounded-full hover:bg-teal-50 transition-colors">
             Staff Login
           </Link>
