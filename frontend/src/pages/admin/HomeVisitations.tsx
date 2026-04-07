@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Home } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useHomeVisitations } from '../../hooks/useHomeVisitations';
 import DataTable, { type Column } from '../../components/shared/DataTable';
 import Pagination from '../../components/shared/Pagination';
 import Modal from '../../components/shared/Modal';
@@ -20,8 +21,6 @@ const VISIT_TYPES = [
 ];
 
 const COOPERATION_LEVELS = ['Cooperative', 'Partially Cooperative', 'Uncooperative', 'Not Present'];
-
-const PAGE_SIZE = 20;
 
 const emptyForm = (): Omit<HomeVisitation, 'visitationId'> => ({
   residentId: null,
@@ -51,15 +50,7 @@ export default function HomeVisitations() {
   }, []);
 
   // --- List state ---
-  const [visitations, setVisitations] = useState<HomeVisitation[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // --- Filters ---
-  const [filterResidentId, setFilterResidentId] = useState('');
-  const [filterVisitType, setFilterVisitType] = useState('');
+  const { visitations, totalPages, page, setPage, loading, error, filterResidentId, setFilterResidentId, filterVisitType, setFilterVisitType, refresh } = useHomeVisitations();
 
   // --- Residents for selects ---
   const [residents, setResidents] = useState<Resident[]>([]);
@@ -81,32 +72,6 @@ export default function HomeVisitations() {
       .then((data) => setResidents(data.items))
       .catch(() => {/* non-critical */});
   }, []);
-
-  const loadVisitations = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(PAGE_SIZE),
-        residentId: filterResidentId,
-        visitType: filterVisitType,
-      });
-      const data = await apiFetch<PaginatedResponse<HomeVisitation>>(
-        `/api/homevisitations?${params.toString()}`
-      );
-      setVisitations(data.items);
-      setTotalPages(data.totalPages);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load visitations');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, filterResidentId, filterVisitType]);
-
-  useEffect(() => {
-    void loadVisitations();
-  }, [loadVisitations]);
 
   const handleResidentFilterChange = (value: string) => {
     setFilterResidentId(value);
@@ -159,7 +124,7 @@ export default function HomeVisitations() {
       }
       toast.success(editTarget ? 'Visit updated.' : 'Visit saved.');
       closeModal();
-      void loadVisitations();
+      void refresh();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Save failed');
     } finally {
@@ -174,7 +139,7 @@ export default function HomeVisitations() {
       await apiFetch(`/api/homevisitations/${deleteTarget.visitationId}`, { method: 'DELETE' });
       toast.success('Visit deleted.');
       setDeleteTarget(null);
-      void loadVisitations();
+      void refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Delete failed.');
     } finally {
@@ -303,7 +268,7 @@ export default function HomeVisitations() {
       {loading ? (
         <LoadingSpinner />
       ) : error ? (
-        <ErrorAlert message={error} onRetry={loadVisitations} />
+        <ErrorAlert message={error} onRetry={refresh} />
       ) : visitations.length === 0 ? (
         <EmptyState
           Icon={Home}

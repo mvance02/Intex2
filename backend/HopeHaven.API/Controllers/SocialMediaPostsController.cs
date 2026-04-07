@@ -47,6 +47,17 @@ public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = post.PostId }, post);
     }
 
+    [HttpPatch("{id:int}/url")]
+    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    public async Task<IActionResult> UpdateUrl(int id, [FromBody] string? url)
+    {
+        var post = await db.SocialMediaPosts.FindAsync(id);
+        if (post is null) return NotFound();
+        post.PostUrl = string.IsNullOrWhiteSpace(url) ? null : url.Trim();
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
     [HttpDelete("{id:int}")]
     // [Authorize(Roles = "Admin")] // IS 414
     public async Task<IActionResult> Delete(int id)

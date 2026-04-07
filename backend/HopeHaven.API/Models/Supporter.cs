@@ -15,6 +15,7 @@ public class Supporter
     public string? SupporterType { get; set; }
 
     [Column("display_name")]
+    [Required]
     [MaxLength(200)]
     public string? DisplayName { get; set; }
 

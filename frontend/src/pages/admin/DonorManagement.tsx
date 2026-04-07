@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { HandHeart } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useSupporters } from '../../hooks/useSupporters';
 import DataTable, { type Column } from '../../components/shared/DataTable';
 import Pagination from '../../components/shared/Pagination';
 import FilterBar from '../../components/shared/FilterBar';
@@ -11,8 +12,6 @@ import ErrorAlert from '../../components/shared/ErrorAlert';
 import EmptyState from '../../components/shared/EmptyState';
 import { apiFetch } from '../../utils/api';
 import type { Supporter, Donation, PaginatedResponse } from '../../types/models';
-
-const PAGE_SIZE = 20;
 
 const STATUS_OPTIONS = [
   { label: 'Active', value: 'Active' },
@@ -82,13 +81,7 @@ export default function DonorManagement() {
   }, []);
 
   // List state
-  const [supporters, setSupporters] = useState<Supporter[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const { supporters, totalPages, loading, error, page, setPage, setSearch, filters, setFilters, refresh } = useSupporters();
 
   // Form modal state
   const [showForm, setShowForm] = useState(false);
@@ -106,31 +99,6 @@ export default function DonorManagement() {
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState<Supporter | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const fetchSupporters = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(PAGE_SIZE),
-        search,
-        status: filters['status'] ?? '',
-        supporterType: filters['supporterType'] ?? '',
-      });
-      const data = await apiFetch<PaginatedResponse<Supporter>>(`/api/supporters?${params}`);
-      setSupporters(data.items);
-      setTotalPages(data.totalPages);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load supporters.');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, filters]);
-
-  useEffect(() => {
-    void fetchSupporters();
-  }, [fetchSupporters]);
 
   const handleSearch = useCallback((value: string) => {
     setSearch(value);
@@ -197,7 +165,7 @@ export default function DonorManagement() {
       }
       toast.success(editTarget ? 'Supporter updated.' : 'Supporter created.');
       closeForm();
-      void fetchSupporters();
+      void refresh();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Save failed.');
     } finally {
@@ -237,7 +205,7 @@ export default function DonorManagement() {
       await apiFetch(`/api/supporters/${deleteTarget.supporterId}`, { method: 'DELETE' });
       toast.success('Supporter deleted.');
       closeDelete();
-      void fetchSupporters();
+      void refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Delete failed.');
     } finally {
@@ -372,7 +340,7 @@ export default function DonorManagement() {
       />
 
       {/* Content */}
-      {error && <ErrorAlert message={error} onRetry={() => void fetchSupporters()} />}
+      {error && <ErrorAlert message={error} onRetry={() => void refresh()} />}
 
       {loading ? (
         <LoadingSpinner label="Loading supporters…" />

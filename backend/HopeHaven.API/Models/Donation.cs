@@ -36,6 +36,7 @@ public class Donation
     public string? CurrencyCode { get; set; }
 
     [Column("amount")]
+    [Range(0, (double)decimal.MaxValue)]
     public decimal? Amount { get; set; }
 
     [Column("estimated_value")]

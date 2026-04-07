@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
+import { apiFetch } from '../../utils/api';
 
 type FormState = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -14,6 +15,7 @@ export default function ReferralPage() {
     anonymous: false,
   });
   const [state, setState] = useState<FormState>('idle');
+  const [refNumber, setRefNumber] = useState('');
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value, type } = e.target;
@@ -26,9 +28,24 @@ export default function ReferralPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setState('submitting');
-    // Simulate submission — replace with real API call when endpoint is available
-    await new Promise(res => setTimeout(res, 800));
-    setState('success');
+    try {
+      const { referenceNumber } = await apiFetch<{ referenceNumber: string }>('/api/referrals', {
+        method: 'POST',
+        body: JSON.stringify({
+          subjectLocation: form.subjectLocation,
+          situation: form.situation,
+          urgency: form.urgency,
+          subjectAge: form.subjectAge || null,
+          referrerName: form.referrerName || null,
+          referrerContact: form.referrerContact || null,
+          anonymous: form.anonymous,
+        }),
+      });
+      setRefNumber(referenceNumber);
+      setState('success');
+    } catch {
+      setState('error');
+    }
   }
 
   if (state === 'success') {
@@ -46,7 +63,7 @@ export default function ReferralPage() {
           immediately.
         </p>
         <p className="text-sm text-gray-400">
-          Reference number: <span className="font-mono font-semibold">REF-{Date.now().toString(36).toUpperCase()}</span>
+          Reference number: <span className="font-mono font-semibold">{refNumber}</span>
         </p>
       </div>
     );

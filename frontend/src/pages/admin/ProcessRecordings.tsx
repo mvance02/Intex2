@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useProcessRecordings } from '../../hooks/useProcessRecordings';
 import DataTable, { type Column } from '../../components/shared/DataTable';
 import Pagination from '../../components/shared/Pagination';
 import Modal from '../../components/shared/Modal';
@@ -22,8 +23,6 @@ const SESSION_TYPES = [
 ];
 
 const EMOTIONAL_STATES = ['Calm', 'Anxious', 'Withdrawn', 'Angry', 'Sad', 'Hopeful', 'Other'];
-
-const PAGE_SIZE = 20;
 
 const emptyForm = (): Omit<ProcessRecording, 'recordingId'> => ({
   residentId: null,
@@ -54,15 +53,9 @@ export default function ProcessRecordings() {
   }, []);
 
   // --- List state ---
-  const [recordings, setRecordings] = useState<ProcessRecording[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { recordings, totalPages, page, setPage, loading, error, filterResidentId, setFilterResidentId, setFilterSocialWorker, refresh } = useProcessRecordings();
 
   // --- Filters ---
-  const [filterResidentId, setFilterResidentId] = useState('');
-  const [filterSocialWorker, setFilterSocialWorker] = useState('');
   const [socialWorkerInput, setSocialWorkerInput] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -86,32 +79,6 @@ export default function ProcessRecordings() {
       .then((data) => setResidents(data.items))
       .catch(() => {/* non-critical */});
   }, []);
-
-  const loadRecordings = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(PAGE_SIZE),
-        residentId: filterResidentId,
-        socialWorker: filterSocialWorker,
-      });
-      const data = await apiFetch<PaginatedResponse<ProcessRecording>>(
-        `/api/processrecordings?${params.toString()}`
-      );
-      setRecordings(data.items);
-      setTotalPages(data.totalPages);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load recordings');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, filterResidentId, filterSocialWorker]);
-
-  useEffect(() => {
-    void loadRecordings();
-  }, [loadRecordings]);
 
   // Debounce social worker filter
   const handleSocialWorkerInputChange = (value: string) => {
@@ -173,7 +140,7 @@ export default function ProcessRecordings() {
       }
       toast.success(editTarget ? 'Session updated.' : 'Session saved.');
       closeModal();
-      void loadRecordings();
+      void refresh();
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Save failed');
     } finally {
@@ -188,7 +155,7 @@ export default function ProcessRecordings() {
       await apiFetch(`/api/processrecordings/${deleteTarget.recordingId}`, { method: 'DELETE' });
       toast.success('Session deleted.');
       setDeleteTarget(null);
-      void loadRecordings();
+      void refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Delete failed.');
     } finally {
@@ -328,7 +295,7 @@ export default function ProcessRecordings() {
       {loading ? (
         <LoadingSpinner />
       ) : error ? (
-        <ErrorAlert message={error} onRetry={loadRecordings} />
+        <ErrorAlert message={error} onRetry={refresh} />
       ) : recordings.length === 0 ? (
         <EmptyState
           Icon={ClipboardList}

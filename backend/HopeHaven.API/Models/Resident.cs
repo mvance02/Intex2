@@ -11,6 +11,7 @@ public class Resident
     public int ResidentId { get; set; }
 
     [Column("case_control_no")]
+    [Required]
     [MaxLength(50)]
     public string? CaseControlNo { get; set; }
 
