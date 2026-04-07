@@ -195,9 +195,12 @@ export default function LoginPage() {
               Privacy Policy
             </Link>
           </p>
-          <p className="text-xs text-gray-400 text-center mt-2">
+          <p className="text-sm text-gray-500 text-center mt-4">
             Need an account?{' '}
-            <Link to="/register" className="underline hover:text-gray-600">
+            <Link
+              to="/register"
+              className="inline-block ml-1 px-4 py-1.5 bg-teal-600 text-white text-sm font-medium rounded-full hover:bg-teal-700 transition-colors"
+            >
               Register here
             </Link>
           </p>
