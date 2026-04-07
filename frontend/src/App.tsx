@@ -72,7 +72,6 @@ export default function App() {
                   <Route path="/logout"       element={<LogoutPage />} />
                   <Route path="/privacy"      element={<PrivacyPage />} />
                   <Route path="/referral"     element={<ReferralPage />} />
-                  <Route path="/donate"       element={<DonatePage />} />
                 </Route>
 
                 {/* Donor — protected + lazy */}
