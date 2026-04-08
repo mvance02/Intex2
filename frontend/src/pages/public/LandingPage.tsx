@@ -519,18 +519,28 @@ export default function LandingPage() {
               </div>
 
               <div className="sm:col-span-2 rounded-xl bg-white border border-gray-100 p-4 flex flex-col justify-center">
-                <p className="text-sm text-gray-700 font-medium">
+                <p className="text-sm text-gray-700 font-medium leading-relaxed">
                   {okrMetric
-                    ? `${okrMetric.stableCount} stable outcomes out of ${okrMetric.eligibleCount} eligible exits`
-                    : 'Tracking long-term reintegration stability for girls who exited shelter at least 90 days ago.'}
+                    ? `${okrMetric.stableCount} of ${okrMetric.eligibleCount} girls were still safe and stable 90 days after leaving our care.`
+                    : 'We track whether girls remain safe and stable 90 days after leaving our care.'}
                 </p>
+
                 {okrMetric && (
-                  <p className={`text-sm mt-1 font-semibold ${okrMetric.deltaPoints >= 0 ? 'text-teal-700' : 'text-amber-700'}`}>
-                    {okrMetric.deltaPoints >= 0 ? '+' : ''}{okrMetric.deltaPoints.toFixed(1)} pts vs prior cohort
+                  <p
+                    className={`text-sm mt-2 font-semibold ${
+                      okrMetric.deltaPoints >= 0 ? 'text-teal-700' : 'text-amber-700'
+                    }`}
+                  >
+                    {okrMetric.deltaPoints >= 0 ? 'Up ' : 'Down '}
+                    {Math.abs(okrMetric.deltaPoints).toFixed(1)} percentage points from the previous group
                   </p>
                 )}
               </div>
             </div>
+
+            <p className="text-xs text-gray-500 mt-4 text-center leading-relaxed">
+              “Safe and stable” means living in a safe placement 90 days after leaving shelter.
+            </p>
           </div>
         </div>
       </section>
