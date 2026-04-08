@@ -35,6 +35,7 @@ export default function DonorDashboard() {
     finally { setLoading(false); }
   }, []);
 
+  useEffect(() => { document.title = 'My Dashboard — Hope Haven'; }, []);
   useEffect(() => { void fetchData(); }, [fetchData]);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading dashboard…" />;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const API = import.meta.env.VITE_API_URL ?? '';
 import { Link } from 'react-router-dom';
@@ -285,6 +285,8 @@ export default function DonatePage() {
   const [customRaw, setCustomRaw] = useState('');
   const [modal, setModal] = useState<ModalState>({ type: 'none' });
   const [donationError, setDonationError] = useState('');
+
+  useEffect(() => { document.title = 'Donate — Hope Haven'; }, []);
 
   // Derived custom amount values
   const customNumeric = parseFloat(customRaw) || 0;

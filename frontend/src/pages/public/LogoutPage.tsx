@@ -8,6 +8,8 @@ export default function LogoutPage() {
   const [error,   setError]   = useState('');
   const { refreshAuthState } = useAuth();
 
+  useEffect(() => { document.title = 'Sign Out — Hope Haven'; }, []);
+
   useEffect(() => {
     let live = true;
     logoutUser()

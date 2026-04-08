@@ -23,6 +23,8 @@ export default function LoginPage() {
   const [serverError, setServerError]   = useState(searchParams.get('externalError') ?? '');
   const [loading, setLoading]           = useState(false);
 
+  useEffect(() => { document.title = 'Sign In — Hope Haven'; }, []);
+
   useEffect(() => {
     getExternalProviders().then(setProviders).catch(() => setProviders([]));
   }, []);

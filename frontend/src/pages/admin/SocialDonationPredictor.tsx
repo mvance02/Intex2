@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../../utils/api';
 import type {
   SocialDraftPredictionRequest,
@@ -47,6 +47,8 @@ type TabKey = 'weekly' | 'optimizer' | 'manual';
 
 export default function SocialDonationPredictor() {
   const [activeTab, setActiveTab] = useState<TabKey>('weekly');
+
+  useEffect(() => { document.title = 'Social Donation Predictor — Hope Haven'; }, []);
 
   // --- Manual prediction state ---
   const [socialDraft, setSocialDraft] = useState<SocialDraftPredictionRequest>({
