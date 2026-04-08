@@ -102,6 +102,22 @@ class OptimizeRequest(BaseModel):
     top_n: int = Field(default=10, ge=1, le=50)
 
 
+class WeeklyScheduleRequest(BaseModel):
+    """Generate a diverse 7-day posting schedule for a platform."""
+    platform: str = Field(..., examples=["Instagram"])
+    optimize_for: str = Field(
+        default="donation_value",
+        description="Target to maximize: 'donation_value' or 'referrals'",
+    )
+    is_boosted: bool | None = Field(default=None)
+    boost_budget_php: float | None = Field(default=None, ge=0)
+    features_resident_story: bool | None = Field(default=None)
+    has_call_to_action: bool | None = Field(default=None)
+    num_hashtags: int | None = Field(default=None, ge=0)
+    mentions_count: int | None = Field(default=None, ge=0)
+    caption_length: int | None = Field(default=None, ge=0)
+
+
 @app.get("/")
 def planner_page() -> FileResponse:
     return FileResponse(Path(__file__).resolve().parent / "content_planner.html")
@@ -374,5 +390,134 @@ def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
         "disclaimer": (
             "Recommendations are based on patterns in historical data. "
             "Results will improve as real donation data replaces synthetic data."
+        ),
+    }
+
+
+@app.post("/predict/weekly-schedule")
+def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
+    """
+    Greedy daily optimization with diversity constraints.
+
+    For each day Mon→Sun, find the best combo for THAT day,
+    then exclude the chosen content_topic and post_type from subsequent days.
+    Result: 7 diverse, individually-optimized posts.
+    """
+    try:
+        b = _load_bundle()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    meta = b.get("meta", {})
+    field_vals = meta.get("field_values", {})
+    model = b["reg_referrals"] if req.optimize_for == "referrals" else b["reg_value"]
+
+    post_types = field_vals.get("post_type", ["FundraisingAppeal"])
+    media_types = field_vals.get("media_type", ["Carousel"])
+    content_topics = field_vals.get("content_topic", ["Education"])
+    sentiment_tones = field_vals.get("sentiment_tone", ["Hopeful"])
+    cta_types = field_vals.get("call_to_action_type", ["DonateNow"])
+
+    num_hashtags = req.num_hashtags if req.num_hashtags is not None else 3
+    mentions_count = req.mentions_count if req.mentions_count is not None else 1
+    caption_length = req.caption_length if req.caption_length is not None else 280
+    is_boosted = req.is_boosted if req.is_boosted is not None else False
+    boost_budget = req.boost_budget_php if req.boost_budget_php is not None else 0.0
+    has_cta = req.has_call_to_action if req.has_call_to_action is not None else True
+    features_story = req.features_resident_story if req.features_resident_story is not None else False
+
+    base_numeric = {
+        "platform": req.platform,
+        "num_hashtags": num_hashtags,
+        "mentions_count": mentions_count,
+        "has_call_to_action": has_cta,
+        "features_resident_story": features_story,
+        "caption_length": caption_length,
+        "is_boosted": is_boosted,
+        "boost_budget_php": boost_budget if is_boosted else 0.0,
+    }
+
+    days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    used_topics: set[str] = set()
+    used_post_types: set[str] = set()
+    schedule: list[dict[str, Any]] = []
+    total_evaluated = 0
+
+    for day in days_order:
+        # Filter out already-used content_topics and post_types for diversity
+        avail_topics = [t for t in content_topics if t not in used_topics] or content_topics
+        avail_ptypes = [p for p in post_types if p not in used_post_types] or post_types
+
+        # Build combos for this day across all hours
+        combos = list(itertools.product(
+            range(7, 22), avail_ptypes, media_types,
+            avail_topics, sentiment_tones, cta_types,
+        ))
+
+        rows = []
+        for hour, pt, mt, ct, st, cta in combos:
+            rows.append({
+                **base_numeric,
+                "day_of_week": day,
+                "post_hour": hour,
+                "post_type": pt,
+                "media_type": mt,
+                "content_topic": ct,
+                "sentiment_tone": st,
+                "call_to_action_type": cta,
+            })
+
+        df_day = pd.DataFrame(rows)
+        X_day = build_model_frame(df_day)[FEATURE_COLS]
+        preds = model.predict(X_day)
+        total_evaluated += len(df_day)
+
+        best_idx = int(np.argmax(preds))
+        best_row = df_day.iloc[best_idx]
+        best_val = float(preds[best_idx])
+
+        chosen_topic = best_row["content_topic"]
+        chosen_ptype = best_row["post_type"]
+        used_topics.add(chosen_topic)
+        used_post_types.add(chosen_ptype)
+
+        schedule.append({
+            "day_of_week": day,
+            "post_hour": int(best_row["post_hour"]),
+            "post_type": chosen_ptype,
+            "media_type": best_row["media_type"],
+            "content_topic": chosen_topic,
+            "sentiment_tone": best_row["sentiment_tone"],
+            "call_to_action_type": best_row["call_to_action_type"],
+            "has_call_to_action": bool(best_row["has_call_to_action"]),
+            "features_resident_story": bool(best_row["features_resident_story"]),
+            "predicted_value": round(best_val, 2),
+        })
+
+    total_predicted = sum(d["predicted_value"] for d in schedule)
+    target_label = (
+        "predicted_donation_referrals" if req.optimize_for == "referrals"
+        else "predicted_estimated_donation_value_php"
+    )
+
+    return {
+        "platform": req.platform,
+        "optimize_for": req.optimize_for,
+        "target_label": target_label,
+        "total_combinations_evaluated": total_evaluated,
+        "weekly_total_predicted": round(total_predicted, 2),
+        "schedule": schedule,
+        "constraints_applied": {
+            "num_hashtags": num_hashtags,
+            "mentions_count": mentions_count,
+            "caption_length": caption_length,
+            "is_boosted": is_boosted,
+            "boost_budget_php": boost_budget,
+            "has_call_to_action": has_cta,
+            "features_resident_story": features_story,
+        },
+        "disclaimer": (
+            "Each day is optimized with diversity constraints — no repeated content topics "
+            "or post types. Results adapt automatically when real data replaces synthetic data."
         ),
     }

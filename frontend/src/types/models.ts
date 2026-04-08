@@ -443,3 +443,39 @@ export interface SocialOptimizeResult {
   constraints_applied: Record<string, unknown>;
   disclaimer: string;
 }
+
+export interface SocialWeeklyScheduleRequest {
+  platform: string;
+  optimize_for: 'donation_value' | 'referrals';
+  is_boosted?: boolean | null;
+  boost_budget_php?: number | null;
+  features_resident_story?: boolean | null;
+  has_call_to_action?: boolean | null;
+  num_hashtags?: number | null;
+  mentions_count?: number | null;
+  caption_length?: number | null;
+}
+
+export interface SocialWeeklyScheduleDay {
+  day_of_week: string;
+  post_hour: number;
+  post_type: string;
+  media_type: string;
+  content_topic: string;
+  sentiment_tone: string;
+  call_to_action_type: string;
+  has_call_to_action: boolean;
+  features_resident_story: boolean;
+  predicted_value: number;
+}
+
+export interface SocialWeeklyScheduleResult {
+  platform: string;
+  optimize_for: string;
+  target_label: string;
+  total_combinations_evaluated: number;
+  weekly_total_predicted: number;
+  schedule: SocialWeeklyScheduleDay[];
+  constraints_applied: Record<string, unknown>;
+  disclaimer: string;
+}

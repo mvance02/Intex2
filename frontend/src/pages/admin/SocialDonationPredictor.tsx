@@ -6,6 +6,8 @@ import type {
   SocialDraftSweepHourResult,
   SocialOptimizeRequest,
   SocialOptimizeResult,
+  SocialWeeklyScheduleRequest,
+  SocialWeeklyScheduleResult,
 } from '../../types/models';
 
 const DAY_OPTIONS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -41,10 +43,10 @@ function formatHour(hour: number): string {
   return `${hour - 12}:00 PM`;
 }
 
-type TabKey = 'manual' | 'optimizer';
+type TabKey = 'weekly' | 'optimizer' | 'manual';
 
 export default function SocialDonationPredictor() {
-  const [activeTab, setActiveTab] = useState<TabKey>('optimizer');
+  const [activeTab, setActiveTab] = useState<TabKey>('weekly');
 
   // --- Manual prediction state ---
   const [socialDraft, setSocialDraft] = useState<SocialDraftPredictionRequest>({
@@ -76,6 +78,13 @@ export default function SocialDonationPredictor() {
   const [optResult, setOptResult] = useState<SocialOptimizeResult | null>(null);
   const [optLoading, setOptLoading] = useState(false);
   const [optError, setOptError] = useState<string | null>(null);
+
+  // --- Weekly schedule state ---
+  const [weeklyPlatform, setWeeklyPlatform] = useState('Instagram');
+  const [weeklyTarget, setWeeklyTarget] = useState<'donation_value' | 'referrals'>('donation_value');
+  const [weeklyResult, setWeeklyResult] = useState<SocialWeeklyScheduleResult | null>(null);
+  const [weeklyLoading, setWeeklyLoading] = useState(false);
+  const [weeklyError, setWeeklyError] = useState<string | null>(null);
 
   const runSocialPrediction = useCallback(async () => {
     setSocialLoading(true);
@@ -127,6 +136,29 @@ export default function SocialDonationPredictor() {
     }
   }, [optPlatform, optTarget]);
 
+  const runWeeklySchedule = useCallback(async () => {
+    setWeeklyLoading(true);
+    setWeeklyError(null);
+    setServiceUnavailable(false);
+    try {
+      const req: SocialWeeklyScheduleRequest = {
+        platform: weeklyPlatform,
+        optimize_for: weeklyTarget,
+      };
+      const result = await apiFetch<SocialWeeklyScheduleResult>('/api/predict/social/weekly-schedule', {
+        method: 'POST',
+        body: JSON.stringify(req),
+      });
+      setWeeklyResult(result);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to generate schedule.';
+      setWeeklyError(message);
+      if (message.includes('503')) setServiceUnavailable(true);
+    } finally {
+      setWeeklyLoading(false);
+    }
+  }, [weeklyPlatform, weeklyTarget]);
+
   const tabClass = (key: TabKey) =>
     `px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
       activeTab === key
@@ -151,6 +183,9 @@ export default function SocialDonationPredictor() {
 
       {/* Tab bar */}
       <div className="flex gap-1 border-b border-gray-200">
+        <button type="button" className={tabClass('weekly')} onClick={() => setActiveTab('weekly')}>
+          Weekly Schedule
+        </button>
         <button type="button" className={tabClass('optimizer')} onClick={() => setActiveTab('optimizer')}>
           Post Optimizer
         </button>
@@ -158,6 +193,110 @@ export default function SocialDonationPredictor() {
           Manual Prediction
         </button>
       </div>
+
+      {/* ====================== WEEKLY SCHEDULE TAB ====================== */}
+      {activeTab === 'weekly' && (
+        <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-5">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Weekly Posting Schedule</h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Generate an optimized 7-day content calendar. Each day gets a unique post type and
+              content topic for maximum variety and impact.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label className="text-sm text-gray-700">
+              Platform
+              <select
+                value={weeklyPlatform}
+                onChange={(e) => setWeeklyPlatform(e.target.value)}
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              >
+                {PLATFORM_OPTIONS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm text-gray-700">
+              Optimize for
+              <select
+                value={weeklyTarget}
+                onChange={(e) => setWeeklyTarget(e.target.value as 'donation_value' | 'referrals')}
+                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="donation_value">Maximize Donation Value (₱)</option>
+                <option value="referrals">Maximize Referrals</option>
+              </select>
+            </label>
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={runWeeklySchedule}
+                disabled={weeklyLoading}
+                className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-teal-700 text-white hover:bg-teal-800 transition-colors disabled:opacity-60"
+              >
+                {weeklyLoading ? 'Generating schedule...' : 'Generate Weekly Schedule'}
+              </button>
+            </div>
+          </div>
+
+          {weeklyError && <span className="text-sm text-red-600">{weeklyError}</span>}
+
+          {weeklyResult && (
+            <div className="space-y-4">
+              {/* Weekly total summary */}
+              <div className="flex items-center gap-4">
+                <div className="bg-teal-50 border border-teal-200 rounded-lg px-4 py-2">
+                  <p className="text-xs text-teal-600 uppercase tracking-wide">Projected Weekly Total</p>
+                  <p className="text-2xl font-bold text-teal-700">
+                    {weeklyResult.optimize_for === 'referrals'
+                      ? weeklyResult.weekly_total_predicted.toFixed(1) + ' referrals'
+                      : formatPeso(weeklyResult.weekly_total_predicted)}
+                  </p>
+                </div>
+                <span className="text-sm text-gray-500">
+                  {weeklyResult.total_combinations_evaluated.toLocaleString()} combinations evaluated
+                  for <span className="font-semibold">{weeklyResult.platform}</span>
+                </span>
+              </div>
+
+              {/* Day-by-day schedule cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3">
+                {weeklyResult.schedule.map((day) => (
+                  <div
+                    key={day.day_of_week}
+                    className="rounded-xl border border-gray-200 p-4 space-y-2 hover:border-teal-300 hover:shadow-sm transition-all"
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-gray-900 text-sm">{day.day_of_week}</p>
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                        {formatHour(day.post_hour)}
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-xs text-gray-600">
+                      <p><span className="text-gray-400">Type:</span> {day.post_type}</p>
+                      <p><span className="text-gray-400">Media:</span> {day.media_type}</p>
+                      <p><span className="text-gray-400">Topic:</span> {day.content_topic}</p>
+                      <p><span className="text-gray-400">Tone:</span> {day.sentiment_tone}</p>
+                      <p><span className="text-gray-400">CTA:</span> {day.call_to_action_type}</p>
+                    </div>
+                    <div className="pt-1 border-t border-gray-100">
+                      <p className="text-sm font-semibold text-teal-700">
+                        {weeklyResult.optimize_for === 'referrals'
+                          ? day.predicted_value.toFixed(2) + ' ref.'
+                          : formatPeso(day.predicted_value)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-gray-400 italic">{weeklyResult.disclaimer}</p>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ====================== OPTIMIZER TAB ====================== */}
       {activeTab === 'optimizer' && (
