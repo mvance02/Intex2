@@ -1,6 +1,7 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -32,14 +33,6 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
-// Default auth scheme = cookies (AddIdentityApiEndpoints registers both Bearer
-// and Cookie; we want [Authorize] on controllers to use cookies by default)
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultChallengeScheme    = IdentityConstants.ApplicationScheme;
-});
-
 // ── Google OAuth (only activates when user-secrets are configured) ───────────
 var googleClientId     = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
@@ -56,8 +49,13 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
 }
 
 // ── Authorization policies ───────────────────────────────────────────────────
+// DefaultPolicy uses cookie scheme so [Authorize] on controllers works with cookies
+// (AddIdentityApiEndpoints registers both Bearer + Cookie; Bearer is the default)
 builder.Services.AddAuthorization(options =>
 {
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(IdentityConstants.ApplicationScheme)
+        .RequireAuthenticatedUser()
+        .Build();
     options.AddPolicy(AuthPolicies.ManageContent,
         policy => policy.RequireRole(AuthRoles.Admin));
     options.AddPolicy(AuthPolicies.DonorAccess,
