@@ -1,11 +1,13 @@
 using HopeHaven.API.Controllers.Base;
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class IncidentReportsController(HopeHavenDbContext db) : CrudController<IncidentReport>(db)
 {
     protected override DbSet<IncidentReport> EntitySet => Db.IncidentReports;

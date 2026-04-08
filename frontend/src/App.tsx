@@ -17,7 +17,6 @@ import RegisterPage from './pages/public/RegisterPage';
 import LogoutPage from './pages/public/LogoutPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import ReferralPage from './pages/public/ReferralPage';
-import DonatePage from './pages/public/DonatePage';
 import NotFound from './pages/NotFound';
 
 // Admin pages — lazy loaded (code split, only fetched after login)
@@ -36,6 +35,7 @@ const UserManagement     = lazy(() => import('./pages/admin/UserManagement'));
 const DonorLayout    = lazy(() => import('./components/shared/DonorLayout'));
 const DonorDashboard = lazy(() => import('./pages/donor/DonorDashboard'));
 const DonorDonations = lazy(() => import('./pages/donor/DonorDonations'));
+const DonatePage     = lazy(() => import('./pages/public/DonatePage'));
 
 function PageFallback() {
   return (
@@ -103,7 +103,11 @@ export default function App() {
                   />
                   <Route
                     path="/donor/donate"
-                    element={<DonatePage />}
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <DonatePage />
+                      </Suspense>
+                    }
                   />
                   <Route
                     path="/donor/manage-mfa"

@@ -54,7 +54,7 @@ export default function DonorLayout() {
     <aside className="w-64 bg-teal-800 text-white flex flex-col h-full" aria-label="Donor navigation">
       <div className="px-6 py-5 border-b border-teal-700 flex items-center justify-between">
         <div>
-          <p className="text-xl font-bold tracking-tight">Hope Haven</p>
+          <Link to="/" className="text-xl font-bold tracking-tight hover:text-teal-200 transition-colors">Hope Haven</Link>
           <p className="text-teal-300 text-xs mt-0.5 font-medium">Donor Portal</p>
         </div>
         <button
@@ -92,7 +92,7 @@ export default function DonorLayout() {
 
       <div className="px-4 py-4 border-t border-teal-700">
         <p className="text-sm font-medium text-white truncate">{authSession.email}</p>
-        <p className="text-xs mt-0.5 text-teal-400">{authSession.roles[0]}</p>
+        <p className="text-xs mt-0.5 text-teal-400">{authSession.roles[0] ?? 'Member'}</p>
         <button
           onClick={handleLogout}
           className="mt-3 flex items-center gap-1.5 text-teal-400 hover:text-white transition-colors text-xs font-medium"

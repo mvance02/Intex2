@@ -284,6 +284,7 @@ export default function DonatePage() {
   const [customMode, setCustomMode] = useState<'php' | 'usd'>('usd');
   const [customRaw, setCustomRaw] = useState('');
   const [modal, setModal] = useState<ModalState>({ type: 'none' });
+  const [donationError, setDonationError] = useState('');
 
   // Derived custom amount values
   const customNumeric = parseFloat(customRaw) || 0;
@@ -309,14 +310,20 @@ export default function DonatePage() {
           impactUnit: customImpact || undefined,
         }),
       });
-      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
-    } catch (err) { console.error('Donation POST error:', err); }
-    setModal({
-      type: 'thank-you',
-      label: 'Custom Donation',
-      phpAmount: Math.round(customPhp),
-      isRecurring: false,
-    });
+      if (!res.ok) {
+        setDonationError('Unable to process donation. Please try again.');
+        return;
+      }
+      setDonationError('');
+      setModal({
+        type: 'thank-you',
+        label: 'Custom Donation',
+        phpAmount: Math.round(customPhp),
+        isRecurring: false,
+      });
+    } catch {
+      setDonationError('Unable to reach the server. Please try again.');
+    }
   }
 
   function handleQuickGive(item: QuickGiveItem) {
@@ -340,14 +347,22 @@ export default function DonatePage() {
           impactUnit: item.impactLine,
         }),
       });
-      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
-    } catch (err) { console.error('Donation POST error:', err); }
-    setModal({
-      type: 'thank-you',
-      label: item.label,
-      phpAmount: item.phpAmount,
-      isRecurring: recurring,
-    });
+      if (!res.ok) {
+        setDonationError('Unable to process donation. Please try again.');
+        setModal({ type: 'none' });
+        return;
+      }
+      setDonationError('');
+      setModal({
+        type: 'thank-you',
+        label: item.label,
+        phpAmount: item.phpAmount,
+        isRecurring: recurring,
+      });
+    } catch {
+      setDonationError('Unable to reach the server. Please try again.');
+      setModal({ type: 'none' });
+    }
   }
 
   function closeModal() {
@@ -467,6 +482,12 @@ export default function DonatePage() {
               processed.
             </p>
           </div>
+
+          {donationError && (
+            <div role="alert" className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-left">
+              {donationError}
+            </div>
+          )}
         </div>
       </section>
 

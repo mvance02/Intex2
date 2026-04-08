@@ -41,7 +41,7 @@ export default function RegisterPage() {
               <span className="text-2xl" aria-hidden="true">🏠</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-800">Create account</h1>
-            <p className="text-sm text-gray-500 mt-1">Hope Haven case management portal</p>
+            <p className="text-sm text-gray-500 mt-1">Hope Haven portal</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
