@@ -18,7 +18,13 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
         var cutoff = today.AddDays(-90);
         var previousWindowStart = today.AddDays(-180);
 
-        string[] stableStatuses = ["Stable", "Successfully Reintegrated", "Reintegrated", "Maintained"];
+        string[] stableStatuses = [
+            "completed",
+            "stable",
+            "successfully reintegrated",
+            "reintegrated",
+            "maintained"
+        ];
 
         var eligibleNow = await db.Residents
             .Where(r => r.DateClosed != null && r.DateClosed <= cutoff)
@@ -28,7 +34,7 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
                 r.DateClosed != null &&
                 r.DateClosed <= cutoff &&
                 r.ReintegrationStatus != null &&
-                stableStatuses.Contains(r.ReintegrationStatus))
+                stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
             .CountAsync();
 
         var eligiblePrev = await db.Residents
@@ -43,7 +49,7 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
                 r.DateClosed > previousWindowStart &&
                 r.DateClosed <= cutoff &&
                 r.ReintegrationStatus != null &&
-                stableStatuses.Contains(r.ReintegrationStatus))
+                stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
             .CountAsync();
 
         var currentRate = eligibleNow > 0 ? (double)stableNow / eligibleNow : 0;

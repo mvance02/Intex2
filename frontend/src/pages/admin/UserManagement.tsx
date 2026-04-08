@@ -132,7 +132,8 @@ export default function UserManagement() {
       )}
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="min-w-[760px] w-full text-sm">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
@@ -194,22 +195,22 @@ export default function UserManagement() {
                   </button>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
                     <button
                       onClick={() => setViewTarget(user)}
-                      className="px-2.5 py-1 text-xs rounded border border-gray-200 text-gray-700 hover:bg-gray-50"
+                      className="w-full sm:w-auto px-2.5 py-2 text-xs rounded border border-gray-200 text-gray-700 hover:bg-gray-50"
                     >
                       View
                     </button>
                     <button
                       onClick={() => openEdit(user)}
-                      className="px-2.5 py-1 text-xs rounded border border-teal-200 text-teal-700 hover:bg-teal-50"
+                      className="w-full sm:w-auto px-2.5 py-2 text-xs rounded border border-teal-200 text-teal-700 hover:bg-teal-50"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteTarget(user)}
-                      className="px-2.5 py-1 text-xs rounded border border-red-200 text-red-700 hover:bg-red-50"
+                      className="w-full sm:w-auto px-2.5 py-2 text-xs rounded border border-red-200 text-red-700 hover:bg-red-50"
                     >
                       Delete
                     </button>
@@ -219,6 +220,7 @@ export default function UserManagement() {
             ))}
           </tbody>
         </table>
+        </div>
         {users.length === 0 && !loading && (
           <div className="px-4 py-10 text-center text-gray-400 text-sm">No registered users found.</div>
         )}
