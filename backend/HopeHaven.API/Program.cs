@@ -49,8 +49,10 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
 }
 
 // ── Authorization policies ───────────────────────────────────────────────────
-// DefaultPolicy uses cookie scheme so [Authorize] on controllers works with cookies
-// (AddIdentityApiEndpoints registers both Bearer + Cookie; Bearer is the default)
+// DefaultPolicy uses the Identity Application cookie scheme.
+// Mobile compatibility is achieved via the Vercel API proxy rewrite
+// (vercel.json routes /api/* → Railway), making cookies first-party on all
+// browsers including iOS Safari.
 builder.Services.AddAuthorization(options =>
 {
     options.DefaultPolicy = new AuthorizationPolicyBuilder(IdentityConstants.ApplicationScheme)
@@ -120,6 +122,8 @@ builder.Services.AddCors(options =>
 // ── ML Inference (IS 455) ─────────────────────────────────────────────────
 builder.Services.AddHttpClient("MLService", c =>
     c.BaseAddress = new Uri(builder.Configuration["ML:BaseUrl"] ?? "http://localhost:8001"));
+builder.Services.AddHttpClient("MLSocialService", c =>
+    c.BaseAddress = new Uri(builder.Configuration["MLSocial:BaseUrl"] ?? "http://localhost:8002"));
 
 var app = builder.Build();
 

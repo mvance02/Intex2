@@ -7,7 +7,7 @@ const apiBaseUrl = import.meta.env.VITE_API_URL ?? '';
 
 async function readApiError(res: Response, fallback: string): Promise<string> {
   const ct = res.headers.get('content-type') ?? '';
-  if (!ct.includes('application/json')) return fallback;
+  if (!ct.includes('json')) return fallback; // covers application/json and application/problem+json
   const d = await res.json();
   if (typeof d?.detail === 'string' && d.detail.length > 0) return d.detail;
   if (typeof d?.title  === 'string' && d.title.length  > 0) return d.title;

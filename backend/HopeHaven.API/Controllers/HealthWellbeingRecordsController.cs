@@ -9,7 +9,6 @@ namespace HopeHaven.API.Controllers;
 [ApiController]
 [Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
-[Authorize]
 public class HealthWellbeingRecordsController(HopeHavenDbContext db) : ControllerBase
 {
     [HttpGet]
@@ -42,6 +41,17 @@ public class HealthWellbeingRecordsController(HopeHavenDbContext db) : Controlle
             if (!await db.HealthWellbeingRecords.AnyAsync(h => h.HealthRecordId == id)) return NotFound();
             throw;
         }
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthPolicies.ManageContent)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var record = await db.HealthWellbeingRecords.FindAsync(id);
+        if (record is null) return NotFound();
+        db.HealthWellbeingRecords.Remove(record);
+        await db.SaveChangesAsync();
         return NoContent();
     }
 }

@@ -8,6 +8,7 @@ import {
   Home,
   BarChart2,
   Share2,
+  TrendingUp,
   UserCog,
   Shield,
   Menu,
@@ -24,6 +25,7 @@ const navItems = [
   { label: 'Home Visits',        path: '/admin/visits',             Icon: Home },
   { label: 'Reports',            path: '/admin/reports',            Icon: BarChart2 },
   { label: 'Social Media',       path: '/admin/social-media',       Icon: Share2 },
+  { label: 'Social Donation ML', path: '/admin/social-donation',    Icon: TrendingUp },
   { label: 'Users',              path: '/admin/users',              Icon: UserCog },
   { label: 'Manage MFA',         path: '/admin/manage-mfa',         Icon: Shield },
 ];

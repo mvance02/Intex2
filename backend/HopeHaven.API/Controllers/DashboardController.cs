@@ -8,7 +8,6 @@ namespace HopeHaven.API.Controllers;
 [ApiController]
 [Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
-[Authorize]
 public class DashboardController(HopeHavenDbContext db) : ControllerBase
 {
     [AllowAnonymous]
@@ -52,23 +51,25 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
             .ToListAsync();
 
         var recentRecordings = await db.ProcessRecordings
+            .Include(p => p.Resident)
             .OrderByDescending(p => p.SessionDate)
             .Take(5)
             .Select(p => new
             {
                 type = "session",
-                description = $"Session with resident #{p.ResidentId} by {p.SocialWorker}",
+                description = $"Session with case {p.Resident!.CaseControlNo ?? "N/A"} by {p.SocialWorker}",
                 date = p.SessionDate
             })
             .ToListAsync();
 
         var recentIncidents = await db.IncidentReports
+            .Include(i => i.Safehouse)
             .OrderByDescending(i => i.IncidentDate)
             .Take(5)
             .Select(i => new
             {
                 type = "incident",
-                description = $"{i.Severity} {i.IncidentType} at safehouse #{i.SafehouseId}",
+                description = $"{i.Severity} {i.IncidentType} at {i.Safehouse!.Name ?? "Unknown"}",
                 date = i.IncidentDate
             })
             .ToListAsync();

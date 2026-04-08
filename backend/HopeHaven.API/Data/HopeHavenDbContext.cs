@@ -28,6 +28,9 @@ public class HopeHavenDbContext(DbContextOptions<HopeHavenDbContext> options) : 
     public DbSet<SafehouseMonthlyMetric> SafehouseMonthlyMetrics => Set<SafehouseMonthlyMetric>();
     public DbSet<PublicImpactSnapshot> PublicImpactSnapshots => Set<PublicImpactSnapshot>();
 
+    // Referrals
+    public DbSet<Referral> Referrals => Set<Referral>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

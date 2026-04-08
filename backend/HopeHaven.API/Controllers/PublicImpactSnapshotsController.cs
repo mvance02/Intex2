@@ -9,7 +9,6 @@ namespace HopeHaven.API.Controllers;
 [ApiController]
 [Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
-[Authorize]
 public class PublicImpactSnapshotsController(HopeHavenDbContext db) : ControllerBase
 {
     // Public endpoint — no auth required (shown on public impact page)

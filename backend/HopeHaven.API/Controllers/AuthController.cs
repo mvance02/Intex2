@@ -29,6 +29,21 @@ public class AuthController(
             .Where(c => c.Type == ClaimTypes.Role)
             .Select(c => c.Value).Distinct().OrderBy(r => r).ToArray();
 
+        // Auto-assign Donor role on first authenticated session if user has none
+        if (user is not null && roles.Length == 0)
+        {
+            var dbRoles = await userManager.GetRolesAsync(user);
+            if (dbRoles.Count == 0)
+            {
+                await userManager.AddToRoleAsync(user, AuthRoles.Donor);
+                roles = [AuthRoles.Donor];
+            }
+            else
+            {
+                roles = dbRoles.OrderBy(r => r).ToArray();
+            }
+        }
+
         return Ok(new { isAuthenticated = true,
             userName = user?.UserName ?? User.Identity?.Name,
             email = user?.Email, roles });
@@ -75,7 +90,7 @@ public class AuthController(
 
         var result = await signInManager.ExternalLoginSignInAsync(
             info.LoginProvider, info.ProviderKey,
-            isPersistent: false, bypassTwoFactor: true);
+            isPersistent: false, bypassTwoFactor: false);
         if (result.Succeeded) return Redirect(SuccessUrl(returnPath));
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email)

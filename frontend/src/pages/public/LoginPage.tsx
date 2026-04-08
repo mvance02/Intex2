@@ -210,6 +210,9 @@ export default function LoginPage() {
                     Continue with {p.displayName}
                   </button>
                 ))}
+                <p className="text-xs text-gray-400 text-center">
+                  Google sign-in may not work on Safari. Use email &amp; password or try Chrome.
+                </p>
               </div>
             </>
           )}

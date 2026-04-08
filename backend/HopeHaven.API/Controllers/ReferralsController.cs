@@ -1,3 +1,5 @@
+using HopeHaven.API.Data;
+using HopeHaven.API.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HopeHaven.API.Controllers;
@@ -16,10 +18,12 @@ public record ReferralResponse(string ReferenceNumber);
 
 [ApiController]
 [Route("api/[controller]")]
-public class ReferralsController(ILogger<ReferralsController> logger) : ControllerBase
+public class ReferralsController(
+    HopeHavenDbContext db,
+    ILogger<ReferralsController> logger) : ControllerBase
 {
     [HttpPost]
-    public ActionResult<ReferralResponse> Submit(ReferralRequest request)
+    public async Task<ActionResult<ReferralResponse>> Submit(ReferralRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.SubjectLocation))
             return BadRequest("Location is required.");
@@ -28,11 +32,27 @@ public class ReferralsController(ILogger<ReferralsController> logger) : Controll
 
         var refNumber = $"REF-{DateTimeOffset.UtcNow.ToUnixTimeSeconds():X}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}";
 
+        var referral = new Referral
+        {
+            ReferenceNumber = refNumber,
+            SubjectLocation = request.SubjectLocation,
+            Situation = request.Situation,
+            Urgency = request.Urgency ?? "Unknown",
+            SubjectAge = request.SubjectAge,
+            ReferrerName = request.Anonymous ? null : request.ReferrerName,
+            ReferrerContact = request.Anonymous ? null : request.ReferrerContact,
+            Anonymous = request.Anonymous,
+            Status = "New",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        db.Referrals.Add(referral);
+        await db.SaveChangesAsync();
+
         logger.LogInformation(
-            "Referral {RefNumber} received — location: {Location}, urgency: {Urgency}, anonymous: {Anonymous}",
+            "Referral {RefNumber} saved — location: {Location}, urgency: {Urgency}, anonymous: {Anonymous}",
             refNumber, request.SubjectLocation, request.Urgency, request.Anonymous);
 
-        // IS 414/455: wire to email notification or case management intake here
         return Ok(new ReferralResponse(refNumber));
     }
 }

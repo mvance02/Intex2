@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Home, HeartPulse, GraduationCap, Utensils } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Home, HeartPulse, GraduationCap, Utensils, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
 import type { DashboardMetrics } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
@@ -364,9 +365,65 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
 // Page
 // ---------------------------------------------------------------------------
 
+function DonatePromptModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close"
+        >
+          <X size={18} />
+        </button>
+        <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <HeartPulse size={24} className="text-teal-600" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-800 mb-2">Support a Girl</h3>
+        <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          Create an account or log in to make a donation and change a life today.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Link
+            to="/login"
+            onClick={onClose}
+            className="px-5 py-2.5 border border-teal-600 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors text-sm"
+          >
+            Log In
+          </Link>
+          <Link
+            to="/register"
+            onClick={onClose}
+            className="px-5 py-2.5 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors text-sm"
+          >
+            Create Account
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
+  const [showDonatePrompt, setShowDonatePrompt] = useState(false);
+
+  function handleDonateClick() {
+    if (isAuthenticated) {
+      navigate('/donor/donate');
+    } else {
+      setShowDonatePrompt(true);
+    }
+  }
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
@@ -375,13 +432,15 @@ export default function LandingPage() {
       .catch(() => null);
   }, []);
 
+  const PHP_TO_USD = 56;
   const ytdRaw = metrics ? Number(metrics.ytdDonations) : null;
   const ytdDisplay = ytdRaw !== null
-    ? `₱${ytdRaw.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`
+    ? `$${Math.round(ytdRaw / PHP_TO_USD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
     : '—';
 
   return (
     <div className="flex flex-col">
+      {showDonatePrompt && <DonatePromptModal onClose={() => setShowDonatePrompt(false)} />}
 
       {/* ------------------------------------------------------------------ */}
       {/* Hero — background image + dark overlay                              */}
@@ -409,12 +468,12 @@ export default function LandingPage() {
             >
               See Our Impact
             </Link>
-            <Link
-              to="/donor/donate"
+            <button
+              onClick={handleDonateClick}
               className="px-7 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             >
               Support a Girl
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -439,35 +498,35 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-3">Your Impact in Action</h2>
             <p className="text-gray-500 max-w-lg mx-auto">
-              Every peso goes directly to the girls in our care. Here is what your gift provides.
+              Every dollar goes directly to the girls in our care. Here is what your gift provides.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 Icon: Utensils,
-                amount: '₱250',
+                amount: '$5',
                 impact: '1 day of nutritious meals for a resident',
                 color: 'bg-amber-50 text-amber-600 border-amber-100',
                 iconBg: 'bg-amber-100',
               },
               {
                 Icon: Home,
-                amount: '₱500',
+                amount: '$9',
                 impact: '1 day of safe housing and pastoral care',
                 color: 'bg-teal-50 text-teal-600 border-teal-100',
                 iconBg: 'bg-teal-100',
               },
               {
                 Icon: HeartPulse,
-                amount: '₱1,200',
+                amount: '$21',
                 impact: '1 trauma counseling session with a licensed therapist',
                 color: 'bg-rose-50 text-rose-600 border-rose-100',
                 iconBg: 'bg-rose-100',
               },
               {
                 Icon: GraduationCap,
-                amount: '₱3,500',
+                amount: '$62',
                 impact: '1 full month of schooling and life-skills training',
                 color: 'bg-blue-50 text-blue-600 border-blue-100',
                 iconBg: 'bg-blue-100',
@@ -486,12 +545,12 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="text-center mt-10">
-            <Link
-              to="/donor/donate"
-              className="inline-block px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+            <button
+              onClick={handleDonateClick}
+              className="px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
             >
               Make a Donation
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -650,6 +709,30 @@ export default function LandingPage() {
       </section>
 
       {/* ------------------------------------------------------------------ */}
+      {/* Anonymous Referral Banner                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="bg-amber-50 border-y border-amber-100 py-10 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+          <div>
+            <p className="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-1">
+              Know someone who needs help?
+            </p>
+            <h2 className="text-xl font-bold text-gray-800 mb-1">Submit an Anonymous Referral</h2>
+            <p className="text-gray-500 text-sm max-w-lg">
+              If you know a child or young woman who may need shelter, counseling, or protection,
+              you can alert our social workers confidentially — no account required.
+            </p>
+          </div>
+          <Link
+            to="/referral"
+            className="shrink-0 px-7 py-3 bg-amber-600 text-white font-semibold rounded-full hover:bg-amber-700 transition-colors"
+          >
+            Make a Referral
+          </Link>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
       {/* CTA strip — lighthousepic3.jpg background                          */}
       {/* ------------------------------------------------------------------ */}
       <section
@@ -673,12 +756,12 @@ export default function LandingPage() {
             >
               Explore Impact →
             </Link>
-            <Link
-              to="/donor/donate"
+            <button
+              onClick={handleDonateClick}
               className="px-8 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             >
               Give Now
-            </Link>
+            </button>
           </div>
         </div>
       </section>
