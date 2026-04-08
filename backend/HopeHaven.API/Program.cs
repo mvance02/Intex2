@@ -1,10 +1,19 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Trust Railway's reverse proxy so redirect URIs use https:// ───────────
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // ── Port binding (Railway sets $PORT; dev falls back to 5000) ─────────────
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
@@ -127,6 +136,8 @@ catch (Exception ex)
 }
 
 // ── Pipeline ───────────────────────────────────────────────────────────────
+app.UseForwardedHeaders(); // must be first — makes Railway's https:// visible to ASP.NET
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
