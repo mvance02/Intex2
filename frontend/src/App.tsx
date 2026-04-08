@@ -18,7 +18,6 @@ import LogoutPage from './pages/public/LogoutPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import ReferralPage from './pages/public/ReferralPage';
 import DonatePage from './pages/public/DonatePage';
-import SocialMediaPage from './pages/public/SocialMediaPage';
 import NotFound from './pages/NotFound';
 
 // Admin pages — lazy loaded (code split, only fetched after login)
@@ -30,6 +29,13 @@ const ProcessRecordings  = lazy(() => import('./pages/admin/ProcessRecordings'))
 const HomeVisitations    = lazy(() => import('./pages/admin/HomeVisitations'));
 const ReportsAnalytics   = lazy(() => import('./pages/admin/ReportsAnalytics'));
 const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
+const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
+const UserManagement     = lazy(() => import('./pages/admin/UserManagement'));
+
+// Donor pages — lazy loaded
+const DonorLayout    = lazy(() => import('./components/shared/DonorLayout'));
+const DonorDashboard = lazy(() => import('./pages/donor/DonorDashboard'));
+const DonorDonations = lazy(() => import('./pages/donor/DonorDonations'));
 
 function PageFallback() {
   return (
@@ -39,10 +45,15 @@ function PageFallback() {
   );
 }
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+function ProtectedRoute({ children, requiredRoles }: { children: React.ReactNode; requiredRoles?: string[] }) {
+  const { isAuthenticated, isLoading, authSession } = useAuth();
   if (isLoading) return <PageFallback />;
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (requiredRoles && requiredRoles.length > 0) {
+    const hasRole = authSession.roles.some(r => requiredRoles.includes(r));
+    if (!hasRole) return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
 }
 
 export default function App() {
@@ -62,14 +73,52 @@ export default function App() {
                   <Route path="/logout"       element={<LogoutPage />} />
                   <Route path="/privacy"      element={<PrivacyPage />} />
                   <Route path="/referral"     element={<ReferralPage />} />
-                  <Route path="/donate"       element={<DonatePage />} />
-                  <Route path="/social-media" element={<SocialMediaPage />} />
+                </Route>
+
+                {/* Donor — protected + lazy */}
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <Suspense fallback={<PageFallback />}>
+                        <DonorLayout />
+                      </Suspense>
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route
+                    path="/donor"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <DonorDashboard />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/donor/donations"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <DonorDonations />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/donor/donate"
+                    element={<DonatePage />}
+                  />
+                  <Route
+                    path="/donor/manage-mfa"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <ManageMFAPage />
+                      </Suspense>
+                    }
+                  />
                 </Route>
 
                 {/* Admin — protected + lazy */}
                 <Route
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRoles={['Admin']}>
                       <AdminLayout />
                     </ProtectedRoute>
                   }
@@ -135,6 +184,22 @@ export default function App() {
                     element={
                       <Suspense fallback={<PageFallback />}>
                         <ManageMFAPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/admin/social-media"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <SocialMediaPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <UserManagement />
                       </Suspense>
                     }
                   />

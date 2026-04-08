@@ -3,12 +3,8 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   HandHeart,
-  Users,
-  ClipboardList,
-  Home,
-  BarChart2,
-  Share2,
-  UserCog,
+  Heart,
+  Shield,
   Menu,
   X,
   LogOut,
@@ -16,17 +12,13 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 
 const navItems = [
-  { label: 'Dashboard',          path: '/admin',                    Icon: LayoutDashboard },
-  { label: 'Donors',             path: '/admin/donors',             Icon: HandHeart },
-  { label: 'Residents',          path: '/admin/residents',          Icon: Users },
-  { label: 'Process Recordings', path: '/admin/process-recordings', Icon: ClipboardList },
-  { label: 'Home Visits',        path: '/admin/visits',             Icon: Home },
-  { label: 'Reports',            path: '/admin/reports',            Icon: BarChart2 },
-  { label: 'Social Media',       path: '/admin/social-media',       Icon: Share2 },
-  { label: 'Users',              path: '/admin/users',              Icon: UserCog },
+  { label: 'Dashboard',   path: '/donor',             Icon: LayoutDashboard },
+  { label: 'My Donations', path: '/donor/donations',  Icon: HandHeart },
+  { label: 'Donate',      path: '/donor/donate',      Icon: Heart },
+  { label: 'Manage MFA',  path: '/donor/manage-mfa',  Icon: Shield },
 ];
 
-export default function AdminLayout() {
+export default function DonorLayout() {
   const { authSession, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -53,17 +45,17 @@ export default function AdminLayout() {
 
   const currentLabel =
     navItems.find((n) =>
-      n.path === '/admin'
-        ? location.pathname === '/admin'
+      n.path === '/donor'
+        ? location.pathname === '/donor'
         : location.pathname.startsWith(n.path)
-    )?.label ?? 'Admin';
+    )?.label ?? 'Donor';
 
   const Sidebar = (
-    <aside className="w-64 bg-teal-800 text-white flex flex-col h-full" aria-label="Admin navigation">
+    <aside className="w-64 bg-teal-800 text-white flex flex-col h-full" aria-label="Donor navigation">
       <div className="px-6 py-5 border-b border-teal-700 flex items-center justify-between">
         <div>
           <p className="text-xl font-bold tracking-tight">Hope Haven</p>
-          <p className="text-teal-300 text-xs mt-0.5 font-medium">Staff Portal</p>
+          <p className="text-teal-300 text-xs mt-0.5 font-medium">Donor Portal</p>
         </div>
         <button
           onClick={() => setSidebarOpen(false)}
@@ -77,8 +69,8 @@ export default function AdminLayout() {
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {navItems.map(({ label, path, Icon }) => {
           const active =
-            path === '/admin'
-              ? location.pathname === '/admin'
+            path === '/donor'
+              ? location.pathname === '/donor'
               : location.pathname.startsWith(path);
           return (
             <Link

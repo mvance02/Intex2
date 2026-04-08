@@ -10,7 +10,7 @@ namespace HopeHaven.API.Data
             var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
             var roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
 
-            foreach (var role in new[] { AuthRoles.Admin, AuthRoles.Customer })
+            foreach (var role in new[] { AuthRoles.Admin, AuthRoles.Donor })
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {

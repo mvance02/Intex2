@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { getAuthSession } from '../utils/authAPI';
+import { getAuthSession, logoutUser } from '../utils/authAPI';
 import type { AuthSession } from '../types/AuthSession';
 
 interface AuthContextValue {
@@ -8,6 +8,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   refreshAuthState: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const anon: AuthSession = { isAuthenticated: false, userName: null, email: null, roles: [] };
@@ -23,11 +24,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     finally { setIsLoading(false); }
   }, []);
 
+  const logout = useCallback(async () => {
+    await logoutUser();
+    setAuthSession(anon);
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => { void refreshAuthState(); }, [refreshAuthState]);
 
   return (
     <AuthContext.Provider value={{
-      authSession, isAuthenticated: authSession.isAuthenticated, isLoading, refreshAuthState
+      authSession, isAuthenticated: authSession.isAuthenticated, isLoading, refreshAuthState, logout
     }}>
       {children}
     </AuthContext.Provider>
