@@ -1,13 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Home, HeartPulse, GraduationCap, Utensils, X } from 'lucide-react';
+import { Home, HeartPulse, GraduationCap, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
 import type { DashboardMetrics, DonorWallEntry, PublicOkrMetric } from '../../types/models';
-import { Link } from 'react-router-dom';
-import { Home, HeartPulse, GraduationCap } from 'lucide-react';
-import { apiFetch } from '../../utils/api';
-import type { DashboardMetrics } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
 import hopeHaven3 from '../../assets/hopeHaven3.jpg';
 import hopeHaven4 from '../../assets/hopehaven4.jpg';
@@ -446,10 +442,8 @@ export default function LandingPage() {
               See Our Impact
             </Link>
             <button
+              type="button"
               onClick={handleDonateClick}
-              className="px-7 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
-            <Link
-              to="/donate"
               className="px-7 py-3 border border-white/60 bg-white/10 text-white font-semibold uppercase text-sm tracking-[0.1em] hover:bg-white/20 transition-colors"
             >
               Support a Girl
@@ -613,7 +607,7 @@ export default function LandingPage() {
               className="inline-block px-8 py-3 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] border border-sky-300 hover:bg-sky-300 hover:text-slate-900 transition-colors"
             >
               Make a Donation
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -822,10 +816,8 @@ export default function LandingPage() {
               Explore Impact →
             </Link>
             <button
+              type="button"
               onClick={handleDonateClick}
-              className="px-8 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
-            <Link
-              to="/donate"
               className="px-8 py-3 border border-white/70 text-white font-semibold uppercase text-sm tracking-[0.1em] hover:bg-white hover:text-slate-900 transition-colors"
             >
               Give Now

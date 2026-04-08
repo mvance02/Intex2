@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Menu, X, LogOut } from 'lucide-react';
-import { Outlet, Link } from 'react-router-dom';
 import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg';
 
 export default function PublicLayout() {
@@ -21,28 +20,28 @@ export default function PublicLayout() {
       <Link
         to="/"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Home
       </Link>
       <Link
         to="/impact"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Our Impact
       </Link>
       <Link
         to="/referral"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Get Help
       </Link>
       <Link
         to="/donor-wall"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Donor Wall
       </Link>
@@ -50,7 +49,7 @@ export default function PublicLayout() {
         <Link
           to="/admin"
           onClick={() => setMenuOpen(false)}
-          className="hover:text-teal-200 transition-colors py-1 md:py-0"
+          className="hover:text-slate-600 transition-colors py-1 md:py-0"
         >
           Admin Portal
         </Link>
@@ -59,15 +58,16 @@ export default function PublicLayout() {
         <Link
           to="/donor"
           onClick={() => setMenuOpen(false)}
-          className="hover:text-teal-200 transition-colors py-1 md:py-0"
+          className="hover:text-slate-600 transition-colors py-1 md:py-0"
         >
           Donor Portal
         </Link>
       )}
       {isAuthenticated && (
         <button
+          type="button"
           onClick={handleLogout}
-          className="flex items-center gap-1.5 hover:text-teal-200 transition-colors py-1 md:py-0"
+          className="flex items-center gap-1.5 hover:text-slate-600 transition-colors py-1 md:py-0"
         >
           <LogOut size={14} />
           Sign Out
@@ -77,7 +77,7 @@ export default function PublicLayout() {
         <Link
           to="/login"
           onClick={() => setMenuOpen(false)}
-          className="bg-white text-teal-700 px-4 py-2.5 rounded-full hover:bg-teal-50 transition-colors text-center"
+          className="border border-sky-300 bg-white text-slate-900 px-4 py-2 hover:bg-sky-300 hover:border-sky-300 transition-colors text-center"
         >
           Login
         </Link>
@@ -86,50 +86,37 @@ export default function PublicLayout() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <nav className="bg-teal-700 text-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold tracking-tight">
-            Hope Haven
-          </Link>
-
-          {/* Desktop nav */}
-          <div className="hidden md:flex gap-6 text-sm font-medium items-center">
-            {navLinks}
-          </div>
-
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2.5 rounded-lg hover:bg-teal-600 transition-colors min-h-11 min-w-11"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={menuOpen}
-          >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
     <div className="min-h-screen flex flex-col bg-white text-slate-900">
       <nav className="sticky top-0 z-30 h-14 bg-white border-b border-slate-200 px-6">
-        <div className="max-w-6xl mx-auto h-full flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center bg-white h-10 w-44 overflow-hidden">
+        <div className="max-w-6xl mx-auto h-full flex items-center justify-between gap-4">
+          <Link to="/" className="inline-flex items-center bg-white h-10 w-44 shrink-0 overflow-hidden">
             <img
               src={hopeHavenLogo}
               alt="Hope Haven logo"
               className="h-full w-full object-cover scale-95"
             />
           </Link>
-          <div className="flex items-center gap-6 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em]">
-            <Link to="/impact" className="hover:text-slate-600 transition-colors">Our Impact</Link>
-            <Link to="/referral" className="hover:text-slate-600 transition-colors">Get Help</Link>
-            <Link to="/login" className="border border-sky-300 bg-white text-slate-900 px-4 py-2 hover:bg-sky-300 hover:border-sky-300 transition-colors">
-            Login
-            </Link>
+
+          <div className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em]">
+            {navLinks}
           </div>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors min-h-11 min-w-11"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden flex flex-col gap-4 pt-4 pb-2 text-sm font-medium border-t border-teal-600 mt-4">
-            {navLinks}
+          <div className="md:hidden border-t border-slate-200 px-6 pb-4 pt-3">
+            <div className="flex flex-col gap-3 text-sm font-semibold uppercase tracking-[0.08em]">
+              {navLinks}
+            </div>
           </div>
         )}
       </nav>
