@@ -32,7 +32,7 @@ const programs = [
     title: 'Safe Housing',
     description:
       'Every donation helps maintain safe, secure facilities for girls who have nowhere else to turn. Funds cover rent, utilities, maintenance, and security.',
-    example: '₱500 covers one day of safe housing for a resident.',
+    example: '$9 covers one day of safe housing for a resident.',
   },
   {
     icon: HeartPulse,
@@ -40,7 +40,7 @@ const programs = [
     title: 'Trauma Counseling',
     description:
       'Licensed social workers and psychologists provide individual and group therapy sessions. Your support funds session costs, training, and clinical supervision.',
-    example: '₱1,200 funds one individual counseling session.',
+    example: '$21 funds one individual counseling session.',
   },
   {
     icon: GraduationCap,
@@ -48,7 +48,7 @@ const programs = [
     title: 'Education & Skills',
     description:
       'We keep every girl enrolled in school and provide life-skills training to prepare them for independent living. Funds cover school fees, uniforms, and supplies.',
-    example: '₱3,500 covers one month of school expenses per girl.',
+    example: '$62 covers one month of school expenses per girl.',
   },
   {
     icon: Utensils,
@@ -56,7 +56,7 @@ const programs = [
     title: 'Nutrition & Health',
     description:
       'Three nutritious meals daily, regular medical and dental checkups, and medication when needed. Your gift ensures no girl goes hungry or untreated.',
-    example: '₱250 feeds a resident for one full day.',
+    example: '$5 feeds a resident for one full day.',
   },
   {
     icon: Users,
@@ -64,7 +64,7 @@ const programs = [
     title: 'Family Reintegration',
     description:
       'Safely returning girls to loving families or transitioning them to independent living requires home visits, case conferences, and ongoing support.',
-    example: '₱2,000 funds one reintegration home visit.',
+    example: '$36 funds one reintegration home visit.',
   },
   {
     icon: ShieldCheck,
@@ -72,7 +72,7 @@ const programs = [
     title: 'Staff & Operations',
     description:
       'Trained, compassionate staff are our greatest resource. Funds support salaries, professional development, and the administrative systems that keep everything running.',
-    example: '₱5,000 contributes one week of social worker salary.',
+    example: '$89 contributes one week of social worker salary.',
   },
 ];
 
@@ -193,7 +193,7 @@ function ThankYouModal({ isRecurring, label, phpAmount, onClose }: ThankYouModal
         <p className="text-gray-500 mb-4 leading-relaxed">
           Your{isRecurring ? ' weekly recurring' : ''} gift of{' '}
           <span className="font-semibold text-teal-700">
-            {formatPhp(phpAmount)} ({formatUsd(usd)})
+            {formatUsd(usd)} (≈ {formatPhp(phpAmount)})
           </span>{' '}
           for <span className="font-semibold">{label}</span> has been recorded.
         </p>
@@ -242,8 +242,8 @@ function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
         </div>
         <h2 className="text-xl font-bold text-gray-800 mb-1 text-center">{item.label}</h2>
         <p className="text-center text-gray-500 text-sm mb-5">
-          {formatPhp(item.phpAmount)}{' '}
-          <span className="text-gray-400">({formatUsd(usd)})</span> —{' '}
+          {formatUsd(usd)}{' '}
+          <span className="text-gray-400">(≈ {formatPhp(item.phpAmount)})</span> —{' '}
           {item.impactLine}.
         </p>
         <p className="text-sm font-medium text-gray-700 mb-4 text-center">
@@ -394,7 +394,7 @@ export default function DonatePage() {
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-4xl font-extrabold mb-4">Give Hope Today</h1>
           <p className="text-teal-100 text-lg leading-relaxed mb-10">
-            Every peso transforms the life of a girl recovering from abuse or trafficking at
+            Every dollar transforms the life of a girl recovering from abuse or trafficking at
             Hope Haven's safehouses in the Philippines.
           </p>
 
@@ -512,9 +512,9 @@ export default function DonatePage() {
                   </div>
                   <p className="font-bold text-gray-800 mb-1">{item.label}</p>
                   <p className="text-teal-700 font-semibold text-sm mb-0.5">
-                    {formatPhp(item.phpAmount)}
+                    {formatUsd(usd)}
                   </p>
-                  <p className="text-gray-400 text-xs mb-3">≈ {formatUsd(usd)}</p>
+                  <p className="text-gray-400 text-xs mb-3">≈ {formatPhp(item.phpAmount)}</p>
                   <p className="text-gray-500 text-xs leading-snug">{item.impactLine}</p>
                 </button>
               );

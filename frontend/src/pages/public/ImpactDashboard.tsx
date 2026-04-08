@@ -102,12 +102,13 @@ export default function ImpactDashboard() {
                     />
                     <YAxis
                       tick={{ fontSize: 11 }}
-                      tickFormatter={(v: number) => `₱${(v / 1000).toFixed(0)}k`}
+                      tickFormatter={(v: number) => `$${(v / 56 / 1000).toFixed(0)}k`}
                     />
                     <Tooltip
                       formatter={(value) => {
                         const n = Number(value);
-                        return [`₱${n.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`, 'Total Donated'];
+                        const usd = Math.round(n / 56);
+                        return [`$${usd.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, 'Total Donated'];
                       }}
                     />
                     <Line

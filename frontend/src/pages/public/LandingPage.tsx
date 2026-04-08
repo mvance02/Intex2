@@ -432,9 +432,10 @@ export default function LandingPage() {
       .catch(() => null);
   }, []);
 
+  const PHP_TO_USD = 56;
   const ytdRaw = metrics ? Number(metrics.ytdDonations) : null;
   const ytdDisplay = ytdRaw !== null
-    ? `₱${ytdRaw.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`
+    ? `$${Math.round(ytdRaw / PHP_TO_USD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
     : '—';
 
   return (
@@ -497,35 +498,35 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-3">Your Impact in Action</h2>
             <p className="text-gray-500 max-w-lg mx-auto">
-              Every peso goes directly to the girls in our care. Here is what your gift provides.
+              Every dollar goes directly to the girls in our care. Here is what your gift provides.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 Icon: Utensils,
-                amount: '₱250',
+                amount: '$5',
                 impact: '1 day of nutritious meals for a resident',
                 color: 'bg-amber-50 text-amber-600 border-amber-100',
                 iconBg: 'bg-amber-100',
               },
               {
                 Icon: Home,
-                amount: '₱500',
+                amount: '$9',
                 impact: '1 day of safe housing and pastoral care',
                 color: 'bg-teal-50 text-teal-600 border-teal-100',
                 iconBg: 'bg-teal-100',
               },
               {
                 Icon: HeartPulse,
-                amount: '₱1,200',
+                amount: '$21',
                 impact: '1 trauma counseling session with a licensed therapist',
                 color: 'bg-rose-50 text-rose-600 border-rose-100',
                 iconBg: 'bg-rose-100',
               },
               {
                 Icon: GraduationCap,
-                amount: '₱3,500',
+                amount: '$62',
                 impact: '1 full month of schooling and life-skills training',
                 color: 'bg-blue-50 text-blue-600 border-blue-100',
                 iconBg: 'bg-blue-100',
@@ -704,6 +705,30 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Anonymous Referral Banner                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="bg-amber-50 border-y border-amber-100 py-10 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+          <div>
+            <p className="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-1">
+              Know someone who needs help?
+            </p>
+            <h2 className="text-xl font-bold text-gray-800 mb-1">Submit an Anonymous Referral</h2>
+            <p className="text-gray-500 text-sm max-w-lg">
+              If you know a child or young woman who may need shelter, counseling, or protection,
+              you can alert our social workers confidentially — no account required.
+            </p>
+          </div>
+          <Link
+            to="/referral"
+            className="shrink-0 px-7 py-3 bg-amber-600 text-white font-semibold rounded-full hover:bg-amber-700 transition-colors"
+          >
+            Make a Referral
+          </Link>
         </div>
       </section>
 

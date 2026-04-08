@@ -17,6 +17,13 @@ export default function PublicLayout() {
   const navLinks = (
     <>
       <Link
+        to="/"
+        onClick={() => setMenuOpen(false)}
+        className="hover:text-teal-200 transition-colors"
+      >
+        Home
+      </Link>
+      <Link
         to="/impact"
         onClick={() => setMenuOpen(false)}
         className="hover:text-teal-200 transition-colors"
