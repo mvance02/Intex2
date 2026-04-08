@@ -1,3 +1,5 @@
+import { getStoredToken } from './authAPI';
+
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
 /** Strip "Lighthouse " prefix from safehouse names for cleaner display */
@@ -10,6 +12,7 @@ const DEFAULT_TIMEOUT_MS = 15_000;
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const token = getStoredToken();
 
   try {
     const res = await fetch(`${API_URL}${path}`, {
@@ -18,6 +21,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options?.headers,
       },
     });

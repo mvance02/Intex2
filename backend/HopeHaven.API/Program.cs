@@ -49,17 +49,23 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
 }
 
 // ── Authorization policies ───────────────────────────────────────────────────
-// DefaultPolicy uses cookie scheme so [Authorize] on controllers works with cookies
-// (AddIdentityApiEndpoints registers both Bearer + Cookie; Bearer is the default)
+// Accept BOTH cookie and Bearer token so mobile browsers (iOS Safari blocks
+// cross-origin cookies) can authenticate via the token stored in localStorage.
 builder.Services.AddAuthorization(options =>
 {
-    options.DefaultPolicy = new AuthorizationPolicyBuilder(IdentityConstants.ApplicationScheme)
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(
+            IdentityConstants.ApplicationScheme,
+            IdentityConstants.BearerScheme)
         .RequireAuthenticatedUser()
         .Build();
     options.AddPolicy(AuthPolicies.ManageContent,
-        policy => policy.RequireRole(AuthRoles.Admin));
+        policy => policy
+            .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme)
+            .RequireRole(AuthRoles.Admin));
     options.AddPolicy(AuthPolicies.DonorAccess,
-        policy => policy.RequireRole(AuthRoles.Donor, AuthRoles.Admin));
+        policy => policy
+            .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme)
+            .RequireRole(AuthRoles.Donor, AuthRoles.Admin));
 });
 
 // ── Password policy (NIST: length over complexity) ───────────────────────────
