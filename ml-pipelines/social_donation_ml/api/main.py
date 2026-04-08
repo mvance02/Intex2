@@ -244,11 +244,12 @@ def sweep_hours(draft: DraftPost) -> dict[str, Any]:
 @app.post("/predict/optimize")
 def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
     """
-    Given a platform (+ optional constraints), find the optimal post configuration
-    to maximize predicted donation value or referrals.
+    Two-pass optimizer: find optimal post configuration for a platform.
 
-    Grids through all categorical combos × hours, scores each with the trained model,
-    returns top N recommendations. Dynamic — adapts to whatever model is trained.
+    Pass 1: Grid categorical combos at a fixed hour (~45K rows), get top 50.
+    Pass 2: Sweep hours 7-21 for those top 50, pick overall top N.
+
+    This keeps total predictions under 1K — fast on any server.
     """
     try:
         b = _load_bundle()
@@ -258,14 +259,9 @@ def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
     meta = b.get("meta", {})
     field_vals = meta.get("field_values", {})
 
-    # Choose the target model
-    if req.optimize_for == "referrals":
-        model = b["reg_referrals"]
-    else:
-        model = b["reg_value"]
+    model = b["reg_referrals"] if req.optimize_for == "referrals" else b["reg_value"]
 
-    # Build grids for each categorical dimension
-    # Platform is fixed by the user
+    # Dynamic field values from trained model
     days = field_vals.get("day_of_week", [
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
     ])
@@ -274,7 +270,6 @@ def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
     content_topics = field_vals.get("content_topic", ["Education"])
     sentiment_tones = field_vals.get("sentiment_tone", ["Hopeful"])
     cta_types = field_vals.get("call_to_action_type", ["DonateNow"])
-    hours = list(range(7, 22))  # 7am to 9pm
 
     # Numeric/boolean defaults (or user-constrained)
     num_hashtags = req.num_hashtags if req.num_hashtags is not None else 3
@@ -285,46 +280,61 @@ def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
     has_cta = req.has_call_to_action if req.has_call_to_action is not None else True
     features_story = req.features_resident_story if req.features_resident_story is not None else False
 
-    # Generate all categorical combos
+    base_numeric = {
+        "platform": req.platform,
+        "num_hashtags": num_hashtags,
+        "mentions_count": mentions_count,
+        "has_call_to_action": has_cta,
+        "features_resident_story": features_story,
+        "caption_length": caption_length,
+        "is_boosted": is_boosted,
+        "boost_budget_php": boost_budget if is_boosted else 0.0,
+    }
+
+    # --- Pass 1: grid categoricals at noon, find top 50 combos ---
     combos = list(itertools.product(
-        days, hours, post_types, media_types,
+        days, post_types, media_types,
         content_topics, sentiment_tones, cta_types,
     ))
-
-    # Build DataFrame of all combos at once (vectorized prediction)
     rows = []
-    for day, hour, pt, mt, ct, st, cta in combos:
-        rows.append({
-            "platform": req.platform,
+    for day, pt, mt, ct, st, cta in combos:
+        row = {
+            **base_numeric,
             "day_of_week": day,
-            "post_hour": hour,
+            "post_hour": 12,
             "post_type": pt,
             "media_type": mt,
             "content_topic": ct,
             "sentiment_tone": st,
-            "num_hashtags": num_hashtags,
-            "mentions_count": mentions_count,
-            "has_call_to_action": has_cta,
             "call_to_action_type": cta,
-            "features_resident_story": features_story,
-            "caption_length": caption_length,
-            "is_boosted": is_boosted,
-            "boost_budget_php": boost_budget if is_boosted else 0.0,
-        })
+        }
+        rows.append(row)
 
-    df_all = pd.DataFrame(rows)
-    X_all = build_model_frame(df_all)[FEATURE_COLS]
+    df_pass1 = pd.DataFrame(rows)
+    X_pass1 = build_model_frame(df_pass1)[FEATURE_COLS]
+    preds_pass1 = model.predict(X_pass1)
 
-    # Vectorized prediction — fast even for 100K+ rows
-    predictions = model.predict(X_all)
+    top_50_idx = np.argsort(preds_pass1)[::-1][:50]
 
-    # Get top N indices
-    top_indices = np.argsort(predictions)[::-1][: req.top_n]
+    # --- Pass 2: sweep hours 7-21 for top 50 combos ---
+    rows_pass2 = []
+    for idx in top_50_idx:
+        base_row = df_pass1.iloc[idx].to_dict()
+        for h in range(7, 22):
+            r = {**base_row, "post_hour": h}
+            rows_pass2.append(r)
+
+    df_pass2 = pd.DataFrame(rows_pass2)
+    X_pass2 = build_model_frame(df_pass2)[FEATURE_COLS]
+    preds_pass2 = model.predict(X_pass2)
+
+    # Pick overall top N
+    final_top = np.argsort(preds_pass2)[::-1][: req.top_n]
 
     recommendations = []
-    for idx in top_indices:
-        row_data = df_all.iloc[idx]
-        pred_value = float(predictions[idx])
+    for idx in final_top:
+        row_data = df_pass2.iloc[idx]
+        pred_value = float(preds_pass2[idx])
         recommendations.append({
             "rank": len(recommendations) + 1,
             "day_of_week": row_data["day_of_week"],
@@ -339,6 +349,7 @@ def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
             "predicted_value": round(pred_value, 2),
         })
 
+    total_evaluated = len(df_pass1) + len(df_pass2)
     target_label = (
         "predicted_donation_referrals" if req.optimize_for == "referrals"
         else "predicted_estimated_donation_value_php"
@@ -348,7 +359,7 @@ def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
         "platform": req.platform,
         "optimize_for": req.optimize_for,
         "target_label": target_label,
-        "total_combinations_evaluated": len(df_all),
+        "total_combinations_evaluated": total_evaluated,
         "top_n": req.top_n,
         "recommendations": recommendations,
         "constraints_applied": {
