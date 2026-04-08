@@ -1,5 +1,6 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class EducationRecordsController(HopeHavenDbContext db) : ControllerBase
 {
     [HttpGet]
@@ -19,7 +21,7 @@ public class EducationRecordsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<EducationRecord>> Create(EducationRecord record)
     {
         db.EducationRecords.Add(record);
@@ -28,7 +30,7 @@ public class EducationRecordsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, EducationRecord record)
     {
         if (id != record.EducationRecordId) return BadRequest("ID mismatch.");

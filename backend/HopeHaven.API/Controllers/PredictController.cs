@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PredictController(IHttpClientFactory httpClientFactory, ILogger<PredictController> logger)
     : ControllerBase
 {

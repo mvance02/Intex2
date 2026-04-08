@@ -157,11 +157,7 @@ app.UseExceptionHandler(err => err.Run(async ctx =>
 
 app.UseSecurityHeaders();
 
-// HTTPS redirect only in dev — Railway terminates TLS at the proxy layer
-if (app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
