@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   buildExternalLoginUrl,
+  getAuthSession,
   getExternalProviders,
   loginUser,
   type ExternalAuthProvider,
@@ -48,6 +49,18 @@ export default function LoginPage() {
         twoFactorCode || undefined,
         recoveryCode  || undefined,
       );
+      // Verify the session cookie was actually stored by the browser.
+      // On iOS Safari (ITP), cross-origin cookies can be silently blocked even
+      // when the login request succeeds (200). If the cookie wasn't stored,
+      // /api/auth/me returns 401 and the user would be stuck with no feedback.
+      const session = await getAuthSession().catch(() => null);
+      if (!session?.isAuthenticated) {
+        setServerError(
+          'Login was accepted but your browser blocked the session cookie. ' +
+          'Please try Chrome or Firefox, or enable cross-site cookies in your browser settings.'
+        );
+        return;
+      }
       await refreshAuthState();
       // Redirect is handled by the useEffect above
     } catch (err: unknown) {
@@ -210,6 +223,9 @@ export default function LoginPage() {
                     Continue with {p.displayName}
                   </button>
                 ))}
+                <p className="text-xs text-gray-400 text-center">
+                  Google sign-in may not work on Safari. Use email &amp; password or try Chrome.
+                </p>
               </div>
             </>
           )}

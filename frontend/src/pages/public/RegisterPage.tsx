@@ -19,6 +19,10 @@ export default function RegisterPage() {
       setErrorMessage('Passwords must match.');
       return;
     }
+    if (password.length < 14) {
+      setErrorMessage('Password must be at least 14 characters.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await registerUser(email, password);
