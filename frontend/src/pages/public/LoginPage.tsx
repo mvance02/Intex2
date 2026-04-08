@@ -190,7 +190,7 @@ export default function LoginPage() {
                   <button
                     key={p.name}
                     type="button"
-                    onClick={() => window.location.assign(buildExternalLoginUrl(p.name, '/login'))}
+                    onClick={() => window.location.assign(buildExternalLoginUrl(p.name, '/'))}
                     className="w-full py-2.5 px-4 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                   >
                     Continue with {p.displayName}
