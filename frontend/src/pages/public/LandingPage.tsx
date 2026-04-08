@@ -409,7 +409,7 @@ export default function LandingPage() {
               See Our Impact
             </Link>
             <Link
-              to="/donate"
+              to="/donor/donate"
               className="px-7 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             >
               Support a Girl
@@ -486,7 +486,7 @@ export default function LandingPage() {
           </div>
           <div className="text-center mt-10">
             <Link
-              to="/donate"
+              to="/donor/donate"
               className="inline-block px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
             >
               Make a Donation
@@ -673,7 +673,7 @@ export default function LandingPage() {
               Explore Impact →
             </Link>
             <Link
-              to="/donate"
+              to="/donor/donate"
               className="px-8 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             >
               Give Now
