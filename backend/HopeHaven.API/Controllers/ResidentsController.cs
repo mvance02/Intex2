@@ -1,11 +1,13 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class ResidentsController(HopeHavenDbContext db) : ControllerBase
 {
@@ -17,7 +19,9 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
         [FromQuery] string? caseStatus = null,
         [FromQuery] int? safehouseId = null,
         [FromQuery] string? caseCategory = null,
-        [FromQuery] string? riskLevel = null)
+        [FromQuery] string? riskLevel = null,
+        [FromQuery] DateOnly? dateFrom = null,
+        [FromQuery] DateOnly? dateTo = null)
     {
         var query = db.Residents.Include(r => r.Safehouse).AsQueryable();
 
@@ -38,6 +42,12 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(riskLevel))
             query = query.Where(r => r.CurrentRiskLevel == riskLevel);
+
+        if (dateFrom.HasValue)
+            query = query.Where(r => r.DateOfAdmission >= dateFrom.Value);
+
+        if (dateTo.HasValue)
+            query = query.Where(r => r.DateOfAdmission <= dateTo.Value);
 
         var total = await query.CountAsync();
         var items = await query
@@ -66,7 +76,7 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<Resident>> Create(Resident resident)
     {
         resident.CreatedAt = DateTime.UtcNow;
@@ -76,7 +86,7 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, Resident resident)
     {
         if (id != resident.ResidentId) return BadRequest("ID mismatch.");
@@ -91,7 +101,7 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Delete(int id)
     {
         var resident = await db.Residents.FindAsync(id);

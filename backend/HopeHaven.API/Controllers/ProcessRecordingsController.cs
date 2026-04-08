@@ -1,11 +1,13 @@
 using HopeHaven.API.Controllers.Base;
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class ProcessRecordingsController(HopeHavenDbContext db) : CrudController<ProcessRecording>(db)
 {
     protected override DbSet<ProcessRecording> EntitySet => Db.ProcessRecordings;

@@ -1,11 +1,13 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class DonationsController(HopeHavenDbContext db) : ControllerBase
 {
@@ -47,7 +49,7 @@ public class DonationsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<Donation>> Create(Donation donation)
     {
         db.Donations.Add(donation);
@@ -56,7 +58,7 @@ public class DonationsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, Donation donation)
     {
         if (id != donation.DonationId) return BadRequest("ID mismatch.");
@@ -71,7 +73,7 @@ public class DonationsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Delete(int id)
     {
         var donation = await db.Donations.FindAsync(id);

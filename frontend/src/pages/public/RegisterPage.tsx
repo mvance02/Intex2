@@ -1,6 +1,6 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { assignDefaultRole, registerUser } from '../../utils/authAPI';
+import { registerUser } from '../../utils/authAPI';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -11,6 +11,8 @@ export default function RegisterPage() {
   const [successMessage, setSuccessMessage]   = useState('');
   const [isSubmitting, setIsSubmitting]       = useState(false);
 
+  useEffect(() => { document.title = 'Register — Hope Haven'; }, []);
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMessage('');
@@ -19,10 +21,13 @@ export default function RegisterPage() {
       setErrorMessage('Passwords must match.');
       return;
     }
+    if (password.length < 14) {
+      setErrorMessage('Password must be at least 14 characters.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await registerUser(email, password);
-      await assignDefaultRole(email);
       setSuccessMessage('Registration succeeded. Redirecting to login…');
       setTimeout(() => navigate('/login'), 1000);
     } catch (err) {
@@ -41,7 +46,7 @@ export default function RegisterPage() {
               <span className="text-2xl" aria-hidden="true">🏠</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-800">Create account</h1>
-            <p className="text-sm text-gray-500 mt-1">Hope Haven case management portal</p>
+            <p className="text-sm text-gray-500 mt-1">Hope Haven portal</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>

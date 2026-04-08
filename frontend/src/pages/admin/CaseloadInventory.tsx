@@ -5,7 +5,7 @@ import Pagination from '../../components/shared/Pagination'
 import FilterBar from '../../components/shared/FilterBar'
 import SkeletonLoader from '../../components/shared/SkeletonLoader'
 import ErrorAlert from '../../components/shared/ErrorAlert'
-import { apiFetch } from '../../utils/api'
+import { apiFetch, displaySafehouseName } from '../../utils/api'
 import type { Resident, Safehouse, PaginatedResponse } from '../../types/models'
 
 const PAGE_SIZE = 20
@@ -63,7 +63,6 @@ function StatusBadge({ status }: { status: string | null }): React.ReactElement 
   )
 }
 
-// Columns are built inside the component so readiness scores (fetched async) can be referenced
 function buildColumns(
   readiness: Map<number, ReadinessPrediction | 'loading'>,
 ): Column<Resident>[] {
@@ -73,7 +72,7 @@ function buildColumns(
     {
       key: 'safehouse',
       header: 'Safehouse',
-      render: (r) => r.safehouse?.name ?? '—',
+      render: (r) => displaySafehouseName(r.safehouse?.name),
     },
     { key: 'caseCategory', header: 'Category', sortable: true },
     {
@@ -114,8 +113,12 @@ export default function CaseloadInventory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [readiness, setReadiness] = useState<Map<number, ReadinessPrediction | 'loading'>>(new Map())
+  const [predictionsLoaded, setPredictionsLoaded] = useState(false)
+  const [predictionsLoading, setPredictionsLoading] = useState(false)
 
   const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     caseStatus: '',
     riskLevel: '',
@@ -127,32 +130,46 @@ export default function CaseloadInventory() {
     document.title = 'Caseload — Hope Haven'
     apiFetch<Safehouse[]>('/api/safehouses')
       .then(setSafehouses)
-      .catch(() => {
-        // Non-critical — safehouse filter will just be empty
-      })
+      .catch(() => {})
   }, [])
 
-  const fetchReadinessScores = useCallback((items: Resident[]) => {
-    // Mark all as loading, then fire parallel requests
+  const fetchReadinessScores = useCallback(async (items: Resident[]) => {
+    if (items.length === 0) return
+    setPredictionsLoading(true)
+    // Mark all as loading immediately so the UI shows spinners
     setReadiness((prev) => {
       const next = new Map(prev)
       items.forEach((r) => next.set(r.residentId, 'loading'))
       return next
     })
-    items.forEach((r) => {
-      apiFetch<ReadinessPrediction>(`/api/predict/reintegration/${r.residentId}`)
-        .then((pred) => {
-          setReadiness((prev) => new Map(prev).set(r.residentId, pred))
-        })
-        .catch(() => {
-          // ML service unavailable — silently remove the loading state
-          setReadiness((prev) => {
-            const next = new Map(prev)
-            next.delete(r.residentId)
-            return next
-          })
-        })
-    })
+    try {
+      // Single batch request → 1 round trip instead of 20
+      const batch = await apiFetch<Record<string, ReadinessPrediction | null>>(
+        '/api/predict/reintegration/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ residentIds: items.map((r) => r.residentId) }),
+        }
+      )
+      setReadiness((prev) => {
+        const next = new Map(prev)
+        for (const [id, pred] of Object.entries(batch)) {
+          if (pred) next.set(Number(id), pred)
+          else next.delete(Number(id))
+        }
+        return next
+      })
+    } catch {
+      // ML service unavailable — clear loading states silently
+      setReadiness((prev) => {
+        const next = new Map(prev)
+        items.forEach((r) => next.delete(r.residentId))
+        return next
+      })
+    } finally {
+      setPredictionsLoading(false)
+      setPredictionsLoaded(true)
+    }
   }, [])
 
   const fetchResidents = useCallback(() => {
@@ -167,17 +184,21 @@ export default function CaseloadInventory() {
       caseCategory: filterValues.caseCategory,
       riskLevel: filterValues.riskLevel,
     })
+    if (dateFrom) params.set('dateFrom', dateFrom)
+    if (dateTo) params.set('dateTo', dateTo)
+
     apiFetch<PaginatedResponse<Resident>>(`/api/residents?${params.toString()}`)
       .then((data) => {
         setResidents(data.items)
         setTotalPages(data.totalPages)
-        fetchReadinessScores(data.items)
+        setPredictionsLoaded(false)
+        void fetchReadinessScores(data.items)
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : 'Failed to load residents.')
       })
       .finally(() => setLoading(false))
-  }, [page, search, filterValues])
+  }, [page, search, filterValues, dateFrom, dateTo])
 
   useEffect(() => {
     fetchResidents()
@@ -218,19 +239,17 @@ export default function CaseloadInventory() {
       key: 'caseCategory',
       label: 'Case Category',
       options: [
-        { label: 'Trafficking', value: 'Trafficking' },
-        { label: 'Physical Abuse', value: 'Physical Abuse' },
-        { label: 'Sexual Abuse', value: 'Sexual Abuse' },
-        { label: 'OSAEC', value: 'OSAEC' },
-        { label: 'At Risk', value: 'At Risk' },
-        { label: 'Orphaned', value: 'Orphaned' },
+        { label: 'Abandoned', value: 'Abandoned' },
+        { label: 'Foundling', value: 'Foundling' },
+        { label: 'Neglected', value: 'Neglected' },
+        { label: 'Surrendered', value: 'Surrendered' },
       ],
     },
     {
       key: 'safehouseId',
       label: 'Safehouse',
       options: safehouses.map((s) => ({
-        label: s.name ?? `Safehouse ${s.safehouseId}`,
+        label: displaySafehouseName(s.name) || `Safehouse ${s.safehouseId}`,
         value: String(s.safehouseId),
       })),
     },
@@ -250,6 +269,48 @@ export default function CaseloadInventory() {
         onFilterChange={handleFilterChange}
         filterValues={filterValues}
       />
+
+      {/* Date admitted filter */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <label className="text-sm text-gray-600 font-medium">Admitted:</label>
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => { setDateFrom(e.target.value); setPage(1) }}
+          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          aria-label="Admitted from date"
+        />
+        <span className="text-sm text-gray-400">to</span>
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => { setDateTo(e.target.value); setPage(1) }}
+          className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          aria-label="Admitted to date"
+        />
+        {(dateFrom || dateTo) && (
+          <button
+            onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
+            className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
+          >
+            Clear dates
+          </button>
+        )}
+
+        {/* Readiness predictions button */}
+        <div className="ml-auto">
+          <button
+            onClick={() => fetchReadinessScores(residents)}
+            disabled={predictionsLoading || residents.length === 0}
+            className="text-sm px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {predictionsLoading && (
+              <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            )}
+            {predictionsLoading ? 'Loading…' : predictionsLoaded ? 'Refresh Predictions' : 'Load Readiness Predictions'}
+          </button>
+        </div>
+      </div>
 
       {error && <ErrorAlert message={error} onRetry={fetchResidents} />}
 

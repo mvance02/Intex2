@@ -1,11 +1,13 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class HealthWellbeingRecordsController(HopeHavenDbContext db) : ControllerBase
 {
@@ -19,7 +21,7 @@ public class HealthWellbeingRecordsController(HopeHavenDbContext db) : Controlle
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<HealthWellbeingRecord>> Create(HealthWellbeingRecord record)
     {
         db.HealthWellbeingRecords.Add(record);
@@ -28,7 +30,7 @@ public class HealthWellbeingRecordsController(HopeHavenDbContext db) : Controlle
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, HealthWellbeingRecord record)
     {
         if (id != record.HealthRecordId) return BadRequest("ID mismatch.");
@@ -39,6 +41,17 @@ public class HealthWellbeingRecordsController(HopeHavenDbContext db) : Controlle
             if (!await db.HealthWellbeingRecords.AnyAsync(h => h.HealthRecordId == id)) return NotFound();
             throw;
         }
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthPolicies.ManageContent)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var record = await db.HealthWellbeingRecords.FindAsync(id);
+        if (record is null) return NotFound();
+        db.HealthWellbeingRecords.Remove(record);
+        await db.SaveChangesAsync();
         return NoContent();
     }
 }

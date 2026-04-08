@@ -18,9 +18,12 @@ export default function LoginPage() {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [recoveryCode, setRecoveryCode] = useState('');
   const [rememberMe, setRememberMe]     = useState(true);
+  const [showMfa, setShowMfa]           = useState(false);
   const [providers, setProviders]       = useState<ExternalAuthProvider[]>([]);
   const [serverError, setServerError]   = useState(searchParams.get('externalError') ?? '');
   const [loading, setLoading]           = useState(false);
+
+  useEffect(() => { document.title = 'Sign In — Hope Haven'; }, []);
 
   useEffect(() => {
     getExternalProviders().then(setProviders).catch(() => setProviders([]));
@@ -112,38 +115,51 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* MFA code */}
-            <div className="mb-4">
-              <label htmlFor="two-factor-code" className="block text-sm font-medium text-gray-700 mb-1">
-                Authenticator code <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <input
-                id="two-factor-code"
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={twoFactorCode}
-                onChange={(e) => setTwoFactorCode(e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="6-digit code"
-              />
-              <p className="mt-1 text-xs text-gray-400">Leave blank unless MFA is enabled on your account.</p>
-            </div>
+            {/* MFA fields — hidden by default */}
+            {showMfa ? (
+              <>
+                {/* MFA code */}
+                <div className="mb-4">
+                  <label htmlFor="two-factor-code" className="block text-sm font-medium text-gray-700 mb-1">
+                    Authenticator code <span className="text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    id="two-factor-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={twoFactorCode}
+                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    placeholder="6-digit code"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">Leave blank unless MFA is enabled on your account.</p>
+                </div>
 
-            {/* Recovery code */}
-            <div className="mb-4">
-              <label htmlFor="recovery-code" className="block text-sm font-medium text-gray-700 mb-1">
-                Recovery code <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <input
-                id="recovery-code"
-                type="text"
-                value={recoveryCode}
-                onChange={(e) => setRecoveryCode(e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="Use when you cannot access the authenticator app"
-              />
-            </div>
+                {/* Recovery code */}
+                <div className="mb-4">
+                  <label htmlFor="recovery-code" className="block text-sm font-medium text-gray-700 mb-1">
+                    Recovery code <span className="text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    id="recovery-code"
+                    type="text"
+                    value={recoveryCode}
+                    onChange={(e) => setRecoveryCode(e.target.value)}
+                    className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    placeholder="Use when you cannot access the authenticator app"
+                  />
+                </div>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowMfa(true)}
+                className="mb-4 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+              >
+                Have an authenticator or recovery code?
+              </button>
+            )}
 
             {/* Remember me */}
             <div className="flex items-center mb-6">
@@ -190,12 +206,15 @@ export default function LoginPage() {
                   <button
                     key={p.name}
                     type="button"
-                    onClick={() => window.location.assign(buildExternalLoginUrl(p.name, '/'))}
+                    onClick={() => window.location.assign(buildExternalLoginUrl(p.name, '/login'))}
                     className="w-full py-2.5 px-4 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
                   >
                     Continue with {p.displayName}
                   </button>
                 ))}
+                <p className="text-xs text-gray-400 text-center">
+                  Google sign-in may not work on Safari. Use email &amp; password or try Chrome.
+                </p>
               </div>
             </>
           )}

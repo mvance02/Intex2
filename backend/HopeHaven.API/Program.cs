@@ -1,10 +1,20 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Trust Railway's reverse proxy so redirect URIs use https:// ───────────
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 // ── Port binding (Railway sets $PORT; dev falls back to 5000) ─────────────
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
@@ -23,14 +33,6 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
-// Default auth scheme = cookies (AddIdentityApiEndpoints registers both Bearer
-// and Cookie; we want [Authorize] on controllers to use cookies by default)
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultChallengeScheme    = IdentityConstants.ApplicationScheme;
-});
-
 // ── Google OAuth (only activates when user-secrets are configured) ───────────
 var googleClientId     = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
@@ -47,8 +49,15 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
 }
 
 // ── Authorization policies ───────────────────────────────────────────────────
+// DefaultPolicy uses the Identity Application cookie scheme.
+// Mobile compatibility is achieved via the Vercel API proxy rewrite
+// (vercel.json routes /api/* → Railway), making cookies first-party on all
+// browsers including iOS Safari.
 builder.Services.AddAuthorization(options =>
 {
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(IdentityConstants.ApplicationScheme)
+        .RequireAuthenticatedUser()
+        .Build();
     options.AddPolicy(AuthPolicies.ManageContent,
         policy => policy.RequireRole(AuthRoles.Admin));
     options.AddPolicy(AuthPolicies.DonorAccess,
@@ -87,6 +96,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+// ── In-memory cache (prediction results) ──────────────────────────────────
+builder.Services.AddMemoryCache();
+
 // ── Controllers + OpenAPI ──────────────────────────────────────────────────
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
@@ -110,6 +122,8 @@ builder.Services.AddCors(options =>
 // ── ML Inference (IS 455) ─────────────────────────────────────────────────
 builder.Services.AddHttpClient("MLService", c =>
     c.BaseAddress = new Uri(builder.Configuration["ML:BaseUrl"] ?? "http://localhost:8001"));
+builder.Services.AddHttpClient("MLSocialService", c =>
+    c.BaseAddress = new Uri(builder.Configuration["MLSocial:BaseUrl"] ?? "http://localhost:8002"));
 
 builder.Services.AddHttpClient("DonorRiskService", c =>
     c.BaseAddress = new Uri(builder.Configuration["DonorRisk:BaseUrl"] ?? "http://localhost:8003"));
@@ -117,25 +131,43 @@ builder.Services.AddHttpClient("DonorRiskService", c =>
 var app = builder.Build();
 
 // ── Seed Identity roles and default admin ─────────────────────────────────
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     await AuthIdentityGenerator.GenerateDefaultIdentityAsync(
         scope.ServiceProvider, app.Configuration);
 }
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "Identity seeding skipped — database may be unreachable.");
+}
 
 // ── Pipeline ───────────────────────────────────────────────────────────────
+app.UseForwardedHeaders(); // must be first — makes Railway's https:// visible to ASP.NET
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
+// Global error handler — surfaces errors as JSON instead of empty 500s
+app.UseExceptionHandler(err => err.Run(async ctx =>
+{
+    ctx.Response.StatusCode = 500;
+    ctx.Response.ContentType = "application/json";
+    var ex = ctx.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+    await ctx.Response.WriteAsJsonAsync(new
+    {
+        error = ex?.Message,
+        inner = ex?.InnerException?.Message,
+        type = ex?.GetType().Name
+    });
+}));
+
 app.UseSecurityHeaders();
 
-// HTTPS redirect only in dev — Railway terminates TLS at the proxy layer
-if (app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();

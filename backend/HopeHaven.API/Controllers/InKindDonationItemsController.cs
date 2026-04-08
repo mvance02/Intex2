@@ -1,11 +1,13 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class InKindDonationItemsController(HopeHavenDbContext db) : ControllerBase
 {
@@ -19,7 +21,7 @@ public class InKindDonationItemsController(HopeHavenDbContext db) : ControllerBa
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+
     public async Task<ActionResult<InKindDonationItem>> Create(InKindDonationItem item)
     {
         db.InKindDonationItems.Add(item);
@@ -28,7 +30,7 @@ public class InKindDonationItemsController(HopeHavenDbContext db) : ControllerBa
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+
     public async Task<IActionResult> Delete(int id)
     {
         var item = await db.InKindDonationItems.FindAsync(id);

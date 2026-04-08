@@ -1,11 +1,13 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class EducationRecordsController(HopeHavenDbContext db) : ControllerBase
 {
@@ -19,7 +21,7 @@ public class EducationRecordsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<EducationRecord>> Create(EducationRecord record)
     {
         db.EducationRecords.Add(record);
@@ -28,7 +30,7 @@ public class EducationRecordsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, EducationRecord record)
     {
         if (id != record.EducationRecordId) return BadRequest("ID mismatch.");
@@ -39,6 +41,17 @@ public class EducationRecordsController(HopeHavenDbContext db) : ControllerBase
             if (!await db.EducationRecords.AnyAsync(e => e.EducationRecordId == id)) return NotFound();
             throw;
         }
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthPolicies.ManageContent)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var record = await db.EducationRecords.FindAsync(id);
+        if (record is null) return NotFound();
+        db.EducationRecords.Remove(record);
+        await db.SaveChangesAsync();
         return NoContent();
     }
 }

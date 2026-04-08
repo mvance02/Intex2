@@ -57,9 +57,17 @@ export interface Donation {
   impactUnit: string | null;
   notes: string | null;
   referralPostId: string | null;
+  shareOnDonorWall: boolean;
+  donorWallName: string | null;
   supporter?: Supporter;
   allocations?: DonationAllocation[];
   inKindItems?: InKindDonationItem[];
+}
+
+export interface DonorWallEntry {
+  displayName: string;
+  donationCount: number;
+  latestDonationDate: string | null;
 }
 
 export interface DonationAllocation {
@@ -355,4 +363,127 @@ export interface SafehouseSummaryItem {
   capacityGirls: number | null;
   currentOccupancy: number | null;
   activeResidents: number;
+}
+
+export interface SocialDraftPredictionRequest {
+  platform: string;
+  day_of_week: string;
+  post_hour: number;
+  post_type: string;
+  media_type: string;
+  content_topic: string;
+  sentiment_tone: string;
+  num_hashtags: number;
+  mentions_count: number;
+  has_call_to_action: boolean;
+  call_to_action_type: string;
+  features_resident_story: boolean;
+  caption_length: number;
+  is_boosted: boolean;
+  boost_budget_php: number;
+}
+
+export interface SocialDraftPredictionResult {
+  predicted_donation_referrals: number;
+  predicted_estimated_donation_value_php: number;
+  high_performer_probability: number;
+  high_performer_class: number;
+  high_performer_definition: string | null;
+  training_threshold_referrals: number | null;
+  performance_band_label: string;
+  performance_band_key: 'high' | 'mid' | 'low' | string;
+  high_performer_classifier: string | null;
+  disclaimer: string;
+}
+
+export interface SocialDraftSweepHourResult {
+  best_post_hour: number;
+  predicted_donation_referrals_at_best: number;
+  sweep: Array<{
+    post_hour: number;
+    predicted_donation_referrals: number;
+  }>;
+}
+
+export interface PublicOkrMetric {
+  metricName: string;
+  ratePercent: number;
+  stableCount: number;
+  eligibleCount: number;
+  previousRatePercent: number;
+  deltaPoints: number;
+}
+
+export interface SocialOptimizeRequest {
+  platform: string;
+  optimize_for: 'donation_value' | 'referrals';
+  is_boosted?: boolean | null;
+  boost_budget_php?: number | null;
+  features_resident_story?: boolean | null;
+  has_call_to_action?: boolean | null;
+  num_hashtags?: number | null;
+  mentions_count?: number | null;
+  caption_length?: number | null;
+  top_n?: number;
+}
+
+export interface SocialOptimizeRecommendation {
+  rank: number;
+  day_of_week: string;
+  post_hour: number;
+  post_type: string;
+  media_type: string;
+  content_topic: string;
+  sentiment_tone: string;
+  call_to_action_type: string;
+  has_call_to_action: boolean;
+  features_resident_story: boolean;
+  predicted_value: number;
+}
+
+export interface SocialOptimizeResult {
+  platform: string;
+  optimize_for: string;
+  target_label: string;
+  total_combinations_evaluated: number;
+  top_n: number;
+  recommendations: SocialOptimizeRecommendation[];
+  constraints_applied: Record<string, unknown>;
+  disclaimer: string;
+}
+
+export interface SocialWeeklyScheduleRequest {
+  platform: string;
+  optimize_for: 'donation_value' | 'referrals';
+  is_boosted?: boolean | null;
+  boost_budget_php?: number | null;
+  features_resident_story?: boolean | null;
+  has_call_to_action?: boolean | null;
+  num_hashtags?: number | null;
+  mentions_count?: number | null;
+  caption_length?: number | null;
+}
+
+export interface SocialWeeklyScheduleDay {
+  day_of_week: string;
+  post_hour: number;
+  post_type: string;
+  media_type: string;
+  content_topic: string;
+  sentiment_tone: string;
+  call_to_action_type: string;
+  has_call_to_action: boolean;
+  features_resident_story: boolean;
+  predicted_value: number;
+}
+
+export interface SocialWeeklyScheduleResult {
+  platform: string;
+  optimize_for: string;
+  target_label: string;
+  total_combinations_evaluated: number;
+  weekly_total_predicted: number;
+  schedule: SocialWeeklyScheduleDay[];
+  constraints_applied: Record<string, unknown>;
+  disclaimer: string;
 }

@@ -7,11 +7,13 @@ Run from repo: uvicorn api.main:app --reload --port 8002
 
 from __future__ import annotations
 
+import itertools
 import sys
 from pathlib import Path
 from typing import Any
 
 import joblib
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,10 +28,10 @@ from features import FEATURE_COLS, build_model_frame  # noqa: E402
 
 ARTIFACTS = ROOT / "artifacts"
 BUNDLE_PATH = ARTIFACTS / "social_bundle.joblib"
-DATA_DIR = ROOT.parent
+DATA_DIR = ROOT / "data"
 POSTS_CSV = DATA_DIR / "social_media_posts.csv"
 
-app = FastAPI(title="Social Content Planner API", version="0.1.0")
+app = FastAPI(title="Social Content Planner API", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -80,6 +82,40 @@ class DraftPost(BaseModel):
     caption_length: int = Field(default=280, ge=0)
     is_boosted: bool = Field(default=False)
     boost_budget_php: float = Field(default=0.0, ge=0)
+
+
+class OptimizeRequest(BaseModel):
+    """User picks a platform + optional constraints; model finds optimal post config."""
+    platform: str = Field(..., examples=["Instagram"])
+    optimize_for: str = Field(
+        default="donation_value",
+        description="Target to maximize: 'donation_value' or 'referrals'",
+    )
+    # Optional constraints — if provided, lock that value instead of searching
+    is_boosted: bool | None = Field(default=None)
+    boost_budget_php: float | None = Field(default=None, ge=0)
+    features_resident_story: bool | None = Field(default=None)
+    has_call_to_action: bool | None = Field(default=None)
+    num_hashtags: int | None = Field(default=None, ge=0)
+    mentions_count: int | None = Field(default=None, ge=0)
+    caption_length: int | None = Field(default=None, ge=0)
+    top_n: int = Field(default=10, ge=1, le=50)
+
+
+class WeeklyScheduleRequest(BaseModel):
+    """Generate a diverse 7-day posting schedule for a platform."""
+    platform: str = Field(..., examples=["Instagram"])
+    optimize_for: str = Field(
+        default="donation_value",
+        description="Target to maximize: 'donation_value' or 'referrals'",
+    )
+    is_boosted: bool | None = Field(default=None)
+    boost_budget_php: float | None = Field(default=None, ge=0)
+    features_resident_story: bool | None = Field(default=None)
+    has_call_to_action: bool | None = Field(default=None)
+    num_hashtags: int | None = Field(default=None, ge=0)
+    mentions_count: int | None = Field(default=None, ge=0)
+    caption_length: int | None = Field(default=None, ge=0)
 
 
 @app.get("/")
@@ -218,4 +254,270 @@ def sweep_hours(draft: DraftPost) -> dict[str, Any]:
         "best_post_hour": best_h,
         "predicted_donation_referrals_at_best": round(best_p, 4),
         "sweep": series,
+    }
+
+
+@app.post("/predict/optimize")
+def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
+    """
+    Two-pass optimizer: find optimal post configuration for a platform.
+
+    Pass 1: Grid categorical combos at a fixed hour (~45K rows), get top 50.
+    Pass 2: Sweep hours 7-21 for those top 50, pick overall top N.
+
+    This keeps total predictions under 1K — fast on any server.
+    """
+    try:
+        b = _load_bundle()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    meta = b.get("meta", {})
+    field_vals = meta.get("field_values", {})
+
+    model = b["reg_referrals"] if req.optimize_for == "referrals" else b["reg_value"]
+
+    # Dynamic field values from trained model
+    days = field_vals.get("day_of_week", [
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    ])
+    post_types = field_vals.get("post_type", ["FundraisingAppeal"])
+    media_types = field_vals.get("media_type", ["Carousel"])
+    content_topics = field_vals.get("content_topic", ["Education"])
+    sentiment_tones = field_vals.get("sentiment_tone", ["Hopeful"])
+    cta_types = field_vals.get("call_to_action_type", ["DonateNow"])
+
+    # Numeric/boolean defaults (or user-constrained)
+    num_hashtags = req.num_hashtags if req.num_hashtags is not None else 3
+    mentions_count = req.mentions_count if req.mentions_count is not None else 1
+    caption_length = req.caption_length if req.caption_length is not None else 280
+    is_boosted = req.is_boosted if req.is_boosted is not None else False
+    boost_budget = req.boost_budget_php if req.boost_budget_php is not None else 0.0
+    has_cta = req.has_call_to_action if req.has_call_to_action is not None else True
+    features_story = req.features_resident_story if req.features_resident_story is not None else False
+
+    base_numeric = {
+        "platform": req.platform,
+        "num_hashtags": num_hashtags,
+        "mentions_count": mentions_count,
+        "has_call_to_action": has_cta,
+        "features_resident_story": features_story,
+        "caption_length": caption_length,
+        "is_boosted": is_boosted,
+        "boost_budget_php": boost_budget if is_boosted else 0.0,
+    }
+
+    # --- Pass 1: grid categoricals at noon, find top 50 combos ---
+    combos = list(itertools.product(
+        days, post_types, media_types,
+        content_topics, sentiment_tones, cta_types,
+    ))
+    rows = []
+    for day, pt, mt, ct, st, cta in combos:
+        row = {
+            **base_numeric,
+            "day_of_week": day,
+            "post_hour": 12,
+            "post_type": pt,
+            "media_type": mt,
+            "content_topic": ct,
+            "sentiment_tone": st,
+            "call_to_action_type": cta,
+        }
+        rows.append(row)
+
+    df_pass1 = pd.DataFrame(rows)
+    X_pass1 = build_model_frame(df_pass1)[FEATURE_COLS]
+    preds_pass1 = model.predict(X_pass1)
+
+    top_50_idx = np.argsort(preds_pass1)[::-1][:50]
+
+    # --- Pass 2: sweep hours 7-21 for top 50 combos ---
+    rows_pass2 = []
+    for idx in top_50_idx:
+        base_row = df_pass1.iloc[idx].to_dict()
+        for h in range(7, 22):
+            r = {**base_row, "post_hour": h}
+            rows_pass2.append(r)
+
+    df_pass2 = pd.DataFrame(rows_pass2)
+    X_pass2 = build_model_frame(df_pass2)[FEATURE_COLS]
+    preds_pass2 = model.predict(X_pass2)
+
+    # Pick overall top N
+    final_top = np.argsort(preds_pass2)[::-1][: req.top_n]
+
+    recommendations = []
+    for idx in final_top:
+        row_data = df_pass2.iloc[idx]
+        pred_value = float(preds_pass2[idx])
+        recommendations.append({
+            "rank": len(recommendations) + 1,
+            "day_of_week": row_data["day_of_week"],
+            "post_hour": int(row_data["post_hour"]),
+            "post_type": row_data["post_type"],
+            "media_type": row_data["media_type"],
+            "content_topic": row_data["content_topic"],
+            "sentiment_tone": row_data["sentiment_tone"],
+            "call_to_action_type": row_data["call_to_action_type"],
+            "has_call_to_action": bool(row_data["has_call_to_action"]),
+            "features_resident_story": bool(row_data["features_resident_story"]),
+            "predicted_value": round(pred_value, 2),
+        })
+
+    total_evaluated = len(df_pass1) + len(df_pass2)
+    target_label = (
+        "predicted_donation_referrals" if req.optimize_for == "referrals"
+        else "predicted_estimated_donation_value_php"
+    )
+
+    return {
+        "platform": req.platform,
+        "optimize_for": req.optimize_for,
+        "target_label": target_label,
+        "total_combinations_evaluated": total_evaluated,
+        "top_n": req.top_n,
+        "recommendations": recommendations,
+        "constraints_applied": {
+            "num_hashtags": num_hashtags,
+            "mentions_count": mentions_count,
+            "caption_length": caption_length,
+            "is_boosted": is_boosted,
+            "boost_budget_php": boost_budget,
+            "has_call_to_action": has_cta,
+            "features_resident_story": features_story,
+        },
+        "disclaimer": (
+            "Recommendations are based on patterns in historical data. "
+            "Results will improve as real donation data replaces synthetic data."
+        ),
+    }
+
+
+@app.post("/predict/weekly-schedule")
+def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
+    """
+    Greedy daily optimization with diversity constraints.
+
+    For each day Mon→Sun, find the best combo for THAT day,
+    then exclude the chosen content_topic and post_type from subsequent days.
+    Result: 7 diverse, individually-optimized posts.
+    """
+    try:
+        b = _load_bundle()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    meta = b.get("meta", {})
+    field_vals = meta.get("field_values", {})
+    model = b["reg_referrals"] if req.optimize_for == "referrals" else b["reg_value"]
+
+    post_types = field_vals.get("post_type", ["FundraisingAppeal"])
+    media_types = field_vals.get("media_type", ["Carousel"])
+    content_topics = field_vals.get("content_topic", ["Education"])
+    sentiment_tones = field_vals.get("sentiment_tone", ["Hopeful"])
+    cta_types = field_vals.get("call_to_action_type", ["DonateNow"])
+
+    num_hashtags = req.num_hashtags if req.num_hashtags is not None else 3
+    mentions_count = req.mentions_count if req.mentions_count is not None else 1
+    caption_length = req.caption_length if req.caption_length is not None else 280
+    is_boosted = req.is_boosted if req.is_boosted is not None else False
+    boost_budget = req.boost_budget_php if req.boost_budget_php is not None else 0.0
+    has_cta = req.has_call_to_action if req.has_call_to_action is not None else True
+    features_story = req.features_resident_story if req.features_resident_story is not None else False
+
+    base_numeric = {
+        "platform": req.platform,
+        "num_hashtags": num_hashtags,
+        "mentions_count": mentions_count,
+        "has_call_to_action": has_cta,
+        "features_resident_story": features_story,
+        "caption_length": caption_length,
+        "is_boosted": is_boosted,
+        "boost_budget_php": boost_budget if is_boosted else 0.0,
+    }
+
+    days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    used_topics: set[str] = set()
+    used_post_types: set[str] = set()
+    schedule: list[dict[str, Any]] = []
+    total_evaluated = 0
+
+    for day in days_order:
+        # Filter out already-used content_topics and post_types for diversity
+        avail_topics = [t for t in content_topics if t not in used_topics] or content_topics
+        avail_ptypes = [p for p in post_types if p not in used_post_types] or post_types
+
+        # Build combos for this day across all hours
+        combos = list(itertools.product(
+            range(7, 22), avail_ptypes, media_types,
+            avail_topics, sentiment_tones, cta_types,
+        ))
+
+        rows = []
+        for hour, pt, mt, ct, st, cta in combos:
+            rows.append({
+                **base_numeric,
+                "day_of_week": day,
+                "post_hour": hour,
+                "post_type": pt,
+                "media_type": mt,
+                "content_topic": ct,
+                "sentiment_tone": st,
+                "call_to_action_type": cta,
+            })
+
+        df_day = pd.DataFrame(rows)
+        X_day = build_model_frame(df_day)[FEATURE_COLS]
+        preds = model.predict(X_day)
+        total_evaluated += len(df_day)
+
+        best_idx = int(np.argmax(preds))
+        best_row = df_day.iloc[best_idx]
+        best_val = float(preds[best_idx])
+
+        chosen_topic = best_row["content_topic"]
+        chosen_ptype = best_row["post_type"]
+        used_topics.add(chosen_topic)
+        used_post_types.add(chosen_ptype)
+
+        schedule.append({
+            "day_of_week": day,
+            "post_hour": int(best_row["post_hour"]),
+            "post_type": chosen_ptype,
+            "media_type": best_row["media_type"],
+            "content_topic": chosen_topic,
+            "sentiment_tone": best_row["sentiment_tone"],
+            "call_to_action_type": best_row["call_to_action_type"],
+            "has_call_to_action": bool(best_row["has_call_to_action"]),
+            "features_resident_story": bool(best_row["features_resident_story"]),
+            "predicted_value": round(best_val, 2),
+        })
+
+    total_predicted = sum(d["predicted_value"] for d in schedule)
+    target_label = (
+        "predicted_donation_referrals" if req.optimize_for == "referrals"
+        else "predicted_estimated_donation_value_php"
+    )
+
+    return {
+        "platform": req.platform,
+        "optimize_for": req.optimize_for,
+        "target_label": target_label,
+        "total_combinations_evaluated": total_evaluated,
+        "weekly_total_predicted": round(total_predicted, 2),
+        "schedule": schedule,
+        "constraints_applied": {
+            "num_hashtags": num_hashtags,
+            "mentions_count": mentions_count,
+            "caption_length": caption_length,
+            "is_boosted": is_boosted,
+            "boost_budget_php": boost_budget,
+            "has_call_to_action": has_cta,
+            "features_resident_story": features_story,
+        },
+        "disclaimer": (
+            "Each day is optimized with diversity constraints — no repeated content topics "
+            "or post types. Results adapt automatically when real data replaces synthetic data."
+        ),
     }

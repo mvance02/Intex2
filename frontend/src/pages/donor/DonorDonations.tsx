@@ -31,6 +31,7 @@ export default function DonorDonations() {
     finally { setLoading(false); }
   }, []);
 
+  useEffect(() => { document.title = 'My Donations — Hope Haven'; }, []);
   useEffect(() => { void fetchData(); }, [fetchData]);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading donations…" />;
@@ -39,7 +40,7 @@ export default function DonorDonations() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">My Donations</h2>
           {donations.length > 0 && (
@@ -50,7 +51,7 @@ export default function DonorDonations() {
         </div>
         <Link
           to="/donor/donate"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition-colors min-h-11"
         >
           <Heart size={14} aria-hidden="true" />
           Donate
@@ -72,7 +73,8 @@ export default function DonorDonations() {
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="min-w-[640px] w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
@@ -104,6 +106,7 @@ export default function DonorDonations() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

@@ -17,7 +17,7 @@ import RegisterPage from './pages/public/RegisterPage';
 import LogoutPage from './pages/public/LogoutPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import ReferralPage from './pages/public/ReferralPage';
-import DonatePage from './pages/public/DonatePage';
+import DonorWallPage from './pages/public/DonorWallPage';
 import NotFound from './pages/NotFound';
 
 // Admin pages — lazy loaded (code split, only fetched after login)
@@ -30,6 +30,7 @@ const HomeVisitations    = lazy(() => import('./pages/admin/HomeVisitations'));
 const ReportsAnalytics   = lazy(() => import('./pages/admin/ReportsAnalytics'));
 const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
 const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
+const SocialDonationPredictor = lazy(() => import('./pages/admin/SocialDonationPredictor'));
 const UserManagement     = lazy(() => import('./pages/admin/UserManagement'));
 const DonorRetentionRisk = lazy(() => import('./pages/admin/DonorRetentionRisk'));
 
@@ -37,6 +38,7 @@ const DonorRetentionRisk = lazy(() => import('./pages/admin/DonorRetentionRisk')
 const DonorLayout    = lazy(() => import('./components/shared/DonorLayout'));
 const DonorDashboard = lazy(() => import('./pages/donor/DonorDashboard'));
 const DonorDonations = lazy(() => import('./pages/donor/DonorDonations'));
+const DonatePage     = lazy(() => import('./pages/public/DonatePage'));
 
 function PageFallback() {
   return (
@@ -74,6 +76,7 @@ export default function App() {
                   <Route path="/logout"       element={<LogoutPage />} />
                   <Route path="/privacy"      element={<PrivacyPage />} />
                   <Route path="/referral"     element={<ReferralPage />} />
+                  <Route path="/donor-wall"   element={<DonorWallPage />} />
                 </Route>
 
                 {/* Donor — protected + lazy */}
@@ -104,7 +107,11 @@ export default function App() {
                   />
                   <Route
                     path="/donor/donate"
-                    element={<DonatePage />}
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <DonatePage />
+                      </Suspense>
+                    }
                   />
                   <Route
                     path="/donor/manage-mfa"
@@ -193,6 +200,14 @@ export default function App() {
                     element={
                       <Suspense fallback={<PageFallback />}>
                         <SocialMediaPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/admin/social-donation"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <SocialDonationPredictor />
                       </Suspense>
                     }
                   />

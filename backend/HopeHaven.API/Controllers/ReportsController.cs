@@ -1,15 +1,17 @@
 using HopeHaven.API.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class ReportsController(HopeHavenDbContext db) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet("donation-trends")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetDonationTrends(
         [FromQuery] int? year = null,
         [FromQuery] int? startYear = null,
@@ -65,7 +67,6 @@ public class ReportsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpGet("resident-outcomes")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetResidentOutcomes(
         [FromQuery] int? safehouseId = null,
         [FromQuery] int? startYear = null,
@@ -123,7 +124,6 @@ public class ReportsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpGet("safehouse-comparison")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetSafehouseComparison(
         [FromQuery] int? startYear = null,
         [FromQuery] int? endYear = null)
@@ -166,7 +166,6 @@ public class ReportsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpGet("reintegration")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetReintegrationStats(
         [FromQuery] int? safehouseId = null,
         [FromQuery] int? startYear = null,
@@ -207,7 +206,6 @@ public class ReportsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpGet("annual-summary")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetAnnualSummary([FromQuery] int? year = null)
     {
         var targetYear = year ?? DateTime.UtcNow.Year;

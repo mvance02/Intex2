@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const API = import.meta.env.VITE_API_URL ?? '';
 import { Link } from 'react-router-dom';
@@ -32,7 +32,7 @@ const programs = [
     title: 'Safe Housing',
     description:
       'Every donation helps maintain safe, secure facilities for girls who have nowhere else to turn. Funds cover rent, utilities, maintenance, and security.',
-    example: '₱500 covers one day of safe housing for a resident.',
+    example: '$9 covers one day of safe housing for a resident.',
   },
   {
     icon: HeartPulse,
@@ -40,7 +40,7 @@ const programs = [
     title: 'Trauma Counseling',
     description:
       'Licensed social workers and psychologists provide individual and group therapy sessions. Your support funds session costs, training, and clinical supervision.',
-    example: '₱1,200 funds one individual counseling session.',
+    example: '$21 funds one individual counseling session.',
   },
   {
     icon: GraduationCap,
@@ -48,7 +48,7 @@ const programs = [
     title: 'Education & Skills',
     description:
       'We keep every girl enrolled in school and provide life-skills training to prepare them for independent living. Funds cover school fees, uniforms, and supplies.',
-    example: '₱3,500 covers one month of school expenses per girl.',
+    example: '$62 covers one month of school expenses per girl.',
   },
   {
     icon: Utensils,
@@ -56,7 +56,7 @@ const programs = [
     title: 'Nutrition & Health',
     description:
       'Three nutritious meals daily, regular medical and dental checkups, and medication when needed. Your gift ensures no girl goes hungry or untreated.',
-    example: '₱250 feeds a resident for one full day.',
+    example: '$5 feeds a resident for one full day.',
   },
   {
     icon: Users,
@@ -64,7 +64,7 @@ const programs = [
     title: 'Family Reintegration',
     description:
       'Safely returning girls to loving families or transitioning them to independent living requires home visits, case conferences, and ongoing support.',
-    example: '₱2,000 funds one reintegration home visit.',
+    example: '$36 funds one reintegration home visit.',
   },
   {
     icon: ShieldCheck,
@@ -72,7 +72,7 @@ const programs = [
     title: 'Staff & Operations',
     description:
       'Trained, compassionate staff are our greatest resource. Funds support salaries, professional development, and the administrative systems that keep everything running.',
-    example: '₱5,000 contributes one week of social worker salary.',
+    example: '$89 contributes one week of social worker salary.',
   },
 ];
 
@@ -193,7 +193,7 @@ function ThankYouModal({ isRecurring, label, phpAmount, onClose }: ThankYouModal
         <p className="text-gray-500 mb-4 leading-relaxed">
           Your{isRecurring ? ' weekly recurring' : ''} gift of{' '}
           <span className="font-semibold text-teal-700">
-            {formatPhp(phpAmount)} ({formatUsd(usd)})
+            {formatUsd(usd)} (≈ {formatPhp(phpAmount)})
           </span>{' '}
           for <span className="font-semibold">{label}</span> has been recorded.
         </p>
@@ -216,6 +216,20 @@ interface RecurringPromptProps {
   item: QuickGiveItem;
   onChoose: (recurring: boolean) => void;
   onCancel: () => void;
+}
+
+interface PendingDonation {
+  label: string;
+  phpAmount: number;
+  isRecurring: boolean;
+  payload: {
+    amount: number;
+    currencyCode: string;
+    isRecurring: boolean;
+    donationType: string;
+    campaignName: string;
+    impactUnit?: string;
+  };
 }
 
 function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
@@ -242,8 +256,8 @@ function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
         </div>
         <h2 className="text-xl font-bold text-gray-800 mb-1 text-center">{item.label}</h2>
         <p className="text-center text-gray-500 text-sm mb-5">
-          {formatPhp(item.phpAmount)}{' '}
-          <span className="text-gray-400">({formatUsd(usd)})</span> —{' '}
+          {formatUsd(usd)}{' '}
+          <span className="text-gray-400">(≈ {formatPhp(item.phpAmount)})</span> —{' '}
           {item.impactLine}.
         </p>
         <p className="text-sm font-medium text-gray-700 mb-4 text-center">
@@ -270,6 +284,87 @@ function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
   );
 }
 
+function DonorWallPrompt({
+  pending,
+  onCancel,
+  onSubmit,
+}: {
+  pending: PendingDonation;
+  onCancel: () => void;
+  onSubmit: (shareOnDonorWall: boolean, donorWallName: string) => void;
+}) {
+  const [shareOnWall, setShareOnWall] = useState(false);
+  const [wallName, setWallName] = useState('');
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Donor wall preference prompt"
+    >
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+        <button
+          onClick={onCancel}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Cancel"
+        >
+          <X size={20} />
+        </button>
+
+        <h2 className="text-xl font-bold text-gray-800">Wall of Donors</h2>
+        <p className="text-sm text-gray-600 mt-2">
+          Your donation to <span className="font-semibold">{pending.label}</span> was prepared.
+          Would you like to appear on the public donor wall?
+        </p>
+
+        <div className="mt-5 space-y-2">
+          <button
+            onClick={() => setShareOnWall(false)}
+            className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
+              !shareOnWall ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Donate anonymously
+          </button>
+          <button
+            onClick={() => setShareOnWall(true)}
+            className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
+              shareOnWall ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Add me to the donor wall
+          </button>
+        </div>
+
+        {shareOnWall && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="donorWallName">
+              Name to display
+            </label>
+            <input
+              id="donorWallName"
+              type="text"
+              maxLength={120}
+              value={wallName}
+              onChange={(e) => setWallName(e.target.value)}
+              placeholder="Enter the name you want shown"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        )}
+
+        <button
+          onClick={() => onSubmit(shareOnWall, wallName)}
+          className="mt-6 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+        >
+          Confirm Donation
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
@@ -277,6 +372,7 @@ function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
 type ModalState =
   | { type: 'none' }
   | { type: 'recurring-prompt'; item: QuickGiveItem }
+  | { type: 'wall-prompt'; pending: PendingDonation }
   | { type: 'thank-you'; label: string; phpAmount: number; isRecurring: boolean };
 
 export default function DonatePage() {
@@ -284,6 +380,9 @@ export default function DonatePage() {
   const [customMode, setCustomMode] = useState<'php' | 'usd'>('usd');
   const [customRaw, setCustomRaw] = useState('');
   const [modal, setModal] = useState<ModalState>({ type: 'none' });
+  const [donationError, setDonationError] = useState('');
+
+  useEffect(() => { document.title = 'Donate — Hope Haven'; }, []);
 
   // Derived custom amount values
   const customNumeric = parseFloat(customRaw) || 0;
@@ -293,29 +392,57 @@ export default function DonatePage() {
     customMode === 'usd' ? customNumeric : phpToUsd(customNumeric);
   const customImpact = customUsd > 0 ? getImpactMessage(customUsd) : null;
 
-  async function handleCustomDonate() {
-    if (customPhp <= 0) return;
+  async function submitDonation(
+    pending: PendingDonation,
+    shareOnDonorWall: boolean,
+    donorWallName: string
+  ) {
     try {
       const res = await fetch(`${API}/api/my-donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
+          ...pending.payload,
+          shareOnDonorWall,
+          donorWallName: shareOnDonorWall ? donorWallName : undefined,
+        }),
+      });
+      if (!res.ok) {
+        setDonationError('Unable to process donation. Please try again.');
+        setModal({ type: 'none' });
+        return;
+      }
+      setDonationError('');
+      setModal({
+        type: 'thank-you',
+        label: pending.label,
+        phpAmount: pending.phpAmount,
+        isRecurring: pending.isRecurring,
+      });
+    } catch {
+      setDonationError('Unable to reach the server. Please try again.');
+      setModal({ type: 'none' });
+    }
+  }
+
+  function handleCustomDonate() {
+    if (customPhp <= 0) return;
+    setModal({
+      type: 'wall-prompt',
+      pending: {
+        label: 'Custom Donation',
+        phpAmount: Math.round(customPhp),
+        isRecurring: false,
+        payload: {
           amount: Math.round(customPhp),
           currencyCode: 'PHP',
           isRecurring: false,
           donationType: 'Monetary',
           campaignName: 'Custom Donation',
           impactUnit: customImpact || undefined,
-        }),
-      });
-      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
-    } catch (err) { console.error('Donation POST error:', err); }
-    setModal({
-      type: 'thank-you',
-      label: 'Custom Donation',
-      phpAmount: Math.round(customPhp),
-      isRecurring: false,
+        },
+      },
     });
   }
 
@@ -323,30 +450,24 @@ export default function DonatePage() {
     setModal({ type: 'recurring-prompt', item });
   }
 
-  async function handleRecurringChoice(recurring: boolean) {
+  function handleRecurringChoice(recurring: boolean) {
     if (modal.type !== 'recurring-prompt') return;
     const item = modal.item;
-    try {
-      const res = await fetch(`${API}/api/my-donations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
+    setModal({
+      type: 'wall-prompt',
+      pending: {
+        label: item.label,
+        phpAmount: item.phpAmount,
+        isRecurring: recurring,
+        payload: {
           amount: item.phpAmount,
           currencyCode: 'PHP',
           isRecurring: recurring,
           donationType: 'Monetary',
           campaignName: item.label,
           impactUnit: item.impactLine,
-        }),
-      });
-      if (!res.ok) console.error('Donation POST failed:', res.status, await res.text().catch(() => ''));
-    } catch (err) { console.error('Donation POST error:', err); }
-    setModal({
-      type: 'thank-you',
-      label: item.label,
-      phpAmount: item.phpAmount,
-      isRecurring: recurring,
+        },
+      },
     });
   }
 
@@ -373,13 +494,22 @@ export default function DonatePage() {
           onClose={closeModal}
         />
       )}
+      {modal.type === 'wall-prompt' && (
+        <DonorWallPrompt
+          pending={modal.pending}
+          onCancel={closeModal}
+          onSubmit={(shareOnDonorWall, donorWallName) => {
+            void submitDonation(modal.pending, shareOnDonorWall, donorWallName);
+          }}
+        />
+      )}
 
       {/* Hero + Custom Donate CTA */}
       <section className="bg-teal-800 text-white py-20 px-6">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-4xl font-extrabold mb-4">Give Hope Today</h1>
           <p className="text-teal-100 text-lg leading-relaxed mb-10">
-            Every peso transforms the life of a girl recovering from abuse or trafficking at
+            Every dollar transforms the life of a girl recovering from abuse or trafficking at
             Hope Haven's safehouses in the Philippines.
           </p>
 
@@ -413,7 +543,7 @@ export default function DonatePage() {
               </button>
             </div>
 
-            <div className="flex gap-3 mb-3">
+        <div className="flex flex-col sm:flex-row gap-3 mb-3">
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
                   {customMode === 'usd' ? '$' : '₱'}
@@ -432,7 +562,7 @@ export default function DonatePage() {
               <button
                 onClick={handleCustomDonate}
                 disabled={customPhp <= 0}
-                className="flex items-center gap-2 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Donate
                 <ArrowRight size={16} />
@@ -467,6 +597,12 @@ export default function DonatePage() {
               processed.
             </p>
           </div>
+
+          {donationError && (
+            <div role="alert" className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-left">
+              {donationError}
+            </div>
+          )}
         </div>
       </section>
 
@@ -491,9 +627,9 @@ export default function DonatePage() {
                   </div>
                   <p className="font-bold text-gray-800 mb-1">{item.label}</p>
                   <p className="text-teal-700 font-semibold text-sm mb-0.5">
-                    {formatPhp(item.phpAmount)}
+                    {formatUsd(usd)}
                   </p>
-                  <p className="text-gray-400 text-xs mb-3">≈ {formatUsd(usd)}</p>
+                  <p className="text-gray-400 text-xs mb-3">≈ {formatPhp(item.phpAmount)}</p>
                   <p className="text-gray-500 text-xs leading-snug">{item.impactLine}</p>
                 </button>
               );

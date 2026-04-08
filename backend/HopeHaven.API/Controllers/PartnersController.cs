@@ -1,11 +1,13 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class PartnersController(HopeHavenDbContext db) : ControllerBase
 {
@@ -28,7 +30,7 @@ public class PartnersController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin")] // IS 414
+
     public async Task<ActionResult<Partner>> Create(Partner partner)
     {
         db.Partners.Add(partner);
@@ -37,7 +39,7 @@ public class PartnersController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+
     public async Task<IActionResult> Update(int id, Partner partner)
     {
         if (id != partner.PartnerId) return BadRequest("ID mismatch.");
@@ -48,6 +50,17 @@ public class PartnersController(HopeHavenDbContext db) : ControllerBase
             if (!await db.Partners.AnyAsync(p => p.PartnerId == id)) return NotFound();
             throw;
         }
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthPolicies.ManageContent)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var partner = await db.Partners.FindAsync(id);
+        if (partner is null) return NotFound();
+        db.Partners.Remove(partner);
+        await db.SaveChangesAsync();
         return NoContent();
     }
 }

@@ -1,7 +1,7 @@
 import { useCookieConsent } from '../../contexts/CookieConsentContext';
 
 export default function CookieConsentBanner() {
-  const { hasAcknowledgedConsent, acknowledgeConsent } = useCookieConsent();
+  const { hasAcknowledgedConsent, acknowledgeConsent, declineConsent } = useCookieConsent();
 
   if (hasAcknowledgedConsent) return null;
 
@@ -22,8 +22,14 @@ export default function CookieConsentBanner() {
 
         <div className="flex gap-3 shrink-0">
           <button
+            onClick={declineConsent}
+            className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-600 font-medium hover:bg-gray-50"
+          >
+            Decline
+          </button>
+          <button
             onClick={acknowledgeConsent}
-            className="px-4 py-2 text-sm rounded-lg bg-teal-600 text-white font-medium hover:bg-teal-700"
+            className="px-4 py-2 text-sm rounded-lg bg-teal-700 text-white font-medium hover:bg-teal-800"
           >
             Accept
           </button>

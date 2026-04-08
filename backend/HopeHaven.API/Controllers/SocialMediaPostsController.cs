@@ -1,14 +1,17 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<SocialMediaPost>>> GetAll(
         [FromQuery] int page = 1,
@@ -30,6 +33,7 @@ public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
         return Ok(new PaginatedResponse<SocialMediaPost> { Items = items, TotalCount = total, Page = page, PageSize = pageSize });
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<SocialMediaPost>> GetById(int id)
     {
@@ -38,7 +42,7 @@ public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<SocialMediaPost>> Create(SocialMediaPost post)
     {
         post.CreatedAt = DateTime.UtcNow;
@@ -48,7 +52,7 @@ public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPatch("{id:int}/url")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> UpdateUrl(int id, [FromBody] string? url)
     {
         var post = await db.SocialMediaPosts.FindAsync(id);
@@ -59,7 +63,7 @@ public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Delete(int id)
     {
         var post = await db.SocialMediaPosts.FindAsync(id);

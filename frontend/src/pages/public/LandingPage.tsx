@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Home, HeartPulse, GraduationCap, Utensils, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { apiFetch, displaySafehouseName } from '../../utils/api';
+import type { DashboardMetrics, DonorWallEntry, PublicOkrMetric } from '../../types/models';
 import { Link } from 'react-router-dom';
 import { Home, HeartPulse, GraduationCap } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
@@ -108,8 +113,9 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   function handlePinEnter(safehouse: typeof SAFEHOUSES[number], svgX: number, svgY: number) {
+    const display = displaySafehouseName(safehouse.name);
     onPinHover(safehouse.name);
-    setTooltip({ name: safehouse.name, region: safehouse.region, x: svgX, y: svgY });
+    setTooltip({ name: display, region: safehouse.region, x: svgX, y: svgY });
   }
 
   function handlePinLeave() {
@@ -309,18 +315,85 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
 // Page
 // ---------------------------------------------------------------------------
 
+function DonatePromptModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close"
+        >
+          <X size={18} />
+        </button>
+        <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <HeartPulse size={24} className="text-teal-600" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-800 mb-2">Support a Girl</h3>
+        <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          Create an account or log in to make a donation and change a life today.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            to="/login"
+            onClick={onClose}
+            className="w-full sm:w-auto px-5 py-3 border border-teal-600 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors text-sm text-center"
+          >
+            Log In
+          </Link>
+          <Link
+            to="/register"
+            onClick={onClose}
+            className="w-full sm:w-auto px-5 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors text-sm text-center"
+          >
+            Create Account
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [okrMetric, setOkrMetric] = useState<PublicOkrMetric | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
+  const [showDonatePrompt, setShowDonatePrompt] = useState(false);
+  const [donorWallPreview, setDonorWallPreview] = useState<DonorWallEntry[]>([]);
+
+  function handleDonateClick() {
+    if (isAuthenticated) {
+      navigate('/donor/donate');
+    } else {
+      setShowDonatePrompt(true);
+    }
+  }
   const [heroIndex, setHeroIndex] = useState(0);
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
-    apiFetch<DashboardMetrics>('/api/dashboard/metrics')
-      .then(setMetrics)
+    Promise.all([
+      apiFetch<DashboardMetrics>('/api/dashboard/metrics'),
+      apiFetch<PublicOkrMetric>('/api/dashboard/public-okr'),
+      apiFetch<DonorWallEntry[]>('/api/donations/wall'),
+    ])
+      .then(([metricsData, okrData, donorWallData]) => {
+        setMetrics(metricsData);
+        setOkrMetric(okrData);
+        setDonorWallPreview(donorWallData.slice(0, 8));
+      })
       .catch(() => null);
   }, []);
 
+  const PHP_TO_USD = 56;
   useEffect(() => {
     const timer = window.setInterval(() => {
       setHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
@@ -330,11 +403,12 @@ export default function LandingPage() {
 
   const ytdRaw = metrics ? Number(metrics.ytdDonations) : null;
   const ytdDisplay = ytdRaw !== null
-    ? `₱${ytdRaw.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`
+    ? `$${Math.round(ytdRaw / PHP_TO_USD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
     : '—';
 
   return (
     <div className="flex flex-col">
+      {showDonatePrompt && <DonatePromptModal onClose={() => setShowDonatePrompt(false)} />}
 
       {/* ------------------------------------------------------------------ */}
       {/* Hero — background image + dark overlay                              */}
@@ -371,12 +445,15 @@ export default function LandingPage() {
             >
               See Our Impact
             </Link>
+            <button
+              onClick={handleDonateClick}
+              className="px-7 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             <Link
               to="/donate"
               className="px-7 py-3 border border-white/60 bg-white/10 text-white font-semibold uppercase text-sm tracking-[0.1em] hover:bg-white/20 transition-colors"
             >
               Support a Girl
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -390,6 +467,87 @@ export default function LandingPage() {
           <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
           <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" />
           <DonationStatBadge value={ytdDisplay} label="Raised This Year" />
+        </div>
+      </section>
+
+      <section className="bg-white py-10 px-6 border-b border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-2xl border border-teal-100 bg-gradient-to-b from-teal-50/60 to-white p-7 sm:p-8">
+            <p className="text-xs font-semibold tracking-[0.18em] uppercase text-teal-700 text-center mb-2">
+              Most Important Outcome Metric
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center">
+              {okrMetric?.metricName ?? '90-day Stable Reintegration Rate'}
+            </h2>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
+              <div className="sm:col-span-1 rounded-xl bg-white border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Current Rate</p>
+                <p className="text-4xl font-extrabold text-teal-700 mt-1">
+                  {okrMetric ? `${okrMetric.ratePercent.toFixed(1)}%` : '—'}
+                </p>
+              </div>
+
+              <div className="sm:col-span-2 rounded-xl bg-white border border-gray-100 p-4 flex flex-col justify-center">
+                <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                  {okrMetric
+                    ? `${okrMetric.stableCount} of ${okrMetric.eligibleCount} girls were still safe and stable 90 days after leaving our care.`
+                    : 'We track whether girls remain safe and stable 90 days after leaving our care.'}
+                </p>
+
+                {okrMetric && (
+                  <p
+                    className={`text-sm mt-2 font-semibold ${
+                      okrMetric.deltaPoints >= 0 ? 'text-teal-700' : 'text-amber-700'
+                    }`}
+                  >
+                    {okrMetric.deltaPoints >= 0 ? 'Up ' : 'Down '}
+                    {Math.abs(okrMetric.deltaPoints).toFixed(1)} percentage points from the previous group
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-4 text-center leading-relaxed">
+              “Safe and stable” means living in a safe placement 90 days after leaving shelter.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-12 px-6 border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] uppercase text-teal-700 mb-1">
+                Donor Recognition
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Wall of Donors</h2>
+            </div>
+            <Link
+              to="/donor-wall"
+              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-teal-200 text-teal-700 font-semibold hover:bg-teal-50 transition-colors"
+            >
+              View Full Wall
+            </Link>
+          </div>
+
+          {donorWallPreview.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {donorWallPreview.map((entry) => (
+                <div
+                  key={`${entry.displayName}-${entry.latestDonationDate ?? 'n/a'}`}
+                  className="rounded-xl bg-teal-50/60 border border-teal-100 px-4 py-3 text-center"
+                >
+                  <p className="font-semibold text-gray-800 truncate">{entry.displayName}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Be the first to join our donor wall when you make a donation.
+            </p>
+          )}
         </div>
       </section>
 
@@ -455,7 +613,7 @@ export default function LandingPage() {
               className="inline-block px-8 py-3 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] border border-sky-300 hover:bg-sky-300 hover:text-slate-900 transition-colors"
             >
               Make a Donation
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -592,7 +750,7 @@ export default function LandingPage() {
                             className="text-sm transition-colors duration-150"
                             style={{ color: isActive ? '#1e293b' : '#475569' }}
                           >
-                            {s.name}
+                            {displaySafehouseName(s.name)}
                           </span>
                         </li>
                       );
@@ -610,6 +768,30 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Anonymous Referral Banner                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="bg-amber-50 border-y border-amber-100 py-10 px-6">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+          <div>
+            <p className="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-1">
+              Know someone who needs help?
+            </p>
+            <h2 className="text-xl font-bold text-gray-800 mb-1">Submit an Anonymous Referral</h2>
+            <p className="text-gray-500 text-sm max-w-lg">
+              If you know a child or young woman who may need shelter, counseling, or protection,
+              you can alert our social workers confidentially — no account required.
+            </p>
+          </div>
+          <Link
+            to="/referral"
+            className="shrink-0 px-7 py-3 bg-amber-600 text-white font-semibold rounded-full hover:bg-amber-700 transition-colors"
+          >
+            Make a Referral
+          </Link>
         </div>
       </section>
 
@@ -639,12 +821,15 @@ export default function LandingPage() {
             >
               Explore Impact →
             </Link>
+            <button
+              onClick={handleDonateClick}
+              className="px-8 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             <Link
               to="/donate"
               className="px-8 py-3 border border-white/70 text-white font-semibold uppercase text-sm tracking-[0.1em] hover:bg-white hover:text-slate-900 transition-colors"
             >
               Give Now
-            </Link>
+            </button>
           </div>
         </div>
       </section>

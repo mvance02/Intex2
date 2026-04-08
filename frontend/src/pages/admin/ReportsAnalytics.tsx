@@ -7,7 +7,7 @@ import {
 import { FileDown } from 'lucide-react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { apiFetch } from '../../utils/api'
+import { apiFetch, displaySafehouseName } from '../../utils/api'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import ErrorAlert from '../../components/shared/ErrorAlert'
 
@@ -304,7 +304,7 @@ export default function ReportsAnalytics() {
       y += 10;
 
       const shRows = safehouseData.safehouses.map(s => [
-        s.name ?? '',
+        displaySafehouseName(s.name),
         s.region ?? '',
         `${s.activeResidents}/${s.capacityGirls ?? 0}`,
         s.openIncidents.toString(),
@@ -379,7 +379,7 @@ export default function ReportsAnalytics() {
     }))
 
   const safehouseChartData = safehouseData?.safehouses.map((sh) => ({
-    name: sh.name ?? `Safehouse ${sh.safehouseId}`,
+    name: displaySafehouseName(sh.name),
     activeResidents: sh.activeResidents,
     capacity: sh.capacityGirls ?? 0,
   })) ?? []

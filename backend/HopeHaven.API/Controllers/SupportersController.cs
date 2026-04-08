@@ -1,11 +1,13 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class SupportersController(HopeHavenDbContext db) : ControllerBase
 {
@@ -58,7 +60,7 @@ public class SupportersController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<Supporter>> Create(Supporter supporter)
     {
         supporter.CreatedAt = DateTime.UtcNow;
@@ -68,7 +70,7 @@ public class SupportersController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, Supporter supporter)
     {
         if (id != supporter.SupporterId) return BadRequest("ID mismatch.");
@@ -83,7 +85,7 @@ public class SupportersController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Delete(int id)
     {
         var supporter = await db.Supporters.FindAsync(id);

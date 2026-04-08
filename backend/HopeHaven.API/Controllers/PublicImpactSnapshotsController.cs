@@ -1,16 +1,19 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class PublicImpactSnapshotsController(HopeHavenDbContext db) : ControllerBase
 {
-    // Public endpoint — no auth required
+    // Public endpoint — no auth required (shown on public impact page)
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<PublicImpactSnapshot>>> GetPublished()
     {
         return Ok(await db.PublicImpactSnapshots
@@ -20,7 +23,6 @@ public class PublicImpactSnapshotsController(HopeHavenDbContext db) : Controller
     }
 
     [HttpGet("all")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<ActionResult<IEnumerable<PublicImpactSnapshot>>> GetAll()
     {
         return Ok(await db.PublicImpactSnapshots
@@ -29,7 +31,7 @@ public class PublicImpactSnapshotsController(HopeHavenDbContext db) : Controller
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<PublicImpactSnapshot>> Create(PublicImpactSnapshot snapshot)
     {
         db.PublicImpactSnapshots.Add(snapshot);
@@ -38,7 +40,7 @@ public class PublicImpactSnapshotsController(HopeHavenDbContext db) : Controller
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, PublicImpactSnapshot snapshot)
     {
         if (id != snapshot.SnapshotId) return BadRequest("ID mismatch.");

@@ -54,12 +54,12 @@ export default function DonorLayout() {
     <aside className="w-64 bg-teal-800 text-white flex flex-col h-full" aria-label="Donor navigation">
       <div className="px-6 py-5 border-b border-teal-700 flex items-center justify-between">
         <div>
-          <p className="text-xl font-bold tracking-tight">Hope Haven</p>
+          <Link to="/" className="text-xl font-bold tracking-tight hover:text-teal-200 transition-colors">Hope Haven</Link>
           <p className="text-teal-300 text-xs mt-0.5 font-medium">Donor Portal</p>
         </div>
         <button
           onClick={() => setSidebarOpen(false)}
-          className="lg:hidden text-teal-300 hover:text-white transition-colors p-1 rounded"
+          className="lg:hidden text-teal-300 hover:text-white transition-colors p-2.5 rounded min-h-11 min-w-11"
           aria-label="Close navigation"
         >
           <X size={18} />
@@ -77,7 +77,7 @@ export default function DonorLayout() {
               key={path}
               to={path}
               aria-current={active ? 'page' : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+              className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-150 ${
                 active
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'text-teal-100 hover:bg-teal-700 hover:text-white'
@@ -92,7 +92,7 @@ export default function DonorLayout() {
 
       <div className="px-4 py-4 border-t border-teal-700">
         <p className="text-sm font-medium text-white truncate">{authSession.email}</p>
-        <p className="text-xs mt-0.5 text-teal-400">{authSession.roles[0]}</p>
+        <p className="text-xs mt-0.5 text-teal-400">{authSession.roles[0] ?? 'Member'}</p>
         <button
           onClick={handleLogout}
           className="mt-3 flex items-center gap-1.5 text-teal-400 hover:text-white transition-colors text-xs font-medium"
@@ -131,7 +131,7 @@ export default function DonorLayout() {
         <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3.5 flex items-center gap-4 sticky top-0 z-30 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors min-h-11 min-w-11"
             aria-label="Open navigation"
             aria-expanded={sidebarOpen}
           >

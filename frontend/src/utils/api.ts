@@ -1,4 +1,10 @@
 const API_URL = import.meta.env.VITE_API_URL ?? '';
+
+/** Strip "Lighthouse " prefix from safehouse names for cleaner display */
+export function displaySafehouseName(name: string | null | undefined): string {
+  if (!name) return '—';
+  return name.replace(/^Lighthouse\s+/i, '');
+}
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {

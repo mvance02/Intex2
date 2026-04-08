@@ -1,15 +1,73 @@
 using HopeHaven.API.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class DashboardController(HopeHavenDbContext db) : ControllerBase
 {
+    [AllowAnonymous]
+    [HttpGet("public-okr")]
+    public async Task<IActionResult> GetPublicOkr()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var cutoff = today.AddDays(-90);
+        var previousWindowStart = today.AddDays(-180);
+
+        string[] stableStatuses = [
+            "completed",
+            "stable",
+            "successfully reintegrated",
+            "reintegrated",
+            "maintained"
+        ];
+
+        var eligibleNow = await db.Residents
+            .Where(r => r.DateClosed != null && r.DateClosed <= cutoff)
+            .CountAsync();
+        var stableNow = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed <= cutoff &&
+                r.ReintegrationStatus != null &&
+                stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
+            .CountAsync();
+
+        var eligiblePrev = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed > previousWindowStart &&
+                r.DateClosed <= cutoff)
+            .CountAsync();
+        var stablePrev = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed > previousWindowStart &&
+                r.DateClosed <= cutoff &&
+                r.ReintegrationStatus != null &&
+                stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
+            .CountAsync();
+
+        var currentRate = eligibleNow > 0 ? (double)stableNow / eligibleNow : 0;
+        var previousRate = eligiblePrev > 0 ? (double)stablePrev / eligiblePrev : 0;
+
+        return Ok(new
+        {
+            metricName = "90-day Stable Reintegration Rate",
+            ratePercent = Math.Round(currentRate * 100, 1),
+            stableCount = stableNow,
+            eligibleCount = eligibleNow,
+            previousRatePercent = Math.Round(previousRate * 100, 1),
+            deltaPoints = Math.Round((currentRate - previousRate) * 100, 1)
+        });
+    }
+
+    [AllowAnonymous]
     [HttpGet("metrics")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetMetrics()
     {
         var activeResidents = await db.Residents.CountAsync(r => r.CaseStatus == "Active");
@@ -34,7 +92,6 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpGet("recent-activity")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetRecentActivity()
     {
         var recentDonations = await db.Donations
@@ -50,23 +107,25 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
             .ToListAsync();
 
         var recentRecordings = await db.ProcessRecordings
+            .Include(p => p.Resident)
             .OrderByDescending(p => p.SessionDate)
             .Take(5)
             .Select(p => new
             {
                 type = "session",
-                description = $"Session with resident #{p.ResidentId} by {p.SocialWorker}",
+                description = $"Session with case {p.Resident!.CaseControlNo ?? "N/A"} by {p.SocialWorker}",
                 date = p.SessionDate
             })
             .ToListAsync();
 
         var recentIncidents = await db.IncidentReports
+            .Include(i => i.Safehouse)
             .OrderByDescending(i => i.IncidentDate)
             .Take(5)
             .Select(i => new
             {
                 type = "incident",
-                description = $"{i.Severity} {i.IncidentType} at safehouse #{i.SafehouseId}",
+                description = $"{i.Severity} {i.IncidentType} at {i.Safehouse!.Name ?? "Unknown"}",
                 date = i.IncidentDate
             })
             .ToListAsync();
@@ -80,8 +139,8 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
         return Ok(activity);
     }
 
+    [AllowAnonymous]
     [HttpGet("safehouse-summary")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetSafehouseSummary()
     {
         var summary = await db.Safehouses

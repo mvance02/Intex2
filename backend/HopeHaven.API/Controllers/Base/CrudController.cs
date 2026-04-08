@@ -1,4 +1,5 @@
 using HopeHaven.API.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,7 @@ namespace HopeHaven.API.Controllers.Base;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public abstract class CrudController<TEntity>(HopeHavenDbContext db) : ControllerBase
     where TEntity : class
 {
@@ -26,7 +28,7 @@ public abstract class CrudController<TEntity>(HopeHavenDbContext db) : Controlle
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public virtual async Task<ActionResult<TEntity>> Create(TEntity entity)
     {
         EntitySet.Add(entity);
@@ -35,7 +37,7 @@ public abstract class CrudController<TEntity>(HopeHavenDbContext db) : Controlle
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public virtual async Task<IActionResult> Update(int id, TEntity entity)
     {
         if (id != GetKey(entity)) return BadRequest("ID mismatch.");
@@ -53,7 +55,7 @@ public abstract class CrudController<TEntity>(HopeHavenDbContext db) : Controlle
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public virtual async Task<IActionResult> Delete(int id)
     {
         var entity = await EntitySet.FindAsync(id);
