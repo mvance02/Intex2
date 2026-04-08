@@ -82,7 +82,6 @@ export default function SocialDonationPredictor() {
   const [optError, setOptError] = useState<string | null>(null);
 
   // --- Weekly schedule state ---
-  const [weeklyPlatform, setWeeklyPlatform] = useState('Instagram');
   const [weeklyTarget, setWeeklyTarget] = useState<'donation_value' | 'referrals'>('donation_value');
   const [weeklyResult, setWeeklyResult] = useState<SocialWeeklyScheduleResult | null>(null);
   const [weeklyLoading, setWeeklyLoading] = useState(false);
@@ -144,7 +143,6 @@ export default function SocialDonationPredictor() {
     setServiceUnavailable(false);
     try {
       const req: SocialWeeklyScheduleRequest = {
-        platform: weeklyPlatform,
         optimize_for: weeklyTarget,
       };
       const result = await apiFetch<SocialWeeklyScheduleResult>('/api/predict/social/weekly-schedule', {
@@ -159,7 +157,7 @@ export default function SocialDonationPredictor() {
     } finally {
       setWeeklyLoading(false);
     }
-  }, [weeklyPlatform, weeklyTarget]);
+  }, [weeklyTarget]);
 
   const tabClass = (key: TabKey) =>
     `px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
@@ -207,19 +205,7 @@ export default function SocialDonationPredictor() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <label className="text-sm text-gray-700">
-              Platform
-              <select
-                value={weeklyPlatform}
-                onChange={(e) => setWeeklyPlatform(e.target.value)}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              >
-                {PLATFORM_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl">
             <label className="text-sm text-gray-700">
               Optimize for
               <select
@@ -227,7 +213,7 @@ export default function SocialDonationPredictor() {
                 onChange={(e) => setWeeklyTarget(e.target.value as 'donation_value' | 'referrals')}
                 className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
               >
-                <option value="donation_value">Maximize Donation Value (₱)</option>
+                <option value="donation_value">Maximize Donation Value</option>
                 <option value="referrals">Maximize Referrals</option>
               </select>
             </label>
@@ -259,7 +245,7 @@ export default function SocialDonationPredictor() {
                 </div>
                 <span className="text-sm text-gray-500">
                   {weeklyResult.total_combinations_evaluated.toLocaleString()} combinations evaluated
-                  for <span className="font-semibold">{weeklyResult.platform}</span>
+                  across all platforms
                 </span>
               </div>
 
@@ -274,6 +260,11 @@ export default function SocialDonationPredictor() {
                       <p className="font-semibold text-gray-900 text-sm">{day.day_of_week}</p>
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
                         {formatHour(day.post_hour)}
+                      </span>
+                    </div>
+                    <div className="mb-1">
+                      <span className="text-xs font-medium bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">
+                        {day.platform}
                       </span>
                     </div>
                     <div className="space-y-1 text-xs text-gray-600">
