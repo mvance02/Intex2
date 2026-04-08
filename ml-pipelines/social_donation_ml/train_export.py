@@ -31,7 +31,7 @@ from features import BOOL_COLS, CAT_COLS, FEATURE_COLS, NUM_COLS, build_model_fr
 from social_wrangle import wrangle_social_posts_with_donations
 
 ROOT = Path(__file__).resolve().parent
-DATA = ROOT.parent
+DATA = ROOT / "data"
 ARTIFACTS = ROOT / "artifacts"
 
 RANDOM_STATE = 42
