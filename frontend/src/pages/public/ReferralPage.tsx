@@ -90,7 +90,7 @@ export default function ReferralPage() {
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="subjectAge" className="block text-sm font-medium text-gray-700 mb-1">
-                Approximate Age <span className="text-gray-400">(optional)</span>
+                Approximate Age <span className="text-gray-600">(optional)</span>
               </label>
               <input
                 id="subjectAge"
@@ -140,6 +140,7 @@ export default function ReferralPage() {
             <select
               id="urgency"
               name="urgency"
+              aria-label="Urgency Level"
               value={form.urgency}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -202,7 +203,7 @@ export default function ReferralPage() {
         <button
           type="submit"
           disabled={state === 'submitting'}
-          className="w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors disabled:opacity-60"
+          className="w-full py-3 bg-teal-700 text-white font-semibold rounded-full hover:bg-teal-800 transition-colors disabled:opacity-60"
         >
           {state === 'submitting' ? 'Submitting…' : 'Submit Referral'}
         </button>
