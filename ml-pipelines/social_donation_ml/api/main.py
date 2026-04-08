@@ -7,11 +7,13 @@ Run from repo: uvicorn api.main:app --reload --port 8002
 
 from __future__ import annotations
 
+import itertools
 import sys
 from pathlib import Path
 from typing import Any
 
 import joblib
+import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,10 +28,10 @@ from features import FEATURE_COLS, build_model_frame  # noqa: E402
 
 ARTIFACTS = ROOT / "artifacts"
 BUNDLE_PATH = ARTIFACTS / "social_bundle.joblib"
-DATA_DIR = ROOT.parent
+DATA_DIR = ROOT / "data"
 POSTS_CSV = DATA_DIR / "social_media_posts.csv"
 
-app = FastAPI(title="Social Content Planner API", version="0.1.0")
+app = FastAPI(title="Social Content Planner API", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -80,6 +82,24 @@ class DraftPost(BaseModel):
     caption_length: int = Field(default=280, ge=0)
     is_boosted: bool = Field(default=False)
     boost_budget_php: float = Field(default=0.0, ge=0)
+
+
+class OptimizeRequest(BaseModel):
+    """User picks a platform + optional constraints; model finds optimal post config."""
+    platform: str = Field(..., examples=["Instagram"])
+    optimize_for: str = Field(
+        default="donation_value",
+        description="Target to maximize: 'donation_value' or 'referrals'",
+    )
+    # Optional constraints — if provided, lock that value instead of searching
+    is_boosted: bool | None = Field(default=None)
+    boost_budget_php: float | None = Field(default=None, ge=0)
+    features_resident_story: bool | None = Field(default=None)
+    has_call_to_action: bool | None = Field(default=None)
+    num_hashtags: int | None = Field(default=None, ge=0)
+    mentions_count: int | None = Field(default=None, ge=0)
+    caption_length: int | None = Field(default=None, ge=0)
+    top_n: int = Field(default=10, ge=1, le=50)
 
 
 @app.get("/")
@@ -218,4 +238,130 @@ def sweep_hours(draft: DraftPost) -> dict[str, Any]:
         "best_post_hour": best_h,
         "predicted_donation_referrals_at_best": round(best_p, 4),
         "sweep": series,
+    }
+
+
+@app.post("/predict/optimize")
+def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
+    """
+    Given a platform (+ optional constraints), find the optimal post configuration
+    to maximize predicted donation value or referrals.
+
+    Grids through all categorical combos × hours, scores each with the trained model,
+    returns top N recommendations. Dynamic — adapts to whatever model is trained.
+    """
+    try:
+        b = _load_bundle()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    meta = b.get("meta", {})
+    field_vals = meta.get("field_values", {})
+
+    # Choose the target model
+    if req.optimize_for == "referrals":
+        model = b["reg_referrals"]
+    else:
+        model = b["reg_value"]
+
+    # Build grids for each categorical dimension
+    # Platform is fixed by the user
+    days = field_vals.get("day_of_week", [
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    ])
+    post_types = field_vals.get("post_type", ["FundraisingAppeal"])
+    media_types = field_vals.get("media_type", ["Carousel"])
+    content_topics = field_vals.get("content_topic", ["Education"])
+    sentiment_tones = field_vals.get("sentiment_tone", ["Hopeful"])
+    cta_types = field_vals.get("call_to_action_type", ["DonateNow"])
+    hours = list(range(7, 22))  # 7am to 9pm
+
+    # Numeric/boolean defaults (or user-constrained)
+    num_hashtags = req.num_hashtags if req.num_hashtags is not None else 3
+    mentions_count = req.mentions_count if req.mentions_count is not None else 1
+    caption_length = req.caption_length if req.caption_length is not None else 280
+    is_boosted = req.is_boosted if req.is_boosted is not None else False
+    boost_budget = req.boost_budget_php if req.boost_budget_php is not None else 0.0
+    has_cta = req.has_call_to_action if req.has_call_to_action is not None else True
+    features_story = req.features_resident_story if req.features_resident_story is not None else False
+
+    # Generate all categorical combos
+    combos = list(itertools.product(
+        days, hours, post_types, media_types,
+        content_topics, sentiment_tones, cta_types,
+    ))
+
+    # Build DataFrame of all combos at once (vectorized prediction)
+    rows = []
+    for day, hour, pt, mt, ct, st, cta in combos:
+        rows.append({
+            "platform": req.platform,
+            "day_of_week": day,
+            "post_hour": hour,
+            "post_type": pt,
+            "media_type": mt,
+            "content_topic": ct,
+            "sentiment_tone": st,
+            "num_hashtags": num_hashtags,
+            "mentions_count": mentions_count,
+            "has_call_to_action": has_cta,
+            "call_to_action_type": cta,
+            "features_resident_story": features_story,
+            "caption_length": caption_length,
+            "is_boosted": is_boosted,
+            "boost_budget_php": boost_budget if is_boosted else 0.0,
+        })
+
+    df_all = pd.DataFrame(rows)
+    X_all = build_model_frame(df_all)[FEATURE_COLS]
+
+    # Vectorized prediction — fast even for 100K+ rows
+    predictions = model.predict(X_all)
+
+    # Get top N indices
+    top_indices = np.argsort(predictions)[::-1][: req.top_n]
+
+    recommendations = []
+    for idx in top_indices:
+        row_data = df_all.iloc[idx]
+        pred_value = float(predictions[idx])
+        recommendations.append({
+            "rank": len(recommendations) + 1,
+            "day_of_week": row_data["day_of_week"],
+            "post_hour": int(row_data["post_hour"]),
+            "post_type": row_data["post_type"],
+            "media_type": row_data["media_type"],
+            "content_topic": row_data["content_topic"],
+            "sentiment_tone": row_data["sentiment_tone"],
+            "call_to_action_type": row_data["call_to_action_type"],
+            "has_call_to_action": bool(row_data["has_call_to_action"]),
+            "features_resident_story": bool(row_data["features_resident_story"]),
+            "predicted_value": round(pred_value, 2),
+        })
+
+    target_label = (
+        "predicted_donation_referrals" if req.optimize_for == "referrals"
+        else "predicted_estimated_donation_value_php"
+    )
+
+    return {
+        "platform": req.platform,
+        "optimize_for": req.optimize_for,
+        "target_label": target_label,
+        "total_combinations_evaluated": len(df_all),
+        "top_n": req.top_n,
+        "recommendations": recommendations,
+        "constraints_applied": {
+            "num_hashtags": num_hashtags,
+            "mentions_count": mentions_count,
+            "caption_length": caption_length,
+            "is_boosted": is_boosted,
+            "boost_budget_php": boost_budget,
+            "has_call_to_action": has_cta,
+            "features_resident_story": features_story,
+        },
+        "disclaimer": (
+            "Recommendations are based on patterns in historical data. "
+            "Results will improve as real donation data replaces synthetic data."
+        ),
     }
