@@ -20,25 +20,49 @@ export default function PublicLayout() {
 
   const navLinks = (
     <>
-      <Link to="/" onClick={() => setMenuOpen(false)} className={linkClass}>
+      <Link
+        to="/"
+        onClick={() => setMenuOpen(false)}
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
+      >
         Home
       </Link>
-      <Link to="/impact" onClick={() => setMenuOpen(false)} className={linkClass}>
+      <Link
+        to="/impact"
+        onClick={() => setMenuOpen(false)}
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
+      >
         Our Impact
       </Link>
-      <Link to="/referral" onClick={() => setMenuOpen(false)} className={linkClass}>
+      <Link
+        to="/referral"
+        onClick={() => setMenuOpen(false)}
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
+      >
         Get Help
       </Link>
-      <Link to="/donor-wall" onClick={() => setMenuOpen(false)} className={linkClass}>
+      <Link
+        to="/donor-wall"
+        onClick={() => setMenuOpen(false)}
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
+      >
         Donor Wall
       </Link>
       {isAuthenticated && isAdmin && (
-        <Link to="/admin" onClick={() => setMenuOpen(false)} className={linkClass}>
+        <Link
+          to="/admin"
+          onClick={() => setMenuOpen(false)}
+          className="hover:text-slate-600 transition-colors py-1 md:py-0"
+        >
           Admin Portal
         </Link>
       )}
       {isAuthenticated && !isAdmin && (
-        <Link to="/donor" onClick={() => setMenuOpen(false)} className={linkClass}>
+        <Link
+          to="/donor"
+          onClick={() => setMenuOpen(false)}
+          className="hover:text-slate-600 transition-colors py-1 md:py-0"
+        >
           Donor Portal
         </Link>
       )}
@@ -46,7 +70,7 @@ export default function PublicLayout() {
         <button
           type="button"
           onClick={handleLogout}
-          className={`flex items-center gap-1.5 ${linkClass}`}
+          className="flex items-center gap-1.5 hover:text-slate-600 transition-colors py-1 md:py-0"
         >
           <LogOut size={14} aria-hidden="true" />
           Sign Out
@@ -56,7 +80,7 @@ export default function PublicLayout() {
         <Link
           to="/login"
           onClick={() => setMenuOpen(false)}
-          className="border border-sky-300 bg-white text-slate-900 px-4 py-2 hover:bg-sky-300 hover:border-sky-300 transition-colors text-center text-xs sm:text-sm font-semibold uppercase tracking-[0.08em]"
+          className="border border-sky-300 bg-white text-slate-900 px-4 py-2 hover:bg-sky-300 hover:border-sky-300 transition-colors text-center"
         >
           Login
         </Link>
@@ -76,14 +100,14 @@ export default function PublicLayout() {
             />
           </Link>
 
-          <div className="hidden md:flex items-center gap-6 text-xs sm:text-sm shrink-0">
+          <div className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em]">
             {navLinks}
           </div>
 
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2.5 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors min-h-11 min-w-11 shrink-0"
+            className="md:hidden p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors min-h-11 min-w-11"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
           >
@@ -92,8 +116,10 @@ export default function PublicLayout() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t border-slate-200 px-6 pb-4 pt-3 flex flex-col gap-3 text-sm font-medium">
-            {navLinks}
+          <div className="md:hidden border-t border-slate-200 px-6 pb-4 pt-3">
+            <div className="flex flex-col gap-3 text-sm font-semibold uppercase tracking-[0.08em]">
+              {navLinks}
+            </div>
           </div>
         )}
       </nav>
