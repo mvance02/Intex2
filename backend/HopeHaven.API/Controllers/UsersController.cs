@@ -82,6 +82,67 @@ public class UsersController(
             Roles = updatedRoles.OrderBy(r => r).ToArray()
         });
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserRequest request)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user is null) return NotFound(new { message = "User not found." });
+
+        // Keep username/email in sync if only one is provided.
+        var nextEmail = string.IsNullOrWhiteSpace(request.Email) ? user.Email : request.Email.Trim();
+        var nextUserName = string.IsNullOrWhiteSpace(request.UserName) ? user.UserName : request.UserName.Trim();
+        if (string.IsNullOrWhiteSpace(nextUserName)) nextUserName = nextEmail;
+
+        user.Email = nextEmail;
+        user.UserName = nextUserName;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new
+            {
+                message = "Failed to update user.",
+                errors = result.Errors.Select(e => e.Description)
+            });
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        return Ok(new
+        {
+            user.Id,
+            user.Email,
+            user.UserName,
+            user.EmailConfirmed,
+            user.TwoFactorEnabled,
+            user.LockoutEnd,
+            Roles = roles.OrderBy(r => r).ToArray()
+        });
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(string id)
+    {
+        var currentUserId = userManager.GetUserId(User);
+        if (currentUserId == id)
+            return BadRequest(new { message = "You cannot delete your own account." });
+
+        var user = await userManager.FindByIdAsync(id);
+        if (user is null) return NotFound(new { message = "User not found." });
+
+        var result = await userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new
+            {
+                message = "Failed to delete user.",
+                errors = result.Errors.Select(e => e.Description)
+            });
+        }
+
+        return Ok(new { message = "User deleted." });
+    }
 }
 
 public record UpdateRolesRequest(string[] Roles);
+public record UpdateUserRequest(string? Email, string? UserName);

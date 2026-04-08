@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Home, HeartPulse, GraduationCap, Utensils, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
-import type { DashboardMetrics } from '../../types/models';
+import type { DashboardMetrics, PublicOkrMetric } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
 import missionImg from '../../assets/lighthousepic2.jpeg';
 import ctaBg from '../../assets/lighthousepic3.jpg';
@@ -389,18 +389,18 @@ function DonatePromptModal({ onClose }: { onClose: () => void }) {
         <p className="text-gray-500 text-sm mb-6 leading-relaxed">
           Create an account or log in to make a donation and change a life today.
         </p>
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             to="/login"
             onClick={onClose}
-            className="px-5 py-2.5 border border-teal-600 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors text-sm"
+            className="w-full sm:w-auto px-5 py-3 border border-teal-600 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors text-sm text-center"
           >
             Log In
           </Link>
           <Link
             to="/register"
             onClick={onClose}
-            className="px-5 py-2.5 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors text-sm"
+            className="w-full sm:w-auto px-5 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors text-sm text-center"
           >
             Create Account
           </Link>
@@ -414,6 +414,7 @@ export default function LandingPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [okrMetric, setOkrMetric] = useState<PublicOkrMetric | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
   const [showDonatePrompt, setShowDonatePrompt] = useState(false);
 
@@ -427,8 +428,14 @@ export default function LandingPage() {
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
-    apiFetch<DashboardMetrics>('/api/dashboard/metrics')
-      .then(setMetrics)
+    Promise.all([
+      apiFetch<DashboardMetrics>('/api/dashboard/metrics'),
+      apiFetch<PublicOkrMetric>('/api/dashboard/public-okr'),
+    ])
+      .then(([metricsData, okrData]) => {
+        setMetrics(metricsData);
+        setOkrMetric(okrData);
+      })
       .catch(() => null);
   }, []);
 
@@ -487,6 +494,41 @@ export default function LandingPage() {
           <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
           <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" />
           <DonationStatBadge value={ytdDisplay} label="Raised This Year" />
+        </div>
+      </section>
+
+      <section className="bg-white py-10 px-6 border-b border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-2xl border border-teal-100 bg-gradient-to-b from-teal-50/60 to-white p-7 sm:p-8">
+            <p className="text-xs font-semibold tracking-[0.18em] uppercase text-teal-700 text-center mb-2">
+              Most Important Outcome Metric
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center">
+              90-day Stable Reintegration Rate
+            </h2>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
+              <div className="sm:col-span-1 rounded-xl bg-white border border-gray-100 p-4">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Current Rate</p>
+                <p className="text-4xl font-extrabold text-teal-700 mt-1">
+                  {okrMetric ? `${okrMetric.ratePercent.toFixed(1)}%` : '—'}
+                </p>
+              </div>
+
+              <div className="sm:col-span-2 rounded-xl bg-white border border-gray-100 p-4 flex flex-col justify-center">
+                <p className="text-sm text-gray-700 font-medium">
+                  {okrMetric
+                    ? `${okrMetric.stableCount} stable outcomes out of ${okrMetric.eligibleCount} eligible exits`
+                    : 'Tracking long-term reintegration stability for girls who exited shelter at least 90 days ago.'}
+                </p>
+                {okrMetric && (
+                  <p className={`text-sm mt-1 font-semibold ${okrMetric.deltaPoints >= 0 ? 'text-teal-700' : 'text-amber-700'}`}>
+                    {okrMetric.deltaPoints >= 0 ? '+' : ''}{okrMetric.deltaPoints.toFixed(1)} pts vs prior cohort
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -639,7 +681,7 @@ export default function LandingPage() {
             {/* Map */}
             <div className="md:col-span-3 flex justify-center">
               <div
-                className="w-72 h-96 relative rounded-2xl overflow-visible"
+                className="w-full max-w-[18rem] sm:max-w-[20rem] aspect-[3/4] h-auto relative rounded-2xl overflow-visible"
                 style={{
                   background: 'radial-gradient(ellipse at center, #0f2a3f 0%, #070e1a 100%)',
                   boxShadow: '0 0 40px rgba(45, 212, 191, 0.08), 0 0 80px rgba(0,0,0,0.6)',
