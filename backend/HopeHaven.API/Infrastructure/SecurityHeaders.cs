@@ -3,7 +3,15 @@ namespace HopeHaven.API.Infrastructure
     public static class SecurityHeaders
     {
         public const string ContentSecurityPolicy =
-            "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'";
+            "default-src 'self'; " +
+            "script-src 'self'; " +
+            "style-src 'self' 'unsafe-inline'; " +
+            "img-src 'self' data:; " +
+            "connect-src 'self'; " +
+            "font-src 'self'; " +
+            "base-uri 'self'; " +
+            "frame-ancestors 'none'; " +
+            "object-src 'none'";
 
         public static IApplicationBuilder UseSecurityHeaders(this IApplicationBuilder app)
         {
