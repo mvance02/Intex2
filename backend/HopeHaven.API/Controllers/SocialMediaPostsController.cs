@@ -12,6 +12,7 @@ namespace HopeHaven.API.Controllers;
 [Authorize]
 public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<PaginatedResponse<SocialMediaPost>>> GetAll(
         [FromQuery] int page = 1,
@@ -33,6 +34,7 @@ public class SocialMediaPostsController(HopeHavenDbContext db) : ControllerBase
         return Ok(new PaginatedResponse<SocialMediaPost> { Items = items, TotalCount = total, Page = page, PageSize = pageSize });
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<SocialMediaPost>> GetById(int id)
     {

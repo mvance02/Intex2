@@ -11,6 +11,7 @@ namespace HopeHaven.API.Controllers;
 [Authorize]
 public class ReportsController(HopeHavenDbContext db) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet("donation-trends")]
     public async Task<IActionResult> GetDonationTrends(
         [FromQuery] int? year = null,
