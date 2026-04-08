@@ -94,6 +94,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
+// ── In-memory cache (prediction results) ──────────────────────────────────
+builder.Services.AddMemoryCache();
+
 // ── Controllers + OpenAPI ──────────────────────────────────────────────────
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>

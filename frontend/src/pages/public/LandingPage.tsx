@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, HeartPulse, GraduationCap, Utensils } from 'lucide-react';
-import { apiFetch } from '../../utils/api';
+import { apiFetch, displaySafehouseName } from '../../utils/api';
 import type { DashboardMetrics } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
 import missionImg from '../../assets/lighthousepic2.jpeg';
@@ -99,8 +99,9 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   function handlePinEnter(safehouse: typeof SAFEHOUSES[number], svgX: number, svgY: number) {
+    const display = displaySafehouseName(safehouse.name);
     onPinHover(safehouse.name);
-    setTooltip({ name: safehouse.name, region: safehouse.region, x: svgX, y: svgY });
+    setTooltip({ name: display, region: safehouse.region, x: svgX, y: svgY });
   }
 
   function handlePinLeave() {
@@ -627,7 +628,7 @@ export default function LandingPage() {
                             className="text-sm transition-colors duration-150"
                             style={{ color: isActive ? 'white' : '#d1d5db' }}
                           >
-                            {s.name}
+                            {displaySafehouseName(s.name)}
                           </span>
                         </li>
                       );

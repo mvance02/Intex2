@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { apiFetch } from '../../utils/api'
+import { apiFetch, displaySafehouseName } from '../../utils/api'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import ErrorAlert from '../../components/shared/ErrorAlert'
 import EmptyState from '../../components/shared/EmptyState'
@@ -139,7 +139,7 @@ function buildTimeline(
       date: new Date(resident.dateOfAdmission),
       type: 'Admission',
       description: 'Admitted to safehouse',
-      detail: resident.safehouse?.name ?? undefined,
+      detail: displaySafehouseName(resident.safehouse?.name) !== '—' ? displaySafehouseName(resident.safehouse?.name) : undefined,
     })
   }
 
@@ -860,7 +860,7 @@ export default function ResidentDetail() {
       <dl className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
         <div>
           <dt className="inline font-medium text-gray-500">Safehouse: </dt>
-          <dd className="inline text-gray-800">{resident.safehouse?.name ?? '—'}</dd>
+          <dd className="inline text-gray-800">{displaySafehouseName(resident.safehouse?.name)}</dd>
         </div>
         <div>
           <dt className="inline font-medium text-gray-500">Social Worker: </dt>
