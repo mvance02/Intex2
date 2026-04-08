@@ -49,23 +49,19 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
 }
 
 // ── Authorization policies ───────────────────────────────────────────────────
-// Accept BOTH cookie and Bearer token so mobile browsers (iOS Safari blocks
-// cross-origin cookies) can authenticate via the token stored in localStorage.
+// DefaultPolicy uses the Identity Application cookie scheme.
+// Mobile compatibility is achieved via the Vercel API proxy rewrite
+// (vercel.json routes /api/* → Railway), making cookies first-party on all
+// browsers including iOS Safari.
 builder.Services.AddAuthorization(options =>
 {
-    options.DefaultPolicy = new AuthorizationPolicyBuilder(
-            IdentityConstants.ApplicationScheme,
-            IdentityConstants.BearerScheme)
+    options.DefaultPolicy = new AuthorizationPolicyBuilder(IdentityConstants.ApplicationScheme)
         .RequireAuthenticatedUser()
         .Build();
     options.AddPolicy(AuthPolicies.ManageContent,
-        policy => policy
-            .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme)
-            .RequireRole(AuthRoles.Admin));
+        policy => policy.RequireRole(AuthRoles.Admin));
     options.AddPolicy(AuthPolicies.DonorAccess,
-        policy => policy
-            .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, IdentityConstants.BearerScheme)
-            .RequireRole(AuthRoles.Donor, AuthRoles.Admin));
+        policy => policy.RequireRole(AuthRoles.Donor, AuthRoles.Admin));
 });
 
 // ── Password policy (NIST: length over complexity) ───────────────────────────
