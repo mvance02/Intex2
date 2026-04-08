@@ -428,7 +428,7 @@ export default function DonatePage() {
               </button>
             </div>
 
-            <div className="flex gap-3 mb-3">
+        <div className="flex flex-col sm:flex-row gap-3 mb-3">
               <div className="relative flex-1">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
                   {customMode === 'usd' ? '$' : '₱'}
@@ -447,7 +447,7 @@ export default function DonatePage() {
               <button
                 onClick={handleCustomDonate}
                 disabled={customPhp <= 0}
-                className="flex items-center gap-2 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Donate
                 <ArrowRight size={16} />

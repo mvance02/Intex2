@@ -20,11 +20,11 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
   }
 
   return (
-    <nav className="flex items-center justify-center gap-1 mt-4" aria-label="Pagination">
+    <nav className="flex items-center justify-center gap-1.5 mt-4" aria-label="Pagination">
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page === 1}
-        className="px-3 py-1.5 rounded text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        className="min-w-11 min-h-11 px-3 py-2 rounded text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         aria-label="Previous page"
       >
         ‹
@@ -40,7 +40,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
             key={item}
             onClick={() => onPageChange(item as number)}
             aria-current={item === page ? 'page' : undefined}
-            className={`px-3 py-1.5 rounded text-sm cursor-pointer transition-colors duration-150 ${
+            className={`min-w-11 min-h-11 px-3 py-2 rounded text-sm cursor-pointer transition-colors duration-150 ${
               item === page
                 ? 'bg-teal-600 text-white font-semibold'
                 : 'text-gray-600 hover:bg-gray-100'
@@ -54,7 +54,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page === totalPages}
-        className="px-3 py-1.5 rounded text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        className="min-w-11 min-h-11 px-3 py-2 rounded text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         aria-label="Next page"
       >
         ›
