@@ -54,10 +54,12 @@ export default function SocialDonationPredictor() {
   const [socialSweep, setSocialSweep] = useState<SocialDraftSweepHourResult | null>(null);
   const [socialLoading, setSocialLoading] = useState(false);
   const [socialError, setSocialError] = useState<string | null>(null);
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
 
   const runSocialPrediction = useCallback(async () => {
     setSocialLoading(true);
     setSocialError(null);
+    setServiceUnavailable(false);
     try {
       const [draftResult, sweepResult] = await Promise.all([
         apiFetch<SocialDraftPredictionResult>('/api/predict/social/draft', {
@@ -72,7 +74,9 @@ export default function SocialDonationPredictor() {
       setSocialResult(draftResult);
       setSocialSweep(sweepResult);
     } catch (err: unknown) {
-      setSocialError(err instanceof Error ? err.message : 'Failed to run social prediction.');
+      const message = err instanceof Error ? err.message : 'Failed to run social prediction.';
+      setSocialError(message);
+      if (message.includes('503')) setServiceUnavailable(true);
     } finally {
       setSocialLoading(false);
     }
@@ -184,6 +188,74 @@ export default function SocialDonationPredictor() {
               ))}
             </select>
           </label>
+          <label className="text-sm text-gray-700">
+            Number of hashtags
+            <input
+              type="number"
+              min={0}
+              value={socialDraft.num_hashtags}
+              onChange={(e) => setSocialDraft((prev) => ({ ...prev, num_hashtags: Number(e.target.value || 0) }))}
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="text-sm text-gray-700">
+            Mentions count
+            <input
+              type="number"
+              min={0}
+              value={socialDraft.mentions_count}
+              onChange={(e) => setSocialDraft((prev) => ({ ...prev, mentions_count: Number(e.target.value || 0) }))}
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="text-sm text-gray-700">
+            Caption length
+            <input
+              type="number"
+              min={0}
+              value={socialDraft.caption_length}
+              onChange={(e) => setSocialDraft((prev) => ({ ...prev, caption_length: Number(e.target.value || 0) }))}
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="text-sm text-gray-700">
+            Boost budget (PHP)
+            <input
+              type="number"
+              min={0}
+              step={100}
+              value={socialDraft.boost_budget_php}
+              onChange={(e) => setSocialDraft((prev) => ({ ...prev, boost_budget_php: Number(e.target.value || 0) }))}
+              className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="text-sm text-gray-700 flex items-center gap-2 mt-6">
+            <input
+              type="checkbox"
+              checked={socialDraft.has_call_to_action}
+              onChange={(e) => setSocialDraft((prev) => ({ ...prev, has_call_to_action: e.target.checked }))}
+              className="rounded border-gray-300"
+            />
+            Has call to action
+          </label>
+          <label className="text-sm text-gray-700 flex items-center gap-2 mt-6">
+            <input
+              type="checkbox"
+              checked={socialDraft.features_resident_story}
+              onChange={(e) => setSocialDraft((prev) => ({ ...prev, features_resident_story: e.target.checked }))}
+              className="rounded border-gray-300"
+            />
+            Features resident story
+          </label>
+          <label className="text-sm text-gray-700 flex items-center gap-2 mt-6">
+            <input
+              type="checkbox"
+              checked={socialDraft.is_boosted}
+              onChange={(e) => setSocialDraft((prev) => ({ ...prev, is_boosted: e.target.checked }))}
+              className="rounded border-gray-300"
+            />
+            Is boosted post
+          </label>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -197,6 +269,12 @@ export default function SocialDonationPredictor() {
           </button>
           {socialError && <span className="text-sm text-red-600">{socialError}</span>}
         </div>
+        {serviceUnavailable && (
+          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            The predictor service is currently unavailable. Please verify backend config `MLSocial:BaseUrl`
+            and ensure the social ML API is running.
+          </p>
+        )}
 
         {socialResult && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
