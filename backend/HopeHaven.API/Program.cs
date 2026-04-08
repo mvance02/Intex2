@@ -111,6 +111,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient("MLService", c =>
     c.BaseAddress = new Uri(builder.Configuration["ML:BaseUrl"] ?? "http://localhost:8001"));
 
+builder.Services.AddHttpClient("DonorRiskService", c =>
+    c.BaseAddress = new Uri(builder.Configuration["DonorRisk:BaseUrl"] ?? "http://localhost:8003"));
+
 var app = builder.Build();
 
 // ── Seed Identity roles and default admin ─────────────────────────────────

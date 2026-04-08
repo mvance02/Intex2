@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, HeartPulse, GraduationCap, Utensils } from 'lucide-react';
+import { Home, HeartPulse, GraduationCap } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
 import type { DashboardMetrics } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
-import missionImg from '../../assets/lighthousepic2.jpeg';
+import hopeHaven3 from '../../assets/hopeHaven3.jpg';
+import hopeHaven4 from '../../assets/hopehaven4.jpg';
+import missionImg from '../../assets/HopeHavenPhoto.jpg';
+import missionImg2 from '../../assets/hopehavenphoto2.jpg';
+import philippinesMapImg from '../../assets/phillipinesmap.jpg';
 import ctaBg from '../../assets/lighthousepic3.jpg';
+import mealImg from '../../assets/philipino meal.jpg';
+import housingImg from '../../assets/House.png';
+import counselingImg from '../../assets/CouncilHopeHaven.jpg';
 
 // ---------------------------------------------------------------------------
 // Hooks
@@ -37,10 +44,10 @@ function AnimatedStatBadge({ value, label }: { value: number | null; label: stri
   const animated = useCountUp(value ?? 0);
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-3xl font-bold text-white">
+      <span className="text-3xl font-bold text-slate-900">
         {value === null ? '—' : animated.toLocaleString()}
       </span>
-      <span className="text-sm text-teal-100">{label}</span>
+      <span className="text-sm text-sky-900">{label}</span>
     </div>
   );
 }
@@ -48,8 +55,8 @@ function AnimatedStatBadge({ value, label }: { value: number | null; label: stri
 function DonationStatBadge({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-3xl font-bold text-white">{value}</span>
-      <span className="text-sm text-teal-100">{label}</span>
+      <span className="text-3xl font-bold text-slate-900">{value}</span>
+      <span className="text-sm text-sky-900">{label}</span>
     </div>
   );
 }
@@ -71,17 +78,19 @@ const SAFEHOUSES = [
 ] as const;
 
 const REGION_COLOR: Record<string, string> = {
-  Luzon:    '#2dd4bf',
-  Visayas:  '#34d399',
-  Mindanao: '#60a5fa',
+  Luzon:    '#2563eb',
+  Visayas:  '#f59e0b',
+  Mindanao: '#10b981',
 };
 
 // RGB triplets for box-shadow / rgba() usage (matches REGION_COLOR)
 const REGION_GLOW: Record<string, string> = {
-  Luzon:    '45, 212, 191',
-  Visayas:  '52, 211, 153',
-  Mindanao: '96, 165, 250',
+  Luzon:    '37, 99, 235',
+  Visayas:  '245, 158, 11',
+  Mindanao: '16, 185, 129',
 };
+
+const HERO_IMAGES = [heroBg, hopeHaven3, hopeHaven4];
 
 // ---------------------------------------------------------------------------
 // Philippines SVG map — interactive with hover tooltips and pulse animations
@@ -119,14 +128,14 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
       <defs>
         {/* Ocean gradient background */}
         <radialGradient id="oceanBg" cx="50%" cy="50%" r="70%">
-          <stop offset="0%" stopColor="#0f2a3f" />
-          <stop offset="100%" stopColor="#070e1a" />
+          <stop offset="0%" stopColor="#f8fbff" />
+          <stop offset="100%" stopColor="#dbeafe" />
         </radialGradient>
 
         {/* Island fill gradient */}
         <linearGradient id="islandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#134e4a" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#0f766e" stopOpacity="0.5" />
+          <stop offset="0%" stopColor="#f8fafc" stopOpacity="0.98" />
+          <stop offset="100%" stopColor="#e2e8f0" stopOpacity="0.95" />
         </linearGradient>
 
         {/* Per-region glow filters */}
@@ -175,80 +184,15 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
       </defs>
 
       {/* Ocean background rect */}
-      <rect x="0" y="0" width="100" height="100" fill="url(#oceanBg)" />
-
-      {/* Island shapes */}
-      {/* Luzon main */}
-      <path
-        d="M 48 10 L 44 14 L 40 18 L 39 22 L 41 26 L 44 28 L 46 32 L 48 36 L 52 38 L 56 36 L 58 32 L 57 27 L 55 23 L 54 18 L 52 13 Z"
-        fill="url(#islandGrad)"
-        stroke="#2dd4bf"
-        strokeWidth="0.4"
-        strokeOpacity="0.6"
-      />
-      {/* Luzon lower peninsula */}
-      <path
-        d="M 46 32 L 44 36 L 43 40 L 45 43 L 48 44 L 51 43 L 52 40 L 52 38"
-        fill="url(#islandGrad)"
-        stroke="#2dd4bf"
-        strokeWidth="0.4"
-        strokeOpacity="0.6"
-      />
-      {/* Mindoro */}
-      <path
-        d="M 40 42 L 37 44 L 36 48 L 38 51 L 41 50 L 42 46 Z"
-        fill="url(#islandGrad)"
-        stroke="#2dd4bf"
-        strokeWidth="0.35"
-        strokeOpacity="0.4"
-      />
-      {/* Palawan */}
-      <path
-        d="M 22 48 L 19 53 L 18 58 L 20 63 L 23 65 L 26 63 L 28 58 L 27 52 Z"
-        fill="url(#islandGrad)"
-        stroke="#2dd4bf"
-        strokeWidth="0.35"
-        strokeOpacity="0.4"
-      />
-      {/* Panay */}
-      <path
-        d="M 38 48 L 35 51 L 35 55 L 38 57 L 42 56 L 44 53 L 43 49 Z"
-        fill="url(#islandGrad)"
-        stroke="#34d399"
-        strokeWidth="0.35"
-        strokeOpacity="0.5"
-      />
-      {/* Negros */}
-      <path
-        d="M 44 50 L 43 54 L 44 58 L 46 61 L 49 60 L 50 56 L 49 52 L 47 50 Z"
-        fill="url(#islandGrad)"
-        stroke="#34d399"
-        strokeWidth="0.35"
-        strokeOpacity="0.5"
-      />
-      {/* Cebu */}
-      <path
-        d="M 51 47 L 50 51 L 51 55 L 53 57 L 56 55 L 56 51 L 54 48 Z"
-        fill="url(#islandGrad)"
-        stroke="#34d399"
-        strokeWidth="0.35"
-        strokeOpacity="0.5"
-      />
-      {/* Leyte / Samar */}
-      <path
-        d="M 58 44 L 56 48 L 57 52 L 60 54 L 64 53 L 66 49 L 65 45 L 62 43 Z"
-        fill="url(#islandGrad)"
-        stroke="#34d399"
-        strokeWidth="0.35"
-        strokeOpacity="0.5"
-      />
-      {/* Mindanao */}
-      <path
-        d="M 46 58 L 43 61 L 42 66 L 44 71 L 48 75 L 52 78 L 57 79 L 62 77 L 66 73 L 68 68 L 67 63 L 64 59 L 60 57 L 55 57 L 50 57 Z"
-        fill="url(#islandGrad)"
-        stroke="#60a5fa"
-        strokeWidth="0.4"
-        strokeOpacity="0.6"
+      <image
+        href={philippinesMapImg}
+        x="0"
+        y="0"
+        width="100"
+        height="100"
+        preserveAspectRatio="xMidYMid slice"
+        opacity="0.72"
+        style={{ mixBlendMode: 'multiply' }}
       />
 
       {/* Safehouse pins */}
@@ -270,18 +214,20 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
             <circle
               cx={x}
               cy={y}
-              r="2.2"
+              r="1.6"
               fill={color}
               className="pin-pulse-1"
+              opacity="0.22"
               style={{ animationDelay: animDelay }}
             />
             {/* Outer pulse ring 2 — staggered */}
             <circle
               cx={x}
               cy={y}
-              r="2.2"
+              r="1.6"
               fill={color}
               className="pin-pulse-2"
+              opacity="0.15"
               style={{ animationDelay: animDelay }}
             />
             {/* Ambient glow halo */}
@@ -290,17 +236,17 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
               cy={y}
               r={isActive ? 3.5 : 2.0}
               fill={color}
-              opacity={isActive ? 0.35 : 0.15}
+              opacity={isActive ? 0.2 : 0.08}
               style={{
                 transition: 'r 0.2s ease, opacity 0.2s ease',
-                filter: `blur(${isActive ? 1.5 : 0.8}px)`,
+                filter: `blur(${isActive ? 1 : 0.5}px)`,
               }}
             />
             {/* Core dot */}
             <circle
               cx={x}
               cy={y}
-              r={isActive ? 1.8 : 1.1}
+              r={isActive ? 1.7 : 1.1}
               fill={color}
               stroke="white"
               strokeWidth={isActive ? 0.45 : 0.3}
@@ -326,8 +272,8 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
               width="19"
               height="7.5"
               rx="1.2"
-              fill="#111827"
-              fillOpacity="0.95"
+              fill="#f8fafc"
+              fillOpacity="0.96"
               stroke={REGION_COLOR[tooltip.region]}
               strokeWidth="0.4"
             />
@@ -336,7 +282,7 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
               y={tipY + 3.2}
               textAnchor="middle"
               fontSize="1.9"
-              fill="white"
+              fill="#0f172a"
               fontFamily="system-ui, sans-serif"
               fontWeight="600"
             >
@@ -366,12 +312,20 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
 export default function LandingPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
+  const [heroIndex, setHeroIndex] = useState(0);
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
     apiFetch<DashboardMetrics>('/api/dashboard/metrics')
       .then(setMetrics)
       .catch(() => null);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
   }, []);
 
   const ytdRaw = metrics ? Number(metrics.ytdDonations) : null;
@@ -385,32 +339,41 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Hero — background image + dark overlay                              */}
       {/* ------------------------------------------------------------------ */}
-      <section
-        className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      >
-        <div className="absolute inset-0 bg-teal-950/65" />
-        <div className="relative z-10 max-w-3xl mx-auto px-6 py-24 text-center text-white">
-          <p className="text-teal-300 text-sm font-semibold tracking-widest uppercase mb-4">
+      <section className="relative min-h-[80vh] flex items-center overflow-hidden">
+        {HERO_IMAGES.map((img, idx) => (
+          <div
+            key={img}
+            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+              heroIndex === idx ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ backgroundImage: `url(${img})` }}
+            aria-hidden="true"
+          />
+        ))}
+        <div
+          className="relative z-10 max-w-6xl mx-auto w-full px-6 py-24 text-left text-white"
+          style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.45)' }}
+        >
+          <p className="text-slate-100 text-xs font-semibold tracking-[0.16em] uppercase mb-4">
             Hope Haven Philippines
           </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+          <h1 className="max-w-2xl text-4xl sm:text-5xl lg:text-6xl font-extrabold uppercase tracking-[0.02em] leading-tight mb-6">
             Safe Homes for Girls Who Deserve a Future
           </h1>
-          <p className="text-lg text-teal-100 mb-10 max-w-xl mx-auto leading-relaxed">
+          <p className="text-lg text-white mb-10 max-w-xl leading-relaxed">
             We provide shelter, healing, and hope to girls who have experienced abuse and
             trafficking across the Philippines.
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-4">
             <Link
               to="/impact"
-              className="px-7 py-3 bg-white text-teal-800 font-semibold rounded-full hover:bg-teal-50 transition-colors"
+              className="px-7 py-3 bg-white text-slate-900 font-semibold uppercase text-sm tracking-[0.1em] border border-white hover:bg-slate-100 transition-colors"
             >
               See Our Impact
             </Link>
             <Link
               to="/donate"
-              className="px-7 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
+              className="px-7 py-3 border border-white/60 bg-white/10 text-white font-semibold uppercase text-sm tracking-[0.1em] hover:bg-white/20 transition-colors"
             >
               Support a Girl
             </Link>
@@ -421,7 +384,7 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Stats bar — animated count-up                                       */}
       {/* ------------------------------------------------------------------ */}
-      <section className="bg-teal-700 py-10 px-6" aria-label="Key statistics">
+      <section className="bg-slate-100 py-10 px-6 border-y border-slate-200" aria-label="Key statistics">
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
           <AnimatedStatBadge value={metrics?.activeResidents ?? null}  label="Girls in Our Care" />
           <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
@@ -433,61 +396,63 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Donor Impact Translator                                             */}
       {/* ------------------------------------------------------------------ */}
-      <section className="bg-white py-20 px-6">
+      <section className="bg-white py-24 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-3">Your Impact in Action</h2>
-            <p className="text-gray-500 max-w-lg mx-auto">
+          <div className="text-left mb-12">
+            <h2 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 mb-3">Your Impact in Action</h2>
+            <p className="text-slate-600 max-w-2xl">
               Every peso goes directly to the girls in our care. Here is what your gift provides.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                Icon: Utensils,
-                amount: '₱250',
+                usdAmount: '$5',
+                pesoAmount: '₱250',
                 impact: '1 day of nutritious meals for a resident',
-                color: 'bg-amber-50 text-amber-600 border-amber-100',
-                iconBg: 'bg-amber-100',
+                bgImage: mealImg,
               },
               {
-                Icon: Home,
-                amount: '₱500',
+                usdAmount: '$10',
+                pesoAmount: '₱500',
                 impact: '1 day of safe housing and pastoral care',
-                color: 'bg-teal-50 text-teal-600 border-teal-100',
-                iconBg: 'bg-teal-100',
+                bgImage: housingImg,
               },
               {
-                Icon: HeartPulse,
-                amount: '₱1,200',
+                usdAmount: '$25',
+                pesoAmount: '₱1,200',
                 impact: '1 trauma counseling session with a licensed therapist',
-                color: 'bg-rose-50 text-rose-600 border-rose-100',
-                iconBg: 'bg-rose-100',
+                bgImage: counselingImg,
               },
               {
-                Icon: GraduationCap,
-                amount: '₱3,500',
+                usdAmount: '$70',
+                pesoAmount: '₱3,500',
                 impact: '1 full month of schooling and life-skills training',
-                color: 'bg-blue-50 text-blue-600 border-blue-100',
-                iconBg: 'bg-blue-100',
+                bgImage: missionImg2,
               },
-            ].map(({ Icon, amount, impact, color, iconBg }) => (
+            ].map(({ usdAmount, pesoAmount, impact, bgImage }) => (
               <div
-                key={amount}
-                className={`rounded-2xl border p-6 flex flex-col items-center text-center gap-4 ${color}`}
+                key={usdAmount}
+                className="relative border border-slate-200 p-6 flex flex-col items-center text-center gap-4 min-h-[15rem] justify-end overflow-hidden"
+                style={{
+                  backgroundImage: `url(${bgImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
               >
-                <div className={`p-3 rounded-full ${iconBg}`}>
-                  <Icon size={24} />
+                <div className="absolute inset-0 bg-black/35" />
+                <div className="relative z-10">
+                  <p className="text-2xl font-extrabold text-white leading-tight">{usdAmount}</p>
+                  <p className="text-xs text-white/90 mt-1">{pesoAmount}</p>
                 </div>
-                <p className="text-2xl font-extrabold">{amount}</p>
-                <p className="text-sm leading-relaxed opacity-80">{impact}</p>
+                <p className="relative z-10 text-sm leading-relaxed text-white/95">{impact}</p>
               </div>
             ))}
           </div>
           <div className="text-center mt-10">
             <Link
               to="/donate"
-              className="inline-block px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+              className="inline-block px-8 py-3 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] border border-sky-300 hover:bg-sky-300 hover:text-slate-900 transition-colors"
             >
               Make a Donation
             </Link>
@@ -498,14 +463,14 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Three Pillars — with mission image                                  */}
       {/* ------------------------------------------------------------------ */}
-      <section className="bg-gray-50 py-20 px-6">
+      <section className="bg-slate-50 py-24 px-6">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-14 items-center">
           <div>
-            <p className="text-teal-600 text-sm font-semibold tracking-widest uppercase mb-3">
+            <p className="text-slate-700 text-xs font-semibold tracking-[0.22em] uppercase mb-3">
               How We Help
             </p>
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Three Pillars</h2>
-            <p className="text-gray-500 mb-8 leading-relaxed">
+            <h2 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 mb-4">Our Three Pillars</h2>
+            <p className="text-slate-600 mb-8 leading-relaxed">
               Every girl who comes through our doors receives a comprehensive programme built on three
               foundations — Caring, Healing, and Teaching.
             </p>
@@ -513,30 +478,30 @@ export default function LandingPage() {
               {[
                 {
                   Icon: Home,
-                  colorClasses: 'bg-teal-50 text-teal-600',
+                  colorClasses: 'bg-slate-200 text-slate-700',
                   title: 'Caring',
                   desc: 'Safe housing, nutritious meals, and daily pastoral care from trained staff.',
                 },
                 {
                   Icon: HeartPulse,
-                  colorClasses: 'bg-rose-50 text-rose-600',
+                  colorClasses: 'bg-slate-200 text-slate-700',
                   title: 'Healing',
                   desc: 'Trauma-informed counselling, health monitoring, and psychosocial support.',
                 },
                 {
                   Icon: GraduationCap,
-                  colorClasses: 'bg-blue-50 text-blue-600',
+                  colorClasses: 'bg-slate-200 text-slate-700',
                   title: 'Teaching',
                   desc: 'Education support, life-skills training, and a path toward reintegration.',
                 },
               ].map(({ Icon, colorClasses, title, desc }) => (
                 <li key={title} className="flex gap-4 items-start">
-                  <div className={`p-2.5 rounded-xl shrink-0 ${colorClasses}`} aria-hidden="true">
+                  <div className={`p-2.5 shrink-0 ${colorClasses}`} aria-hidden="true">
                     <Icon size={20} />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-700">{title}</p>
-                    <p className="text-sm text-gray-500 mt-1">{desc}</p>
+                    <p className="font-semibold text-slate-800 uppercase tracking-[0.06em] text-sm">{title}</p>
+                    <p className="text-sm text-slate-600 mt-1">{desc}</p>
                   </div>
                 </li>
               ))}
@@ -547,11 +512,11 @@ export default function LandingPage() {
             <img
               src={missionImg}
               alt="Hope Haven residents and staff"
-              className="rounded-2xl object-cover w-full h-80 md:h-96 shadow-lg"
+              className="object-cover w-full h-80 md:h-96 border border-slate-300 shadow-lg contrast-110 saturate-110"
             />
-            <div className="absolute -bottom-5 -left-5 bg-teal-600 text-white rounded-2xl px-6 py-4 shadow-xl hidden md:block">
+            <div className="absolute -bottom-5 -left-5 bg-slate-900 text-white px-6 py-4 shadow-xl hidden md:block border border-slate-700">
               <p className="text-2xl font-extrabold">9</p>
-              <p className="text-xs text-teal-100 mt-0.5">Safehouses across<br />the Philippines</p>
+              <p className="text-xs text-slate-300 mt-0.5">Safehouses across<br />the Philippines</p>
             </div>
           </div>
         </div>
@@ -560,16 +525,16 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Philippines Safehouse Map                                           */}
       {/* ------------------------------------------------------------------ */}
-      <section className="bg-gray-900 py-20 px-6">
+      <section className="bg-slate-100 py-20 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-teal-400 text-sm font-semibold tracking-widest uppercase mb-3">
+            <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase mb-3">
               Nationwide Presence
             </p>
-            <h2 className="text-3xl font-bold text-white mb-3">
+            <h2 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 mb-3">
               Our Safehouses Across the Philippines
             </h2>
-            <p className="text-gray-400 max-w-lg mx-auto">
+            <p className="text-slate-600 max-w-lg mx-auto">
               From northern Luzon to southern Mindanao, Hope Haven maintains nine safe homes
               so that no girl is ever too far from help.
             </p>
@@ -579,10 +544,10 @@ export default function LandingPage() {
             {/* Map */}
             <div className="md:col-span-3 flex justify-center">
               <div
-                className="w-72 h-96 relative rounded-2xl overflow-visible"
+                className="w-[26rem] h-[34rem] relative overflow-visible"
                 style={{
-                  background: 'radial-gradient(ellipse at center, #0f2a3f 0%, #070e1a 100%)',
-                  boxShadow: '0 0 40px rgba(45, 212, 191, 0.08), 0 0 80px rgba(0,0,0,0.6)',
+                  background: 'transparent',
+                  boxShadow: 'none',
                 }}
               >
                 <PhilippinesMap hoveredCity={hoveredCity} onPinHover={setHoveredCity} />
@@ -605,7 +570,7 @@ export default function LandingPage() {
                       return (
                         <li
                           key={s.name}
-                          className="flex items-center gap-2.5 px-2 py-1 rounded-lg cursor-default transition-all duration-150"
+                          className="flex items-center gap-2.5 px-2 py-1 cursor-default transition-all duration-150"
                           style={{
                             backgroundColor: isActive ? `rgba(${REGION_GLOW[region]}, 0.12)` : 'transparent',
                           }}
@@ -625,7 +590,7 @@ export default function LandingPage() {
                           />
                           <span
                             className="text-sm transition-colors duration-150"
-                            style={{ color: isActive ? 'white' : '#d1d5db' }}
+                            style={{ color: isActive ? '#1e293b' : '#475569' }}
                           >
                             {s.name}
                           </span>
@@ -635,10 +600,10 @@ export default function LandingPage() {
                   </ul>
                 </div>
               ))}
-              <div className="pt-4 border-t border-gray-700">
+              <div className="pt-4 border-t border-slate-300">
                 <Link
                   to="/impact"
-                  className="text-teal-400 text-sm font-semibold hover:text-teal-300 transition-colors"
+                  className="text-slate-700 text-sm font-semibold uppercase tracking-[0.1em] hover:text-slate-900 transition-colors"
                 >
                   View impact by region →
                 </Link>
@@ -655,26 +620,28 @@ export default function LandingPage() {
         className="relative py-28 px-6 bg-cover bg-center"
         style={{ backgroundImage: `url(${ctaBg})` }}
       >
-        <div className="absolute inset-0 bg-teal-950/70" />
-        <div className="relative z-10 max-w-3xl mx-auto text-center text-white">
-          <p className="text-teal-300 text-sm font-semibold tracking-widest uppercase mb-4">
+        <div
+          className="relative z-10 max-w-3xl mx-auto text-center text-white"
+          style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.45)' }}
+        >
+          <p className="text-slate-200 text-xs font-semibold tracking-[0.16em] uppercase mb-4">
             Stories of Transformation
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Real Stories, Real Change</h2>
-          <p className="text-teal-100 mb-10 max-w-xl mx-auto leading-relaxed">
+          <h2 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-[0.05em] mb-4">Real Stories, Real Change</h2>
+          <p className="text-slate-100 mb-10 max-w-xl mx-auto leading-relaxed">
             Every statistic represents a girl whose life has been transformed. Explore our impact
             dashboard to see the full picture behind the numbers.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               to="/impact"
-              className="px-8 py-3 bg-white text-teal-800 font-semibold rounded-full hover:bg-teal-50 transition-colors"
+              className="px-8 py-3 bg-white text-slate-900 font-semibold uppercase text-sm tracking-[0.12em] border border-white hover:bg-transparent hover:text-white transition-colors"
             >
               Explore Impact →
             </Link>
             <Link
               to="/donate"
-              className="px-8 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
+              className="px-8 py-3 border border-white/70 text-white font-semibold uppercase text-sm tracking-[0.1em] hover:bg-white hover:text-slate-900 transition-colors"
             >
               Give Now
             </Link>

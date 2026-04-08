@@ -31,6 +31,7 @@ const ReportsAnalytics   = lazy(() => import('./pages/admin/ReportsAnalytics'));
 const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
 const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
 const UserManagement     = lazy(() => import('./pages/admin/UserManagement'));
+const DonorRetentionRisk = lazy(() => import('./pages/admin/DonorRetentionRisk'));
 
 // Donor pages — lazy loaded
 const DonorLayout    = lazy(() => import('./components/shared/DonorLayout'));
