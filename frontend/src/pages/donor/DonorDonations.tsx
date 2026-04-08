@@ -31,6 +31,7 @@ export default function DonorDonations() {
     finally { setLoading(false); }
   }, []);
 
+  useEffect(() => { document.title = 'My Donations — Hope Haven'; }, []);
   useEffect(() => { void fetchData(); }, [fetchData]);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading donations…" />;

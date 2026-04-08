@@ -42,6 +42,7 @@ export default function UserManagement() {
     }
   }, []);
 
+  useEffect(() => { document.title = 'User Management — Hope Haven'; }, []);
   useEffect(() => { void fetchUsers(); }, [fetchUsers]);
 
   async function toggleRole(user: UserRecord, role: string) {

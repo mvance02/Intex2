@@ -28,6 +28,8 @@ export default function ManageMFAPage() {
     return `otpauth://totp/${encodeURIComponent(label)}?${params}`;
   }, [authSession.email, status?.sharedKey]);
 
+  useEffect(() => { document.title = 'Manage MFA — Hope Haven'; }, []);
+
   useEffect(() => {
     if (!isLoading && isAuthenticated)
       getTwoFactorStatus()

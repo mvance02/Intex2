@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../../utils/authAPI';
 
@@ -10,6 +10,8 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage]       = useState('');
   const [successMessage, setSuccessMessage]   = useState('');
   const [isSubmitting, setIsSubmitting]       = useState(false);
+
+  useEffect(() => { document.title = 'Register — Hope Haven'; }, []);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

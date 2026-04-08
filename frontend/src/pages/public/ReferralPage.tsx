@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
 
@@ -16,6 +16,8 @@ export default function ReferralPage() {
   });
   const [state, setState] = useState<FormState>('idle');
   const [refNumber, setRefNumber] = useState('');
+
+  useEffect(() => { document.title = 'Refer a Girl — Hope Haven'; }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value, type } = e.target;
