@@ -507,7 +507,7 @@ export default function LandingPage() {
               Most Important Outcome Metric
             </p>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center">
-              90-day Stable Reintegration Rate
+              {okrMetric?.metricName ?? '90-day Stable Reintegration Rate'}
             </h2>
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
