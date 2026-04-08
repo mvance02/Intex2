@@ -1,0 +1,76 @@
+import { useEffect, useState } from 'react';
+import { Heart } from 'lucide-react';
+import { apiFetch } from '../../utils/api';
+import type { DonorWallEntry } from '../../types/models';
+
+export default function DonorWallPage() {
+  const [entries, setEntries] = useState<DonorWallEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    apiFetch<DonorWallEntry[]>('/api/donations/wall')
+      .then((data) => {
+        setEntries(data);
+        setError('');
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Unable to load donor wall.');
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <section className="bg-gradient-to-b from-teal-50/70 to-white min-h-[70vh] py-14 px-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-10">
+          <p className="text-xs font-semibold tracking-[0.18em] uppercase text-teal-700 mb-2">
+            Community Support
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Wall of Donors</h1>
+          <p className="text-gray-600 mt-3 max-w-2xl mx-auto">
+            Thank you to supporters who chose to be recognized for helping Hope Haven girls heal and rebuild.
+          </p>
+        </div>
+
+        {loading && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+            Loading donor wall...
+          </div>
+        )}
+
+        {!loading && error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 text-center">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && entries.length === 0 && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-500">
+            No donors have chosen public recognition yet.
+          </div>
+        )}
+
+        {!loading && !error && entries.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {entries.map((entry) => (
+              <article
+                key={`${entry.displayName}-${entry.latestDonationDate ?? 'n/a'}`}
+                className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+              >
+                <div className="flex items-center gap-2 text-teal-700 mb-2">
+                  <Heart size={16} aria-hidden="true" />
+                  <span className="text-xs uppercase tracking-wide font-semibold">Donor</span>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-800 break-words">{entry.displayName}</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {entry.donationCount} contribution{entry.donationCount === 1 ? '' : 's'}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}

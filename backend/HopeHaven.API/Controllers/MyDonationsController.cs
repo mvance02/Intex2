@@ -14,6 +14,27 @@ public class MyDonationsController(
     HopeHavenDbContext db,
     UserManager<ApplicationUser> userManager) : ControllerBase
 {
+    [HttpGet("/api/donations/wall")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetDonorWall()
+    {
+        var entries = await db.Donations
+            .Where(d => d.ShareOnDonorWall && d.DonorWallName != null && d.DonorWallName != "")
+            .GroupBy(d => d.DonorWallName!)
+            .Select(g => new
+            {
+                displayName = g.Key,
+                donationCount = g.Count(),
+                latestDonationDate = g.Max(x => x.DonationDate)
+            })
+            .OrderByDescending(x => x.latestDonationDate)
+            .ThenBy(x => x.displayName)
+            .Take(250)
+            .ToListAsync();
+
+        return Ok(entries);
+    }
+
     /// <summary>
     /// Get the logged-in user's donation history.
     /// </summary>
@@ -92,7 +113,11 @@ public class MyDonationsController(
                 CampaignName = request.CampaignName,
                 ChannelSource = "Website",
                 Notes = request.Notes,
-                ImpactUnit = request.ImpactUnit
+                ImpactUnit = request.ImpactUnit,
+                ShareOnDonorWall = request.ShareOnDonorWall,
+                DonorWallName = request.ShareOnDonorWall
+                    ? NormalizeDonorWallName(request.DonorWallName, supporter.DisplayName, email)
+                    : null
             };
 
             db.Donations.Add(donation);
@@ -106,13 +131,24 @@ public class MyDonationsController(
                 donation.DonationDate,
                 donation.IsRecurring,
                 donation.CampaignName,
-                donation.DonationType
+                donation.DonationType,
+                donation.ShareOnDonorWall,
+                donation.DonorWallName
             });
         }
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Failed to save donation.", error = ex.Message, inner = ex.InnerException?.Message });
         }
+    }
+
+    private static string NormalizeDonorWallName(string? requestedName, string? supporterDisplayName, string email)
+    {
+        var candidate = string.IsNullOrWhiteSpace(requestedName)
+            ? (string.IsNullOrWhiteSpace(supporterDisplayName) ? email.Split('@')[0] : supporterDisplayName)
+            : requestedName.Trim();
+
+        return candidate.Length <= 120 ? candidate : candidate[..120];
     }
 }
 
@@ -123,5 +159,7 @@ public record CreateMyDonationRequest(
     string? DonationType = "Monetary",
     string? CampaignName = null,
     string? Notes = null,
-    string? ImpactUnit = null
+    string? ImpactUnit = null,
+    bool ShareOnDonorWall = false,
+    string? DonorWallName = null
 );

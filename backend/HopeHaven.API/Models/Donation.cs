@@ -53,6 +53,13 @@ public class Donation
     [MaxLength(100)]
     public string? ReferralPostId { get; set; }
 
+    [Column("share_on_donor_wall")]
+    public bool ShareOnDonorWall { get; set; }
+
+    [Column("donor_wall_name")]
+    [MaxLength(120)]
+    public string? DonorWallName { get; set; }
+
     // Navigation
     [ForeignKey(nameof(SupporterId))]
     public Supporter? Supporter { get; set; }
