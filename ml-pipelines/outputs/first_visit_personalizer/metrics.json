@@ -1,0 +1,90 @@
+{
+  "cause_accuracy": 0.26666666666666666,
+  "ask_bucket_accuracy": 0.6,
+  "cause_report": {
+    "Education": {
+      "precision": 0.2,
+      "recall": 0.25,
+      "f1-score": 0.2222222222222222,
+      "support": 4.0
+    },
+    "Maintenance": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 1.0
+    },
+    "Operations": {
+      "precision": 0.5,
+      "recall": 0.5,
+      "f1-score": 0.5,
+      "support": 4.0
+    },
+    "Outreach": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 2.0
+    },
+    "Transport": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 1.0
+    },
+    "Wellbeing": {
+      "precision": 0.16666666666666666,
+      "recall": 0.3333333333333333,
+      "f1-score": 0.2222222222222222,
+      "support": 3.0
+    },
+    "accuracy": 0.26666666666666666,
+    "macro avg": {
+      "precision": 0.14444444444444443,
+      "recall": 0.18055555555555555,
+      "f1-score": 0.1574074074074074,
+      "support": 15.0
+    },
+    "weighted avg": {
+      "precision": 0.22,
+      "recall": 0.26666666666666666,
+      "f1-score": 0.23703703703703702,
+      "support": 15.0
+    }
+  },
+  "ask_bucket_report": {
+    "high_ask": {
+      "precision": 0.5714285714285714,
+      "recall": 1.0,
+      "f1-score": 0.7272727272727273,
+      "support": 8.0
+    },
+    "mid_ask": {
+      "precision": 1.0,
+      "recall": 0.14285714285714285,
+      "f1-score": 0.25,
+      "support": 7.0
+    },
+    "accuracy": 0.6,
+    "macro avg": {
+      "precision": 0.7857142857142857,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.48863636363636365,
+      "support": 15.0
+    },
+    "weighted avg": {
+      "precision": 0.7714285714285715,
+      "recall": 0.6,
+      "f1-score": 0.5045454545454545,
+      "support": 15.0
+    }
+  },
+  "feature_columns": [
+    "supporter_type",
+    "relationship_type",
+    "region",
+    "country",
+    "acquisition_channel",
+    "status"
+  ]
+}
