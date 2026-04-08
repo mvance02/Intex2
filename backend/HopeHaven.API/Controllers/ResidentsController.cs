@@ -1,5 +1,6 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ResidentsController(HopeHavenDbContext db) : ControllerBase
 {
     [HttpGet]
@@ -66,7 +68,7 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<Resident>> Create(Resident resident)
     {
         resident.CreatedAt = DateTime.UtcNow;
@@ -76,7 +78,7 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, Resident resident)
     {
         if (id != resident.ResidentId) return BadRequest("ID mismatch.");
@@ -91,7 +93,7 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = "Admin")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Delete(int id)
     {
         var resident = await db.Residents.FindAsync(id);

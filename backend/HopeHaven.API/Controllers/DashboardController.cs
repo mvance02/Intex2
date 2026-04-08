@@ -1,4 +1,5 @@
 using HopeHaven.API.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,10 +7,10 @@ namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class DashboardController(HopeHavenDbContext db) : ControllerBase
 {
     [HttpGet("metrics")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetMetrics()
     {
         var activeResidents = await db.Residents.CountAsync(r => r.CaseStatus == "Active");
@@ -34,7 +35,6 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpGet("recent-activity")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetRecentActivity()
     {
         var recentDonations = await db.Donations
@@ -81,7 +81,6 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
     }
 
     [HttpGet("safehouse-summary")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
     public async Task<IActionResult> GetSafehouseSummary()
     {
         var summary = await db.Safehouses

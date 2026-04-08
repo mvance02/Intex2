@@ -1,5 +1,6 @@
 using HopeHaven.API.Data;
 using HopeHaven.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class HealthWellbeingRecordsController(HopeHavenDbContext db) : ControllerBase
 {
     [HttpGet]
@@ -19,7 +21,7 @@ public class HealthWellbeingRecordsController(HopeHavenDbContext db) : Controlle
     }
 
     [HttpPost]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<ActionResult<HealthWellbeingRecord>> Create(HealthWellbeingRecord record)
     {
         db.HealthWellbeingRecords.Add(record);
@@ -28,7 +30,7 @@ public class HealthWellbeingRecordsController(HopeHavenDbContext db) : Controlle
     }
 
     [HttpPut("{id:int}")]
-    // [Authorize(Roles = "Admin,Staff")] // IS 414
+    [Authorize(Policy = AuthPolicies.ManageContent)]
     public async Task<IActionResult> Update(int id, HealthWellbeingRecord record)
     {
         if (id != record.HealthRecordId) return BadRequest("ID mismatch.");
