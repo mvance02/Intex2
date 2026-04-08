@@ -453,7 +453,6 @@ export interface SocialOptimizeResult {
 }
 
 export interface SocialWeeklyScheduleRequest {
-  platform: string;
   optimize_for: 'donation_value' | 'referrals';
   is_boosted?: boolean | null;
   boost_budget_php?: number | null;
@@ -466,6 +465,7 @@ export interface SocialWeeklyScheduleRequest {
 
 export interface SocialWeeklyScheduleDay {
   day_of_week: string;
+  platform: string;
   post_hour: number;
   post_type: string;
   media_type: string;
@@ -478,7 +478,6 @@ export interface SocialWeeklyScheduleDay {
 }
 
 export interface SocialWeeklyScheduleResult {
-  platform: string;
   optimize_for: string;
   target_label: string;
   total_combinations_evaluated: number;

@@ -103,8 +103,7 @@ class OptimizeRequest(BaseModel):
 
 
 class WeeklyScheduleRequest(BaseModel):
-    """Generate a diverse 7-day posting schedule for a platform."""
-    platform: str = Field(..., examples=["Instagram"])
+    """Generate a diverse 7-day posting schedule across all platforms."""
     optimize_for: str = Field(
         default="donation_value",
         description="Target to maximize: 'donation_value' or 'referrals'",
@@ -397,11 +396,13 @@ def optimize_post(req: OptimizeRequest) -> dict[str, Any]:
 @app.post("/predict/weekly-schedule")
 def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
     """
-    Greedy daily optimization with diversity constraints.
+    Greedy daily optimization across ALL platforms with diversity constraints.
 
-    For each day Mon→Sun, find the best combo for THAT day,
-    then exclude the chosen content_topic and post_type from subsequent days.
-    Result: 7 diverse, individually-optimized posts.
+    Constraints enforced:
+      - No back-to-back same platform (yesterday's platform excluded)
+      - No repeated content_topic across the week
+      - No repeated post_type across the week
+    Result: 7 diverse posts across multiple platforms.
     """
     try:
         b = _load_bundle()
@@ -412,6 +413,9 @@ def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
     field_vals = meta.get("field_values", {})
     model = b["reg_referrals"] if req.optimize_for == "referrals" else b["reg_value"]
 
+    platforms = field_vals.get("platform", [
+        "Facebook", "Instagram", "LinkedIn", "TikTok", "Twitter", "WhatsApp", "YouTube",
+    ])
     post_types = field_vals.get("post_type", ["FundraisingAppeal"])
     media_types = field_vals.get("media_type", ["Carousel"])
     content_topics = field_vals.get("content_topic", ["Education"])
@@ -427,7 +431,6 @@ def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
     features_story = req.features_resident_story if req.features_resident_story is not None else False
 
     base_numeric = {
-        "platform": req.platform,
         "num_hashtags": num_hashtags,
         "mentions_count": mentions_count,
         "has_call_to_action": has_cta,
@@ -440,24 +443,29 @@ def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
     days_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     used_topics: set[str] = set()
     used_post_types: set[str] = set()
+    prev_platform: str | None = None
     schedule: list[dict[str, Any]] = []
     total_evaluated = 0
 
     for day in days_order:
-        # Filter out already-used content_topics and post_types for diversity
+        # Diversity: exclude already-used topics and post types (reset if exhausted)
         avail_topics = [t for t in content_topics if t not in used_topics] or content_topics
         avail_ptypes = [p for p in post_types if p not in used_post_types] or post_types
 
-        # Build combos for this day across all hours
+        # No back-to-back: exclude yesterday's platform
+        avail_platforms = [p for p in platforms if p != prev_platform] if prev_platform else platforms
+
+        # Build combos: platform × hours × post_type × media × topic × tone × cta
         combos = list(itertools.product(
-            range(7, 22), avail_ptypes, media_types,
+            avail_platforms, range(7, 22), avail_ptypes, media_types,
             avail_topics, sentiment_tones, cta_types,
         ))
 
         rows = []
-        for hour, pt, mt, ct, st, cta in combos:
+        for plat, hour, pt, mt, ct, st, cta in combos:
             rows.append({
                 **base_numeric,
+                "platform": plat,
                 "day_of_week": day,
                 "post_hour": hour,
                 "post_type": pt,
@@ -476,13 +484,16 @@ def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
         best_row = df_day.iloc[best_idx]
         best_val = float(preds[best_idx])
 
+        chosen_platform = best_row["platform"]
         chosen_topic = best_row["content_topic"]
         chosen_ptype = best_row["post_type"]
         used_topics.add(chosen_topic)
         used_post_types.add(chosen_ptype)
+        prev_platform = chosen_platform
 
         schedule.append({
             "day_of_week": day,
+            "platform": chosen_platform,
             "post_hour": int(best_row["post_hour"]),
             "post_type": chosen_ptype,
             "media_type": best_row["media_type"],
@@ -501,7 +512,6 @@ def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
     )
 
     return {
-        "platform": req.platform,
         "optimize_for": req.optimize_for,
         "target_label": target_label,
         "total_combinations_evaluated": total_evaluated,
@@ -517,7 +527,8 @@ def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
             "features_resident_story": features_story,
         },
         "disclaimer": (
-            "Each day is optimized with diversity constraints — no repeated content topics "
-            "or post types. Results adapt automatically when real data replaces synthetic data."
+            "Each day is optimized across all platforms with diversity constraints — "
+            "no back-to-back same platform, no repeated content topics or post types. "
+            "Rankings show relative performance; actual values calibrate with real data."
         ),
     }

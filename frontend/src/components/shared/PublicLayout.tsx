@@ -4,6 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Menu, X, LogOut } from 'lucide-react';
 import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg';
 
+const linkClass =
+  'hover:text-slate-600 transition-colors py-1 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em]';
+
 export default function PublicLayout() {
   const { isAuthenticated, authSession, logout } = useAuth();
   const navigate = useNavigate();
@@ -69,7 +72,7 @@ export default function PublicLayout() {
           onClick={handleLogout}
           className="flex items-center gap-1.5 hover:text-slate-600 transition-colors py-1 md:py-0"
         >
-          <LogOut size={14} />
+          <LogOut size={14} aria-hidden="true" />
           Sign Out
         </button>
       )}
@@ -108,7 +111,7 @@ export default function PublicLayout() {
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
           </button>
         </div>
 
