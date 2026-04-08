@@ -4,7 +4,7 @@ Each item maps to a requirement from the assignment. Status is based on a code a
 
 Legend: ✅ Complete · ⚠️ Partial · ❌ Missing
 
----
+----
 
 ## Confidentiality (Encryption)
 
