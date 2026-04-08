@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 [Authorize]
 public class DashboardController(HopeHavenDbContext db) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpGet("metrics")]
     public async Task<IActionResult> GetMetrics()
     {
@@ -80,6 +82,7 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
         return Ok(activity);
     }
 
+    [AllowAnonymous]
     [HttpGet("safehouse-summary")]
     public async Task<IActionResult> GetSafehouseSummary()
     {

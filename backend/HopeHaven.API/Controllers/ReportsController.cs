@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 [Authorize]
 public class ReportsController(HopeHavenDbContext db) : ControllerBase
