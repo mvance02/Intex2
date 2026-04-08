@@ -396,3 +396,12 @@ export interface SocialDraftSweepHourResult {
     predicted_donation_referrals: number;
   }>;
 }
+
+export interface PublicOkrMetric {
+  metricName: string;
+  ratePercent: number;
+  stableCount: number;
+  eligibleCount: number;
+  previousRatePercent: number;
+  deltaPoints: number;
+}

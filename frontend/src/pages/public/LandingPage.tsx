@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Home, HeartPulse, GraduationCap, Utensils, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
-import type { DashboardMetrics } from '../../types/models';
+import type { DashboardMetrics, PublicOkrMetric } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
 import missionImg from '../../assets/lighthousepic2.jpeg';
 import ctaBg from '../../assets/lighthousepic3.jpg';
@@ -414,6 +414,7 @@ export default function LandingPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [okrMetric, setOkrMetric] = useState<PublicOkrMetric | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
   const [showDonatePrompt, setShowDonatePrompt] = useState(false);
 
@@ -427,8 +428,14 @@ export default function LandingPage() {
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
-    apiFetch<DashboardMetrics>('/api/dashboard/metrics')
-      .then(setMetrics)
+    Promise.all([
+      apiFetch<DashboardMetrics>('/api/dashboard/metrics'),
+      apiFetch<PublicOkrMetric>('/api/dashboard/public-okr'),
+    ])
+      .then(([metricsData, okrData]) => {
+        setMetrics(metricsData);
+        setOkrMetric(okrData);
+      })
       .catch(() => null);
   }, []);
 
@@ -487,6 +494,32 @@ export default function LandingPage() {
           <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
           <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" />
           <DonationStatBadge value={ytdDisplay} label="Raised This Year" />
+        </div>
+      </section>
+
+      <section className="bg-white py-8 px-6 border-b border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="rounded-2xl border border-teal-100 bg-teal-50/40 p-6 text-center">
+            <p className="text-xs font-semibold tracking-widest uppercase text-teal-700 mb-2">
+              Most Important Outcome Metric
+            </p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+              {okrMetric?.metricName ?? '90-day Stable Reintegration Rate'}
+            </h2>
+            <p className="text-4xl font-extrabold text-teal-700 mt-2">
+              {okrMetric ? `${okrMetric.ratePercent.toFixed(1)}%` : '—'}
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              {okrMetric
+                ? `${okrMetric.stableCount} stable outcomes out of ${okrMetric.eligibleCount} eligible exits`
+                : 'Tracking long-term reintegration stability for girls who exited shelter at least 90 days ago.'}
+            </p>
+            {okrMetric && (
+              <p className={`text-sm mt-1 ${okrMetric.deltaPoints >= 0 ? 'text-teal-700' : 'text-amber-700'}`}>
+                {okrMetric.deltaPoints >= 0 ? '+' : ''}{okrMetric.deltaPoints.toFixed(1)} pts vs prior cohort
+              </p>
+            )}
+          </div>
         </div>
       </section>
 

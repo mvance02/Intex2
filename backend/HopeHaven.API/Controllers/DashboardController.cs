@@ -11,6 +11,56 @@ namespace HopeHaven.API.Controllers;
 public class DashboardController(HopeHavenDbContext db) : ControllerBase
 {
     [AllowAnonymous]
+    [HttpGet("public-okr")]
+    public async Task<IActionResult> GetPublicOkr()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var cutoff = today.AddDays(-90);
+        var previousWindowStart = today.AddDays(-180);
+
+        string[] stableStatuses = ["Stable", "Successfully Reintegrated", "Reintegrated", "Maintained"];
+
+        var eligibleNow = await db.Residents
+            .Where(r => r.DateClosed != null && r.DateClosed <= cutoff)
+            .CountAsync();
+        var stableNow = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed <= cutoff &&
+                r.ReintegrationStatus != null &&
+                stableStatuses.Contains(r.ReintegrationStatus))
+            .CountAsync();
+
+        var eligiblePrev = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed > previousWindowStart &&
+                r.DateClosed <= cutoff)
+            .CountAsync();
+        var stablePrev = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed > previousWindowStart &&
+                r.DateClosed <= cutoff &&
+                r.ReintegrationStatus != null &&
+                stableStatuses.Contains(r.ReintegrationStatus))
+            .CountAsync();
+
+        var currentRate = eligibleNow > 0 ? (double)stableNow / eligibleNow : 0;
+        var previousRate = eligiblePrev > 0 ? (double)stablePrev / eligiblePrev : 0;
+
+        return Ok(new
+        {
+            metricName = "90-day Stable Reintegration Rate",
+            ratePercent = Math.Round(currentRate * 100, 1),
+            stableCount = stableNow,
+            eligibleCount = eligibleNow,
+            previousRatePercent = Math.Round(previousRate * 100, 1),
+            deltaPoints = Math.Round((currentRate - previousRate) * 100, 1)
+        });
+    }
+
+    [AllowAnonymous]
     [HttpGet("metrics")]
     public async Task<IActionResult> GetMetrics()
     {
