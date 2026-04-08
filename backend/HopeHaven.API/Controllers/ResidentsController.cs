@@ -20,7 +20,9 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
         [FromQuery] string? caseStatus = null,
         [FromQuery] int? safehouseId = null,
         [FromQuery] string? caseCategory = null,
-        [FromQuery] string? riskLevel = null)
+        [FromQuery] string? riskLevel = null,
+        [FromQuery] DateOnly? dateFrom = null,
+        [FromQuery] DateOnly? dateTo = null)
     {
         var query = db.Residents.Include(r => r.Safehouse).AsQueryable();
 
@@ -41,6 +43,12 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(riskLevel))
             query = query.Where(r => r.CurrentRiskLevel == riskLevel);
+
+        if (dateFrom.HasValue)
+            query = query.Where(r => r.DateOfAdmission >= dateFrom.Value);
+
+        if (dateTo.HasValue)
+            query = query.Where(r => r.DateOfAdmission <= dateTo.Value);
 
         var total = await query.CountAsync();
         var items = await query

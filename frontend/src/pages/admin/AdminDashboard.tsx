@@ -5,7 +5,7 @@ import KpiCard from '../../components/shared/KpiCard';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorAlert from '../../components/shared/ErrorAlert';
 import { SkeletonKpiCards } from '../../components/shared/SkeletonLoader';
-import { apiFetch } from '../../utils/api';
+import { apiFetch, displaySafehouseName } from '../../utils/api';
 import type {
   DashboardMetrics,
   RecentActivityItem,
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
               {safehouses.map((s) => (
                 <CapacityGauge
                   key={s.safehouseId}
-                  name={s.name ?? '—'}
+                  name={displaySafehouseName(s.name)}
                   region={s.region ?? '—'}
                   status={s.status ?? '—'}
                   occupancy={s.currentOccupancy ?? 0}

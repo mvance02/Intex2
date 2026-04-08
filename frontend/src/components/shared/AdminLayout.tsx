@@ -9,6 +9,7 @@ import {
   BarChart2,
   Share2,
   UserCog,
+  Shield,
   Menu,
   X,
   LogOut,
@@ -24,6 +25,7 @@ const navItems = [
   { label: 'Reports',            path: '/admin/reports',            Icon: BarChart2 },
   { label: 'Social Media',       path: '/admin/social-media',       Icon: Share2 },
   { label: 'Users',              path: '/admin/users',              Icon: UserCog },
+  { label: 'Manage MFA',         path: '/admin/manage-mfa',         Icon: Shield },
 ];
 
 export default function AdminLayout() {
