@@ -57,9 +57,17 @@ export interface Donation {
   impactUnit: string | null;
   notes: string | null;
   referralPostId: string | null;
+  shareOnDonorWall: boolean;
+  donorWallName: string | null;
   supporter?: Supporter;
   allocations?: DonationAllocation[];
   inKindItems?: InKindDonationItem[];
+}
+
+export interface DonorWallEntry {
+  displayName: string;
+  donationCount: number;
+  latestDonationDate: string | null;
 }
 
 export interface DonationAllocation {

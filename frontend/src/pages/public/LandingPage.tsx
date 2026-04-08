@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Home, HeartPulse, GraduationCap, Utensils, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
-import type { DashboardMetrics, PublicOkrMetric } from '../../types/models';
+import type { DashboardMetrics, DonorWallEntry, PublicOkrMetric } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
 import missionImg from '../../assets/lighthousepic2.jpeg';
 import ctaBg from '../../assets/lighthousepic3.jpg';
@@ -417,6 +417,7 @@ export default function LandingPage() {
   const [okrMetric, setOkrMetric] = useState<PublicOkrMetric | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
   const [showDonatePrompt, setShowDonatePrompt] = useState(false);
+  const [donorWallPreview, setDonorWallPreview] = useState<DonorWallEntry[]>([]);
 
   function handleDonateClick() {
     if (isAuthenticated) {
@@ -431,10 +432,12 @@ export default function LandingPage() {
     Promise.all([
       apiFetch<DashboardMetrics>('/api/dashboard/metrics'),
       apiFetch<PublicOkrMetric>('/api/dashboard/public-okr'),
+      apiFetch<DonorWallEntry[]>('/api/donations/wall'),
     ])
-      .then(([metricsData, okrData]) => {
+      .then(([metricsData, okrData, donorWallData]) => {
         setMetrics(metricsData);
         setOkrMetric(okrData);
+        setDonorWallPreview(donorWallData.slice(0, 8));
       })
       .catch(() => null);
   }, []);
@@ -529,6 +532,42 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-12 px-6 border-b border-gray-100">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] uppercase text-teal-700 mb-1">
+                Donor Recognition
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Wall of Donors</h2>
+            </div>
+            <Link
+              to="/donor-wall"
+              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-teal-200 text-teal-700 font-semibold hover:bg-teal-50 transition-colors"
+            >
+              View Full Wall
+            </Link>
+          </div>
+
+          {donorWallPreview.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {donorWallPreview.map((entry) => (
+                <div
+                  key={`${entry.displayName}-${entry.latestDonationDate ?? 'n/a'}`}
+                  className="rounded-xl bg-teal-50/60 border border-teal-100 px-4 py-3 text-center"
+                >
+                  <p className="font-semibold text-gray-800 truncate">{entry.displayName}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Be the first to join our donor wall when you make a donation.
+            </p>
+          )}
         </div>
       </section>
 

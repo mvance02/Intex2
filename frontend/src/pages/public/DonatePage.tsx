@@ -218,6 +218,20 @@ interface RecurringPromptProps {
   onCancel: () => void;
 }
 
+interface PendingDonation {
+  label: string;
+  phpAmount: number;
+  isRecurring: boolean;
+  payload: {
+    amount: number;
+    currencyCode: string;
+    isRecurring: boolean;
+    donationType: string;
+    campaignName: string;
+    impactUnit?: string;
+  };
+}
+
 function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
   const usd = phpToUsd(item.phpAmount);
   return (
@@ -270,6 +284,87 @@ function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
   );
 }
 
+function DonorWallPrompt({
+  pending,
+  onCancel,
+  onSubmit,
+}: {
+  pending: PendingDonation;
+  onCancel: () => void;
+  onSubmit: (shareOnDonorWall: boolean, donorWallName: string) => void;
+}) {
+  const [shareOnWall, setShareOnWall] = useState(false);
+  const [wallName, setWallName] = useState('');
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Donor wall preference prompt"
+    >
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+        <button
+          onClick={onCancel}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Cancel"
+        >
+          <X size={20} />
+        </button>
+
+        <h2 className="text-xl font-bold text-gray-800">Wall of Donors</h2>
+        <p className="text-sm text-gray-600 mt-2">
+          Your donation to <span className="font-semibold">{pending.label}</span> was prepared.
+          Would you like to appear on the public donor wall?
+        </p>
+
+        <div className="mt-5 space-y-2">
+          <button
+            onClick={() => setShareOnWall(false)}
+            className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
+              !shareOnWall ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Donate anonymously
+          </button>
+          <button
+            onClick={() => setShareOnWall(true)}
+            className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
+              shareOnWall ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Add me to the donor wall
+          </button>
+        </div>
+
+        {shareOnWall && (
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="donorWallName">
+              Name to display
+            </label>
+            <input
+              id="donorWallName"
+              type="text"
+              maxLength={120}
+              value={wallName}
+              onChange={(e) => setWallName(e.target.value)}
+              placeholder="Enter the name you want shown"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+          </div>
+        )}
+
+        <button
+          onClick={() => onSubmit(shareOnWall, wallName)}
+          className="mt-6 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+        >
+          Confirm Donation
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
@@ -277,6 +372,7 @@ function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
 type ModalState =
   | { type: 'none' }
   | { type: 'recurring-prompt'; item: QuickGiveItem }
+  | { type: 'wall-prompt'; pending: PendingDonation }
   | { type: 'thank-you'; label: string; phpAmount: number; isRecurring: boolean };
 
 export default function DonatePage() {
@@ -296,57 +392,20 @@ export default function DonatePage() {
     customMode === 'usd' ? customNumeric : phpToUsd(customNumeric);
   const customImpact = customUsd > 0 ? getImpactMessage(customUsd) : null;
 
-  async function handleCustomDonate() {
-    if (customPhp <= 0) return;
+  async function submitDonation(
+    pending: PendingDonation,
+    shareOnDonorWall: boolean,
+    donorWallName: string
+  ) {
     try {
       const res = await fetch(`${API}/api/my-donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          amount: Math.round(customPhp),
-          currencyCode: 'PHP',
-          isRecurring: false,
-          donationType: 'Monetary',
-          campaignName: 'Custom Donation',
-          impactUnit: customImpact || undefined,
-        }),
-      });
-      if (!res.ok) {
-        setDonationError('Unable to process donation. Please try again.');
-        return;
-      }
-      setDonationError('');
-      setModal({
-        type: 'thank-you',
-        label: 'Custom Donation',
-        phpAmount: Math.round(customPhp),
-        isRecurring: false,
-      });
-    } catch {
-      setDonationError('Unable to reach the server. Please try again.');
-    }
-  }
-
-  function handleQuickGive(item: QuickGiveItem) {
-    setModal({ type: 'recurring-prompt', item });
-  }
-
-  async function handleRecurringChoice(recurring: boolean) {
-    if (modal.type !== 'recurring-prompt') return;
-    const item = modal.item;
-    try {
-      const res = await fetch(`${API}/api/my-donations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          amount: item.phpAmount,
-          currencyCode: 'PHP',
-          isRecurring: recurring,
-          donationType: 'Monetary',
-          campaignName: item.label,
-          impactUnit: item.impactLine,
+          ...pending.payload,
+          shareOnDonorWall,
+          donorWallName: shareOnDonorWall ? donorWallName : undefined,
         }),
       });
       if (!res.ok) {
@@ -357,14 +416,59 @@ export default function DonatePage() {
       setDonationError('');
       setModal({
         type: 'thank-you',
-        label: item.label,
-        phpAmount: item.phpAmount,
-        isRecurring: recurring,
+        label: pending.label,
+        phpAmount: pending.phpAmount,
+        isRecurring: pending.isRecurring,
       });
     } catch {
       setDonationError('Unable to reach the server. Please try again.');
       setModal({ type: 'none' });
     }
+  }
+
+  function handleCustomDonate() {
+    if (customPhp <= 0) return;
+    setModal({
+      type: 'wall-prompt',
+      pending: {
+        label: 'Custom Donation',
+        phpAmount: Math.round(customPhp),
+        isRecurring: false,
+        payload: {
+          amount: Math.round(customPhp),
+          currencyCode: 'PHP',
+          isRecurring: false,
+          donationType: 'Monetary',
+          campaignName: 'Custom Donation',
+          impactUnit: customImpact || undefined,
+        },
+      },
+    });
+  }
+
+  function handleQuickGive(item: QuickGiveItem) {
+    setModal({ type: 'recurring-prompt', item });
+  }
+
+  function handleRecurringChoice(recurring: boolean) {
+    if (modal.type !== 'recurring-prompt') return;
+    const item = modal.item;
+    setModal({
+      type: 'wall-prompt',
+      pending: {
+        label: item.label,
+        phpAmount: item.phpAmount,
+        isRecurring: recurring,
+        payload: {
+          amount: item.phpAmount,
+          currencyCode: 'PHP',
+          isRecurring: recurring,
+          donationType: 'Monetary',
+          campaignName: item.label,
+          impactUnit: item.impactLine,
+        },
+      },
+    });
   }
 
   function closeModal() {
@@ -388,6 +492,15 @@ export default function DonatePage() {
           phpAmount={modal.phpAmount}
           isRecurring={modal.isRecurring}
           onClose={closeModal}
+        />
+      )}
+      {modal.type === 'wall-prompt' && (
+        <DonorWallPrompt
+          pending={modal.pending}
+          onCancel={closeModal}
+          onSubmit={(shareOnDonorWall, donorWallName) => {
+            void submitDonation(modal.pending, shareOnDonorWall, donorWallName);
+          }}
         />
       )}
 

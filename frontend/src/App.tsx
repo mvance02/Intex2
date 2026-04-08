@@ -17,6 +17,7 @@ import RegisterPage from './pages/public/RegisterPage';
 import LogoutPage from './pages/public/LogoutPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import ReferralPage from './pages/public/ReferralPage';
+import DonorWallPage from './pages/public/DonorWallPage';
 import NotFound from './pages/NotFound';
 
 // Admin pages — lazy loaded (code split, only fetched after login)
@@ -74,6 +75,7 @@ export default function App() {
                   <Route path="/logout"       element={<LogoutPage />} />
                   <Route path="/privacy"      element={<PrivacyPage />} />
                   <Route path="/referral"     element={<ReferralPage />} />
+                  <Route path="/donor-wall"   element={<DonorWallPage />} />
                 </Route>
 
                 {/* Donor — protected + lazy */}

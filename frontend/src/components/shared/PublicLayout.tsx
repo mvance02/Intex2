@@ -37,6 +37,13 @@ export default function PublicLayout() {
       >
         Get Help
       </Link>
+      <Link
+        to="/donor-wall"
+        onClick={() => setMenuOpen(false)}
+        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+      >
+        Donor Wall
+      </Link>
       {isAuthenticated && isAdmin && (
         <Link
           to="/admin"
