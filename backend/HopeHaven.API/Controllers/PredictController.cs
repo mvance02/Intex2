@@ -138,6 +138,18 @@ public class PredictController(
     }
 
     /// <summary>
+    /// POST /api/predict/social/weekly-schedule
+    /// Returns a diverse 7-day posting schedule optimized for a platform.
+    /// </summary>
+    [HttpPost("social/weekly-schedule")]
+    public async Task<IActionResult> PredictSocialWeeklySchedule([FromBody] SocialWeeklyScheduleRequest request)
+    {
+        var body = JsonSerializer.Serialize(request);
+        var result = await ForwardToSocialMl("/predict/weekly-schedule", body);
+        return result;
+    }
+
+    /// <summary>
     /// GET /api/predict/social/model-info
     /// Returns social planner model metadata.
     /// </summary>
@@ -217,6 +229,17 @@ public record SocialOptimizeRequest(
     [property: JsonPropertyName("mentions_count")] int? MentionsCount = null,
     [property: JsonPropertyName("caption_length")] int? CaptionLength = null,
     [property: JsonPropertyName("top_n")] int TopN = 10
+);
+public record SocialWeeklyScheduleRequest(
+    [property: JsonPropertyName("platform")] string Platform,
+    [property: JsonPropertyName("optimize_for")] string OptimizeFor = "donation_value",
+    [property: JsonPropertyName("is_boosted")] bool? IsBoosted = null,
+    [property: JsonPropertyName("boost_budget_php")] double? BoostBudgetPhp = null,
+    [property: JsonPropertyName("features_resident_story")] bool? FeaturesResidentStory = null,
+    [property: JsonPropertyName("has_call_to_action")] bool? HasCallToAction = null,
+    [property: JsonPropertyName("num_hashtags")] int? NumHashtags = null,
+    [property: JsonPropertyName("mentions_count")] int? MentionsCount = null,
+    [property: JsonPropertyName("caption_length")] int? CaptionLength = null
 );
 public record SocialDraftRequest(
     [property: JsonPropertyName("platform")] string Platform,
