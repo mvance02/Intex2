@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace HopeHaven.API.Controllers;
 
@@ -99,6 +101,52 @@ public class PredictController(
         }
     }
 
+    /// <summary>
+    /// POST /api/predict/social/draft
+    /// Proxies social post features to the social donation ML service.
+    /// </summary>
+    [HttpPost("social/draft")]
+    public async Task<IActionResult> PredictSocialDraft([FromBody] SocialDraftRequest request)
+    {
+        var body = JsonSerializer.Serialize(request);
+        var result = await ForwardToSocialMl("/predict/draft", body);
+        return result;
+    }
+
+    /// <summary>
+    /// POST /api/predict/social/draft/sweep-hours
+    /// Returns best posting hour recommendations for the same draft.
+    /// </summary>
+    [HttpPost("social/draft/sweep-hours")]
+    public async Task<IActionResult> PredictSocialDraftSweepHours([FromBody] SocialDraftRequest request)
+    {
+        var body = JsonSerializer.Serialize(request);
+        var result = await ForwardToSocialMl("/predict/draft/sweep-hours", body);
+        return result;
+    }
+
+    /// <summary>
+    /// GET /api/predict/social/model-info
+    /// Returns social planner model metadata.
+    /// </summary>
+    [HttpGet("social/model-info")]
+    public async Task<IActionResult> SocialModelInfo()
+    {
+        var client = httpClientFactory.CreateClient("MLSocialService");
+        try
+        {
+            var response = await client.GetAsync("/model-info");
+            var json = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode, json);
+            return Content(json, "application/json");
+        }
+        catch (HttpRequestException)
+        {
+            return StatusCode(503, new { message = "Social ML service is not reachable." });
+        }
+    }
+
     // Returns null on network error, "notfound" on 404, JSON string on success
     private async Task<string?> FetchFromMl(int residentId)
     {
@@ -121,6 +169,45 @@ public class PredictController(
             return null;
         }
     }
+
+    private async Task<IActionResult> ForwardToSocialMl(string path, string jsonBody)
+    {
+        var client = httpClientFactory.CreateClient("MLSocialService");
+        using var content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await client.PostAsync(path, content);
+            var json = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return NotFound(new { message = "Social prediction route not found in ML service." });
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode, json);
+            return Content(json, "application/json");
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogWarning(ex, "Social ML service unreachable for path {Path}", path);
+            return StatusCode(503, new { message = "Social ML service is not reachable." });
+        }
+    }
 }
 
 public record BatchPredictRequest(int[] ResidentIds);
+public record SocialDraftRequest(
+    [property: JsonPropertyName("platform")] string Platform,
+    [property: JsonPropertyName("day_of_week")] string DayOfWeek,
+    [property: JsonPropertyName("post_hour")] int PostHour,
+    [property: JsonPropertyName("post_type")] string PostType,
+    [property: JsonPropertyName("media_type")] string MediaType,
+    [property: JsonPropertyName("content_topic")] string ContentTopic,
+    [property: JsonPropertyName("sentiment_tone")] string SentimentTone,
+    [property: JsonPropertyName("num_hashtags")] int NumHashtags,
+    [property: JsonPropertyName("mentions_count")] int MentionsCount,
+    [property: JsonPropertyName("has_call_to_action")] bool HasCallToAction,
+    [property: JsonPropertyName("call_to_action_type")] string CallToActionType,
+    [property: JsonPropertyName("features_resident_story")] bool FeaturesResidentStory,
+    [property: JsonPropertyName("caption_length")] int CaptionLength,
+    [property: JsonPropertyName("is_boosted")] bool IsBoosted,
+    [property: JsonPropertyName("boost_budget_php")] double BoostBudgetPhp
+);

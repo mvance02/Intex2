@@ -29,6 +29,7 @@ const HomeVisitations    = lazy(() => import('./pages/admin/HomeVisitations'));
 const ReportsAnalytics   = lazy(() => import('./pages/admin/ReportsAnalytics'));
 const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
 const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
+const SocialDonationPredictor = lazy(() => import('./pages/admin/SocialDonationPredictor'));
 const UserManagement     = lazy(() => import('./pages/admin/UserManagement'));
 
 // Donor pages — lazy loaded
@@ -196,6 +197,14 @@ export default function App() {
                     element={
                       <Suspense fallback={<PageFallback />}>
                         <SocialMediaPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/admin/social-donation"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <SocialDonationPredictor />
                       </Suspense>
                     }
                   />

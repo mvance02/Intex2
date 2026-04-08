@@ -356,3 +356,43 @@ export interface SafehouseSummaryItem {
   currentOccupancy: number | null;
   activeResidents: number;
 }
+
+export interface SocialDraftPredictionRequest {
+  platform: string;
+  day_of_week: string;
+  post_hour: number;
+  post_type: string;
+  media_type: string;
+  content_topic: string;
+  sentiment_tone: string;
+  num_hashtags: number;
+  mentions_count: number;
+  has_call_to_action: boolean;
+  call_to_action_type: string;
+  features_resident_story: boolean;
+  caption_length: number;
+  is_boosted: boolean;
+  boost_budget_php: number;
+}
+
+export interface SocialDraftPredictionResult {
+  predicted_donation_referrals: number;
+  predicted_estimated_donation_value_php: number;
+  high_performer_probability: number;
+  high_performer_class: number;
+  high_performer_definition: string | null;
+  training_threshold_referrals: number | null;
+  performance_band_label: string;
+  performance_band_key: 'high' | 'mid' | 'low' | string;
+  high_performer_classifier: string | null;
+  disclaimer: string;
+}
+
+export interface SocialDraftSweepHourResult {
+  best_post_hour: number;
+  predicted_donation_referrals_at_best: number;
+  sweep: Array<{
+    post_hour: number;
+    predicted_donation_referrals: number;
+  }>;
+}
