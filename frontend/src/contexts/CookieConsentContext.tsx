@@ -6,12 +6,13 @@ const STORAGE_KEY = 'hh_cookie_consent';
 interface CookieConsentContextValue {
   hasAcknowledgedConsent: boolean;
   acknowledgeConsent: () => void;
+  declineConsent: () => void;
 }
 const CookieConsentContext = createContext<CookieConsentContextValue | undefined>(undefined);
 
 function readInitial() {
-  return typeof window !== 'undefined' &&
-    window.localStorage.getItem(STORAGE_KEY) === 'accepted';
+  const val = typeof window !== 'undefined' ? window.localStorage.getItem(STORAGE_KEY) : null;
+  return val === 'accepted' || val === 'declined';
 }
 
 export function CookieConsentProvider({ children }: { children: ReactNode }) {
@@ -20,6 +21,10 @@ export function CookieConsentProvider({ children }: { children: ReactNode }) {
     hasAcknowledgedConsent: ack,
     acknowledgeConsent() {
       window.localStorage.setItem(STORAGE_KEY, 'accepted');
+      setAck(true);
+    },
+    declineConsent() {
+      window.localStorage.setItem(STORAGE_KEY, 'declined');
       setAck(true);
     },
   }), [ack]);

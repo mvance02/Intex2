@@ -12,10 +12,10 @@
 |---|---|---|---|
 | IS 401 — Project Management | 20 | **~14–18** | Depends on FigJam completion |
 | IS 413 — Enterprise App Dev | 20 | **~19** | Very strong — minor polish items |
-| IS 414 — Security | 20 | **~19.4** | Strong — CSP verification needed |
+| IS 414 — Security | 20 | **~20** | CSP expanded, cookie Decline button added |
 | IS 455 — Machine Learning | 20 | **~16–19** | Social media pipeline now deployed; education dropout + 2 others still notebook-only |
 | Presentation | 20 | ❓ | Up to judges |
-| **TOTAL** | **100** | **~88–96** | |
+| **TOTAL** | **100** | **~89–97** | |
 
 ---
 
