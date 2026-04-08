@@ -62,7 +62,7 @@ export default function ReferralPage() {
           respond within 48 hours. If this is an emergency, please contact local authorities
           immediately.
         </p>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-600">
           Reference number: <span className="font-mono font-semibold">{refNumber}</span>
         </p>
       </div>
@@ -89,10 +89,11 @@ export default function ReferralPage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="subjectAge" className="block text-sm font-medium text-gray-700 mb-1">
                 Approximate Age <span className="text-gray-400">(optional)</span>
               </label>
               <input
+                id="subjectAge"
                 type="text"
                 name="subjectAge"
                 value={form.subjectAge}
@@ -102,10 +103,11 @@ export default function ReferralPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="subjectLocation" className="block text-sm font-medium text-gray-700 mb-1">
                 Location / Area <span className="text-red-500">*</span>
               </label>
               <input
+                id="subjectLocation"
                 type="text"
                 name="subjectLocation"
                 value={form.subjectLocation}
@@ -118,10 +120,11 @@ export default function ReferralPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="situation" className="block text-sm font-medium text-gray-700 mb-1">
               Describe the Situation <span className="text-red-500">*</span>
             </label>
             <textarea
+              id="situation"
               name="situation"
               value={form.situation}
               onChange={handleChange}
@@ -133,8 +136,9 @@ export default function ReferralPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Urgency Level</label>
+            <label htmlFor="urgency" className="block text-sm font-medium text-gray-700 mb-1">Urgency Level</label>
             <select
+              id="urgency"
               name="urgency"
               value={form.urgency}
               onChange={handleChange}
@@ -164,8 +168,9 @@ export default function ReferralPage() {
           {!form.anonymous && (
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                <label htmlFor="referrerName" className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
                 <input
+                  id="referrerName"
                   type="text"
                   name="referrerName"
                   value={form.referrerName}
@@ -175,8 +180,9 @@ export default function ReferralPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone or Email</label>
+                <label htmlFor="referrerContact" className="block text-sm font-medium text-gray-700 mb-1">Phone or Email</label>
                 <input
+                  id="referrerContact"
                   type="text"
                   name="referrerContact"
                   value={form.referrerContact}
@@ -201,7 +207,7 @@ export default function ReferralPage() {
           {state === 'submitting' ? 'Submitting…' : 'Submit Referral'}
         </button>
 
-        <p className="text-xs text-gray-400 text-center">
+        <p className="text-xs text-gray-600 text-center">
           All referrals are kept strictly confidential and reviewed only by licensed social workers.
         </p>
       </form>
