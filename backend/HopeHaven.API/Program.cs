@@ -93,10 +93,16 @@ builder.Services.AddHttpClient("MLService", c =>
 var app = builder.Build();
 
 // ── Seed Identity roles and default admin ─────────────────────────────────
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     await AuthIdentityGenerator.GenerateDefaultIdentityAsync(
         scope.ServiceProvider, app.Configuration);
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "Identity seeding skipped — database may be unreachable.");
 }
 
 // ── Pipeline ───────────────────────────────────────────────────────────────
