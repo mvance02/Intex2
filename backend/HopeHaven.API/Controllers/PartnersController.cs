@@ -52,4 +52,15 @@ public class PartnersController(HopeHavenDbContext db) : ControllerBase
         }
         return NoContent();
     }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = AuthPolicies.ManageContent)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var partner = await db.Partners.FindAsync(id);
+        if (partner is null) return NotFound();
+        db.Partners.Remove(partner);
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
 }

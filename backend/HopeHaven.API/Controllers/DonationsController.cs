@@ -9,7 +9,6 @@ namespace HopeHaven.API.Controllers;
 [ApiController]
 [Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
-[Authorize]
 public class DonationsController(HopeHavenDbContext db) : ControllerBase
 {
     [HttpGet]
