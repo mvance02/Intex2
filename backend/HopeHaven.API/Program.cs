@@ -141,6 +141,20 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Global error handler — surfaces errors as JSON instead of empty 500s
+app.UseExceptionHandler(err => err.Run(async ctx =>
+{
+    ctx.Response.StatusCode = 500;
+    ctx.Response.ContentType = "application/json";
+    var ex = ctx.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+    await ctx.Response.WriteAsJsonAsync(new
+    {
+        error = ex?.Message,
+        inner = ex?.InnerException?.Message,
+        type = ex?.GetType().Name
+    });
+}));
+
 app.UseSecurityHeaders();
 
 // HTTPS redirect only in dev — Railway terminates TLS at the proxy layer
