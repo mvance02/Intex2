@@ -509,36 +509,41 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-white py-12 px-6 border-b border-gray-100">
+      <section className="bg-slate-50 py-24 px-6 border-y border-slate-200">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
             <div>
-              <p className="text-xs font-semibold tracking-[0.18em] uppercase text-teal-700 mb-1">
+              <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase mb-3">
                 Donor Recognition
               </p>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Wall of Donors</h2>
+              <h2 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900">
+                Wall of Donors
+              </h2>
+              <p className="text-slate-600 text-sm mt-2 max-w-xl">
+                Thank you to everyone who stands with our girls. See every name on the full wall.
+              </p>
             </div>
             <Link
               to="/donor-wall"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-teal-200 text-teal-700 font-semibold hover:bg-teal-50 transition-colors"
+              className="inline-flex items-center justify-center shrink-0 px-6 py-3 border border-sky-300 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] hover:bg-sky-300 hover:text-slate-900 transition-colors"
             >
               View Full Wall
             </Link>
           </div>
 
           {donorWallPreview.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {donorWallPreview.map((entry) => (
                 <div
                   key={`${entry.displayName}-${entry.latestDonationDate ?? 'n/a'}`}
-                  className="rounded-xl bg-teal-50/60 border border-teal-100 px-4 py-3 text-center"
+                  className="border border-slate-200 bg-white px-4 py-4 text-center shadow-sm"
                 >
-                  <p className="font-semibold text-gray-800 truncate">{entry.displayName}</p>
+                  <p className="font-semibold text-slate-800 text-sm truncate">{entry.displayName}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-600 max-w-xl">
               Be the first to join our donor wall when you make a donation.
             </p>
           )}
@@ -768,21 +773,23 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/* Anonymous Referral Banner                                           */}
       {/* ------------------------------------------------------------------ */}
-      <section className="bg-amber-50 border-y border-amber-100 py-10 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+      <section className="bg-slate-100 border-y border-slate-200 py-24 px-6">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-end sm:justify-between gap-8 text-center sm:text-left">
           <div>
-            <p className="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-1">
+            <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase mb-3">
               Know someone who needs help?
             </p>
-            <h2 className="text-xl font-bold text-gray-800 mb-1">Submit an Anonymous Referral</h2>
-            <p className="text-gray-500 text-sm max-w-lg">
+            <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 mb-3">
+              Submit an Anonymous Referral
+            </h2>
+            <p className="text-slate-600 text-sm max-w-2xl leading-relaxed">
               If you know a child or young woman who may need shelter, counseling, or protection,
               you can alert our social workers confidentially — no account required.
             </p>
           </div>
           <Link
             to="/referral"
-            className="shrink-0 px-7 py-3 bg-amber-600 text-white font-semibold rounded-full hover:bg-amber-700 transition-colors"
+            className="inline-flex shrink-0 items-center justify-center px-7 py-3 bg-slate-900 text-white font-semibold uppercase text-sm tracking-[0.1em] border border-slate-900 hover:bg-slate-800 transition-colors"
           >
             Make a Referral
           </Link>
