@@ -49,8 +49,13 @@ export default function ImpactDashboard() {
       apiFetch<SafehouseSummaryItem[]>('/api/dashboard/safehouse-summary'),
     ])
       .then(([trendsRes, snapshotsRes, safehousesRes]) => {
+        const now = new Date();
         setTrends(trendsRes.trends ?? []);
-        setSnapshots(snapshotsRes);
+        setSnapshots(
+          snapshotsRes.filter(
+            (s) => !s.snapshotDate || new Date(s.snapshotDate) <= now,
+          ),
+        );
         setSafehouses(safehousesRes);
       })
       .catch((e: Error) => setError(e.message))

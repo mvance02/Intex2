@@ -42,6 +42,13 @@ export async function getAuthSession(): Promise<AuthSession> {
   if (!r.ok) throw new Error('Unable to load auth session.');
   return r.json();
 }
+export async function assignDefaultRole(email: string): Promise<void> {
+  const r = await fetch(`${apiBaseUrl}/api/account/assign-default-role`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', body: JSON.stringify({ email }),
+  });
+  if (!r.ok) throw new Error(await readApiError(r, 'Unable to assign role.'));
+}
 export async function registerUser(email: string, password: string): Promise<void> {
   const r = await fetch(`${apiBaseUrl}/api/auth/register`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
