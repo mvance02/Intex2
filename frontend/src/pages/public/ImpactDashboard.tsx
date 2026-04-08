@@ -11,7 +11,7 @@ import {
   Bar,
   Legend,
 } from 'recharts';
-import { apiFetch } from '../../utils/api';
+import { apiFetch, displaySafehouseName } from '../../utils/api';
 import type { PublicImpactSnapshot, SafehouseSummaryItem } from '../../types/models';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorAlert from '../../components/shared/ErrorAlert';
@@ -56,7 +56,7 @@ export default function ImpactDashboard() {
             (s) => !s.snapshotDate || new Date(s.snapshotDate) <= now,
           ),
         );
-        setSafehouses(safehousesRes);
+        setSafehouses(safehousesRes.map((s) => ({ ...s, name: displaySafehouseName(s.name) })));
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
@@ -162,9 +162,13 @@ export default function ImpactDashboard() {
                         })}
                       </p>
                     )}
-                    <h3 className="text-base font-semibold text-gray-800 mb-2">{snap.headline}</h3>
+                    <h3 className="text-base font-semibold text-gray-800 mb-2">
+                      {snap.headline?.replace(/Lighthouse\s+Sanctuary/gi, 'Hope Haven Sanctuary')}
+                    </h3>
                     {snap.summaryText && (
-                      <p className="text-sm text-gray-500 leading-relaxed">{snap.summaryText}</p>
+                      <p className="text-sm text-gray-500 leading-relaxed">
+                        {snap.summaryText.replace(/Lighthouse\s+Sanctuary/gi, 'Hope Haven Sanctuary')}
+                      </p>
                     )}
                   </article>
                 ))}

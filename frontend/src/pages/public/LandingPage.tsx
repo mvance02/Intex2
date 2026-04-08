@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Home, HeartPulse, GraduationCap, Utensils } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Home, HeartPulse, GraduationCap, Utensils, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
 import type { DashboardMetrics } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
@@ -364,9 +365,65 @@ function PhilippinesMap({ hoveredCity, onPinHover }: PhilippinesMapProps) {
 // Page
 // ---------------------------------------------------------------------------
 
+function DonatePromptModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close"
+        >
+          <X size={18} />
+        </button>
+        <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <HeartPulse size={24} className="text-teal-600" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-800 mb-2">Support a Girl</h3>
+        <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+          Create an account or log in to make a donation and change a life today.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Link
+            to="/login"
+            onClick={onClose}
+            className="px-5 py-2.5 border border-teal-600 text-teal-600 font-semibold rounded-full hover:bg-teal-50 transition-colors text-sm"
+          >
+            Log In
+          </Link>
+          <Link
+            to="/register"
+            onClick={onClose}
+            className="px-5 py-2.5 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors text-sm"
+          >
+            Create Account
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
+  const [showDonatePrompt, setShowDonatePrompt] = useState(false);
+
+  function handleDonateClick() {
+    if (isAuthenticated) {
+      navigate('/donor/donate');
+    } else {
+      setShowDonatePrompt(true);
+    }
+  }
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
@@ -382,6 +439,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col">
+      {showDonatePrompt && <DonatePromptModal onClose={() => setShowDonatePrompt(false)} />}
 
       {/* ------------------------------------------------------------------ */}
       {/* Hero — background image + dark overlay                              */}
@@ -409,12 +467,12 @@ export default function LandingPage() {
             >
               See Our Impact
             </Link>
-            <Link
-              to="/donor/donate"
+            <button
+              onClick={handleDonateClick}
               className="px-7 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             >
               Support a Girl
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -486,12 +544,12 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="text-center mt-10">
-            <Link
-              to="/donor/donate"
-              className="inline-block px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+            <button
+              onClick={handleDonateClick}
+              className="px-8 py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
             >
               Make a Donation
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -673,12 +731,12 @@ export default function LandingPage() {
             >
               Explore Impact →
             </Link>
-            <Link
-              to="/donor/donate"
+            <button
+              onClick={handleDonateClick}
               className="px-8 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors"
             >
               Give Now
-            </Link>
+            </button>
           </div>
         </div>
       </section>
