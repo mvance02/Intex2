@@ -42,7 +42,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
             aria-current={item === page ? 'page' : undefined}
             className={`min-w-11 min-h-11 px-3 py-2 rounded text-sm cursor-pointer transition-colors duration-150 ${
               item === page
-                ? 'bg-teal-600 text-white font-semibold'
+                ? 'bg-blue-600 text-white font-semibold'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >

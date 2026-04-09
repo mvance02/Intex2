@@ -160,10 +160,10 @@ export default function SocialDonationPredictor() {
   }, [weeklyTarget]);
 
   const tabClass = (key: TabKey) =>
-    `px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+    `px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] transition-colors border-b-2 ${
       activeTab === key
-        ? 'bg-white text-teal-700 border border-b-0 border-gray-200'
-        : 'bg-gray-50 text-gray-500 hover:text-gray-700 border border-transparent'
+        ? 'text-blue-700 border-blue-600'
+        : 'text-gray-500 border-transparent hover:text-gray-700'
     }`;
 
   return (
@@ -176,13 +176,13 @@ export default function SocialDonationPredictor() {
       </div>
 
       {serviceUnavailable && (
-        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2">
           The predictor service is currently unavailable. Please verify backend config and ensure the social ML API is running.
         </p>
       )}
 
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-0 border-b border-gray-200">
         <button type="button" className={tabClass('weekly')} onClick={() => setActiveTab('weekly')}>
           Weekly Schedule
         </button>
@@ -196,7 +196,7 @@ export default function SocialDonationPredictor() {
 
       {/* ====================== WEEKLY SCHEDULE TAB ====================== */}
       {activeTab === 'weekly' && (
-        <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-5">
+        <section className="bg-white border border-gray-200 p-5 space-y-5">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Weekly Posting Schedule</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -211,7 +211,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={weeklyTarget}
                 onChange={(e) => setWeeklyTarget(e.target.value as 'donation_value' | 'referrals')}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 <option value="donation_value">Maximize Donation Value</option>
                 <option value="referrals">Maximize Referrals</option>
@@ -222,7 +222,7 @@ export default function SocialDonationPredictor() {
                 type="button"
                 onClick={runWeeklySchedule}
                 disabled={weeklyLoading}
-                className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-teal-700 text-white hover:bg-teal-800 transition-colors disabled:opacity-60"
+                className="w-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-60"
               >
                 {weeklyLoading ? 'Generating schedule...' : 'Generate Weekly Schedule'}
               </button>
@@ -235,9 +235,9 @@ export default function SocialDonationPredictor() {
             <div className="space-y-4">
               {/* Weekly total summary */}
               <div className="flex items-center gap-4">
-                <div className="bg-teal-50 border border-teal-200 rounded-lg px-4 py-2">
-                  <p className="text-xs text-teal-600 uppercase tracking-wide">Projected Weekly Total</p>
-                  <p className="text-2xl font-bold text-teal-700">
+                <div className="bg-blue-50 border border-blue-200 px-4 py-2">
+                  <p className="text-xs text-blue-600 uppercase tracking-wide">Projected Weekly Total</p>
+                  <p className="text-2xl font-bold text-blue-700">
                     {weeklyResult.optimize_for === 'referrals'
                       ? weeklyResult.weekly_total_predicted.toFixed(1) + ' referrals'
                       : formatPeso(weeklyResult.weekly_total_predicted)}
@@ -254,16 +254,16 @@ export default function SocialDonationPredictor() {
                 {weeklyResult.schedule.map((day) => (
                   <div
                     key={day.day_of_week}
-                    className="rounded-xl border border-gray-200 p-4 space-y-2 hover:border-teal-300 hover:shadow-sm transition-all"
+                    className="border border-gray-200 p-4 space-y-2 hover:border-blue-400 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <p className="font-semibold text-gray-900 text-sm">{day.day_of_week}</p>
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5">
                         {formatHour(day.post_hour)}
                       </span>
                     </div>
                     <div className="mb-1">
-                      <span className="text-xs font-medium bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-semibold uppercase tracking-[0.06em] bg-blue-100 text-blue-800 px-2 py-0.5">
                         {day.platform}
                       </span>
                     </div>
@@ -275,7 +275,7 @@ export default function SocialDonationPredictor() {
                       <p><span className="text-gray-400">CTA:</span> {day.call_to_action_type}</p>
                     </div>
                     <div className="pt-1 border-t border-gray-100">
-                      <p className="text-sm font-semibold text-teal-700">
+                      <p className="text-sm font-semibold text-blue-700">
                         {weeklyResult.optimize_for === 'referrals'
                           ? day.predicted_value.toFixed(2) + ' ref.'
                           : formatPeso(day.predicted_value)}
@@ -293,7 +293,7 @@ export default function SocialDonationPredictor() {
 
       {/* ====================== OPTIMIZER TAB ====================== */}
       {activeTab === 'optimizer' && (
-        <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-5">
+        <section className="bg-white border border-gray-200 p-5 space-y-5">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Find the Optimal Post</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -308,7 +308,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={optPlatform}
                 onChange={(e) => setOptPlatform(e.target.value)}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {PLATFORM_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -320,7 +320,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={optTarget}
                 onChange={(e) => setOptTarget(e.target.value as 'donation_value' | 'referrals')}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 <option value="donation_value">Maximize Donation Value (₱)</option>
                 <option value="referrals">Maximize Referrals</option>
@@ -331,7 +331,7 @@ export default function SocialDonationPredictor() {
                 type="button"
                 onClick={runOptimizer}
                 disabled={optLoading}
-                className="w-full px-4 py-2 rounded-lg text-sm font-medium bg-teal-700 text-white hover:bg-teal-800 transition-colors disabled:opacity-60"
+                className="w-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-60"
               >
                 {optLoading ? 'Analyzing combinations...' : 'Find Optimal Post'}
               </button>
@@ -343,7 +343,7 @@ export default function SocialDonationPredictor() {
           {optResult && (
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-sm text-gray-600">
-                <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded font-medium">
+                <span className="bg-blue-50 text-blue-700 px-2 py-1 font-medium">
                   {optResult.total_combinations_evaluated.toLocaleString()} combinations evaluated
                 </span>
                 <span>for <span className="font-semibold">{optResult.platform}</span></span>
@@ -351,8 +351,8 @@ export default function SocialDonationPredictor() {
 
               {/* Top recommendation highlight */}
               {optResult.recommendations.length > 0 && (
-                <div className="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl p-5">
-                  <p className="text-xs text-teal-600 uppercase tracking-wide font-semibold mb-2">
+                <div className="bg-blue-50 border border-blue-200 p-5">
+                  <p className="text-xs text-blue-600 uppercase tracking-wide font-semibold mb-2">
                     #1 Recommended Post
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -388,7 +388,7 @@ export default function SocialDonationPredictor() {
                       <p className="text-xs text-gray-500">
                         {optResult.optimize_for === 'referrals' ? 'Predicted Referrals' : 'Predicted Value'}
                       </p>
-                      <p className="font-bold text-teal-700 text-lg">
+                      <p className="font-bold text-blue-700 text-lg">
                         {optResult.optimize_for === 'referrals'
                           ? optResult.recommendations[0].predicted_value.toFixed(2)
                           : formatPeso(optResult.recommendations[0].predicted_value)}
@@ -427,7 +427,7 @@ export default function SocialDonationPredictor() {
                         <td className="py-2 pr-3">{rec.content_topic}</td>
                         <td className="py-2 pr-3">{rec.sentiment_tone}</td>
                         <td className="py-2 pr-3">{rec.call_to_action_type}</td>
-                        <td className="py-2 pr-3 text-right font-semibold text-teal-700">
+                        <td className="py-2 pr-3 text-right font-semibold text-blue-700">
                           {optResult.optimize_for === 'referrals'
                             ? rec.predicted_value.toFixed(2)
                             : formatPeso(rec.predicted_value)}
@@ -446,7 +446,7 @@ export default function SocialDonationPredictor() {
 
       {/* ====================== MANUAL PREDICTION TAB ====================== */}
       {activeTab === 'manual' && (
-        <section className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
+        <section className="bg-white border border-gray-200 p-5 space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Manual Post Prediction</h2>
             <p className="text-sm text-gray-500 mt-1">
@@ -460,7 +460,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={socialDraft.platform}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, platform: e.target.value }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {PLATFORM_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -472,7 +472,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={socialDraft.day_of_week}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, day_of_week: e.target.value }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {DAY_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -487,7 +487,7 @@ export default function SocialDonationPredictor() {
                 max={23}
                 value={socialDraft.post_hour}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, post_hour: Number(e.target.value || 0) }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               />
             </label>
             <label className="text-sm text-gray-700">
@@ -495,7 +495,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={socialDraft.post_type}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, post_type: e.target.value }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {POST_TYPE_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -507,7 +507,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={socialDraft.media_type}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, media_type: e.target.value }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {MEDIA_TYPE_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -519,7 +519,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={socialDraft.content_topic}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, content_topic: e.target.value }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {CONTENT_TOPIC_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -531,7 +531,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={socialDraft.sentiment_tone}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, sentiment_tone: e.target.value }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {SENTIMENT_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -543,7 +543,7 @@ export default function SocialDonationPredictor() {
               <select
                 value={socialDraft.call_to_action_type}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, call_to_action_type: e.target.value }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               >
                 {CTA_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -557,7 +557,7 @@ export default function SocialDonationPredictor() {
                 min={0}
                 value={socialDraft.num_hashtags}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, num_hashtags: Number(e.target.value || 0) }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               />
             </label>
             <label className="text-sm text-gray-700">
@@ -567,7 +567,7 @@ export default function SocialDonationPredictor() {
                 min={0}
                 value={socialDraft.mentions_count}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, mentions_count: Number(e.target.value || 0) }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               />
             </label>
             <label className="text-sm text-gray-700">
@@ -577,7 +577,7 @@ export default function SocialDonationPredictor() {
                 min={0}
                 value={socialDraft.caption_length}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, caption_length: Number(e.target.value || 0) }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               />
             </label>
             <label className="text-sm text-gray-700">
@@ -588,7 +588,7 @@ export default function SocialDonationPredictor() {
                 step={100}
                 value={socialDraft.boost_budget_php}
                 onChange={(e) => setSocialDraft((prev) => ({ ...prev, boost_budget_php: Number(e.target.value || 0) }))}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
               />
             </label>
             <label className="text-sm text-gray-700 flex items-center gap-2 mt-6">
@@ -625,7 +625,7 @@ export default function SocialDonationPredictor() {
               type="button"
               onClick={runSocialPrediction}
               disabled={socialLoading}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-teal-700 text-white hover:bg-teal-800 transition-colors disabled:opacity-60"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-blue-700 text-white hover:bg-blue-800 transition-colors disabled:opacity-60"
             >
               {socialLoading ? 'Running prediction...' : 'Run Prediction'}
             </button>
@@ -634,15 +634,15 @@ export default function SocialDonationPredictor() {
 
           {socialResult && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-              <div className="rounded-lg border border-gray-200 p-3">
+              <div className="border border-gray-200 p-3">
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Predicted referrals</p>
                 <p className="text-xl font-semibold text-gray-900">{socialResult.predicted_donation_referrals.toFixed(2)}</p>
               </div>
-              <div className="rounded-lg border border-gray-200 p-3">
+              <div className="border border-gray-200 p-3">
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Predicted donation value</p>
                 <p className="text-xl font-semibold text-gray-900">{formatPeso(socialResult.predicted_estimated_donation_value_php)}</p>
               </div>
-              <div className="rounded-lg border border-gray-200 p-3">
+              <div className="border border-gray-200 p-3">
                 <p className="text-xs text-gray-500 uppercase tracking-wide">High-performer probability</p>
                 <p className="text-xl font-semibold text-gray-900">{formatPercent(socialResult.high_performer_probability)}</p>
               </div>

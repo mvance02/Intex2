@@ -15,7 +15,7 @@ export default function KpiCard({
   label,
   value,
   Icon,
-  iconColor = 'text-teal-600',
+  iconColor = 'text-blue-600',
   trend,
   trendLabel,
   colorClass = 'bg-white',
@@ -26,11 +26,11 @@ export default function KpiCard({
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
 
   return (
-    <div className={`${colorClass} rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-2`}>
+    <div className={`${colorClass} border border-gray-200 p-5 flex flex-col gap-2`}>
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-500">{label}</span>
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-[0.08em]">{label}</span>
         {Icon && (
-          <div className={`p-2 rounded-lg bg-gray-50 ${iconColor}`}>
+          <div className={`p-2 bg-gray-50 ${iconColor}`}>
             <Icon size={18} aria-hidden="true" />
           </div>
         )}

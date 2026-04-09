@@ -91,10 +91,10 @@ export default function AdminLayout() {
               key={path}
               to={path}
               aria-current={active ? 'page' : undefined}
-              className={`flex items-center gap-3 px-3 py-3 text-sm font-semibold uppercase tracking-[0.06em] transition-colors duration-150 ${
+              className={`flex items-center gap-3 px-3 py-3 text-sm font-semibold uppercase tracking-[0.06em] transition-colors duration-150 border-l-[3px] ${
                 active
-                  ? 'bg-sky-300 text-slate-900'
-                  : 'text-slate-200 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-slate-800 text-white border-blue-500'
+                  : 'text-slate-300 hover:bg-slate-800 hover:text-white border-transparent'
               }`}
             >
               <Icon size={17} aria-hidden="true" className="shrink-0" />
@@ -145,7 +145,7 @@ export default function AdminLayout() {
         <header className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3.5 flex items-center gap-4 sticky top-0 z-30 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
-          className="lg:hidden p-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors min-h-11 min-w-11"
+          className="lg:hidden p-2.5 text-slate-500 hover:bg-slate-100 transition-colors min-h-11 min-w-11"
             aria-label="Open navigation"
             aria-expanded={sidebarOpen}
           >

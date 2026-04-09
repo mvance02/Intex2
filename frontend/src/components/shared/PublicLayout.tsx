@@ -4,7 +4,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Menu, X, LogOut } from 'lucide-react';
 import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg';
 
-
 export default function PublicLayout() {
   const { isAuthenticated, authSession, logout } = useAuth();
   const navigate = useNavigate();

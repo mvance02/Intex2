@@ -21,7 +21,7 @@ from pydantic import BaseModel
 warnings.filterwarnings("ignore")
 
 # ── Load artefacts once at startup ────────────────────────────────────────────
-MODEL_PATH = Path(__file__).parent / "models" / "reintegration_pipeline.pkl"
+MODEL_PATH = Path(__file__).parent / "models" / "reintegration_pipeline.joblib"
 
 if not MODEL_PATH.exists():
     raise FileNotFoundError(

@@ -127,12 +127,12 @@ export default function UserManagement() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="mb-4 bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
         <table className="min-w-[760px] w-full text-sm">
           <thead>
@@ -150,18 +150,18 @@ export default function UserManagement() {
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3 text-gray-800 font-medium">{user.email}</td>
                 <td className="px-4 py-3 text-center">
-                  <span className={`inline-block w-2 h-2 rounded-full ${user.emailConfirmed ? 'bg-green-400' : 'bg-gray-300'}`} />
+                  <span className={`inline-block w-2 h-2 ${user.emailConfirmed ? 'bg-green-400' : 'bg-gray-300'}`} />
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <span className={`inline-block w-2 h-2 rounded-full ${user.twoFactorEnabled ? 'bg-green-400' : 'bg-gray-300'}`} />
+                  <span className={`inline-block w-2 h-2 ${user.twoFactorEnabled ? 'bg-green-400' : 'bg-gray-300'}`} />
                 </td>
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => void toggleRole(user, 'Admin')}
                     disabled={updatingId === user.id}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.06em] transition-colors ${
                       user.roles.includes('Admin')
-                        ? 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                         : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                     }`}
                     title={user.roles.includes('Admin') ? 'Remove Admin role' : 'Grant Admin role'}
@@ -180,7 +180,7 @@ export default function UserManagement() {
                   <button
                     onClick={() => void toggleRole(user, 'Donor')}
                     disabled={updatingId === user.id}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.06em] transition-colors ${
                       user.roles.includes('Donor')
                         ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                         : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
@@ -199,19 +199,19 @@ export default function UserManagement() {
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
                     <button
                       onClick={() => setViewTarget(user)}
-                      className="w-full sm:w-auto px-2.5 py-2 text-xs rounded border border-gray-200 text-gray-700 hover:bg-gray-50"
+                      className="w-full sm:w-auto px-2.5 py-2 text-xs border border-gray-200 text-gray-700 hover:bg-gray-50"
                     >
                       View
                     </button>
                     <button
                       onClick={() => openEdit(user)}
-                      className="w-full sm:w-auto px-2.5 py-2 text-xs rounded border border-teal-200 text-teal-700 hover:bg-teal-50"
+                      className="w-full sm:w-auto px-2.5 py-2 text-xs border border-blue-200 text-blue-700 hover:bg-blue-50"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteTarget(user)}
-                      className="w-full sm:w-auto px-2.5 py-2 text-xs rounded border border-red-200 text-red-700 hover:bg-red-50"
+                      className="w-full sm:w-auto px-2.5 py-2 text-xs border border-red-200 text-red-700 hover:bg-red-50"
                     >
                       Delete
                     </button>
@@ -261,7 +261,7 @@ export default function UserManagement() {
               type="email"
               value={form.email}
               onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-300 px-3 py-2 text-sm"
               required
             />
           </div>
@@ -271,7 +271,7 @@ export default function UserManagement() {
               type="text"
               value={form.userName}
               onChange={(e) => setForm((prev) => ({ ...prev, userName: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-300 px-3 py-2 text-sm"
               required
             />
           </div>
@@ -280,14 +280,14 @@ export default function UserManagement() {
             <button
               type="button"
               onClick={closeEdit}
-              className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-200 text-sm text-gray-700 hover:bg-gray-50"
               disabled={formLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-teal-700 text-white text-sm font-medium hover:bg-teal-800 disabled:opacity-60"
+              className="px-4 py-2 bg-blue-700 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-blue-800 disabled:opacity-60"
               disabled={formLoading}
             >
               {formLoading ? 'Saving...' : 'Save Changes'}

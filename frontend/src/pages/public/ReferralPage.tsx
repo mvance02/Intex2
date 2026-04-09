@@ -54,17 +54,17 @@ export default function ReferralPage() {
     return (
       <div className="max-w-xl mx-auto px-6 py-20 text-center">
         <div className="flex justify-center mb-6">
-          <div className="bg-teal-100 p-4 rounded-full">
-            <ShieldCheck size={40} className="text-teal-600" />
+          <div className="bg-slate-100 p-4 border border-slate-200">
+            <ShieldCheck size={40} className="text-slate-700" />
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-3">Referral Received</h1>
-        <p className="text-gray-500 leading-relaxed mb-6">
+        <h1 className="text-2xl font-extrabold uppercase tracking-[0.05em] text-slate-900 mb-3">Referral Received</h1>
+        <p className="text-slate-600 leading-relaxed mb-6">
           Thank you for reaching out. A Hope Haven social worker will review this referral and
           respond within 48 hours. If this is an emergency, please contact local authorities
           immediately.
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-slate-600">
           Reference number: <span className="font-mono font-semibold">{refNumber}</span>
         </p>
       </div>
@@ -74,12 +74,12 @@ export default function ReferralPage() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-16">
       <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-800 mb-3">Anonymous Referral</h1>
-        <p className="text-gray-500 leading-relaxed">
+        <h1 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 mb-3">Anonymous Referral</h1>
+        <p className="text-slate-600 leading-relaxed">
           If you know a child or young woman who may need shelter, counseling, or protection,
           you can submit a confidential referral here. You do not need to share your identity.
         </p>
-        <div className="mt-4 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+        <div className="mt-4 flex items-start gap-2 bg-slate-100 border border-slate-300 px-4 py-3 text-sm text-slate-700">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <span>For immediate danger, contact local police (911) or the DSWD hotline (1-800-10-5786 or 02-931-8101).</span>
         </div>
@@ -87,12 +87,12 @@ export default function ReferralPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <fieldset className="space-y-4">
-          <legend className="text-sm font-semibold text-gray-700 uppercase tracking-wide">About the Person in Need</legend>
+          <legend className="text-sm font-semibold text-slate-700 uppercase tracking-[0.08em]">About the Person in Need</legend>
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="subjectAge" className="block text-sm font-medium text-gray-700 mb-1">
-                Approximate Age <span className="text-gray-600">(optional)</span>
+              <label htmlFor="subjectAge" className="block text-sm font-medium text-slate-700 mb-1">
+                Approximate Age <span className="text-slate-500">(optional)</span>
               </label>
               <input
                 id="subjectAge"
@@ -101,11 +101,11 @@ export default function ReferralPage() {
                 value={form.subjectAge}
                 onChange={handleChange}
                 placeholder="e.g. 14"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
               />
             </div>
             <div>
-              <label htmlFor="subjectLocation" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="subjectLocation" className="block text-sm font-medium text-slate-700 mb-1">
                 Location / Area <span className="text-red-500">*</span>
               </label>
               <input
@@ -116,13 +116,13 @@ export default function ReferralPage() {
                 onChange={handleChange}
                 required
                 placeholder="City, province, or barangay"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="situation" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="situation" className="block text-sm font-medium text-slate-700 mb-1">
               Describe the Situation <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -133,19 +133,19 @@ export default function ReferralPage() {
               required
               rows={5}
               placeholder="Please describe what you have observed or know about the situation. Include any relevant details that may help our social workers respond appropriately."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
             />
           </div>
 
           <div>
-            <label htmlFor="urgency" className="block text-sm font-medium text-gray-700 mb-1">Urgency Level</label>
+            <label htmlFor="urgency" className="block text-sm font-medium text-slate-700 mb-1">Urgency Level</label>
             <select
               id="urgency"
               name="urgency"
               aria-label="Urgency Level"
               value={form.urgency}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
             >
               <option value="routine">Routine — Within a week</option>
               <option value="soon">Soon — Within 48 hours</option>
@@ -154,16 +154,16 @@ export default function ReferralPage() {
           </div>
         </fieldset>
 
-        <fieldset className="space-y-4 pt-2 border-t border-gray-100">
-          <legend className="text-sm font-semibold text-gray-700 uppercase tracking-wide pt-4">Your Information (Optional)</legend>
+        <fieldset className="space-y-4 pt-2 border-t border-slate-200">
+          <legend className="text-sm font-semibold text-slate-700 uppercase tracking-[0.08em] pt-4">Your Information (Optional)</legend>
 
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
             <input
               type="checkbox"
               name="anonymous"
               checked={form.anonymous}
               onChange={handleChange}
-              className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+              className="border-slate-300 text-sky-600 focus:ring-sky-300"
             />
             Submit completely anonymously (no contact info)
           </label>
@@ -171,7 +171,7 @@ export default function ReferralPage() {
           {!form.anonymous && (
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="referrerName" className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                <label htmlFor="referrerName" className="block text-sm font-medium text-slate-700 mb-1">Your Name</label>
                 <input
                   id="referrerName"
                   type="text"
@@ -179,11 +179,11 @@ export default function ReferralPage() {
                   value={form.referrerName}
                   onChange={handleChange}
                   placeholder="Your name"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
                 />
               </div>
               <div>
-                <label htmlFor="referrerContact" className="block text-sm font-medium text-gray-700 mb-1">Phone or Email</label>
+                <label htmlFor="referrerContact" className="block text-sm font-medium text-slate-700 mb-1">Phone or Email</label>
                 <input
                   id="referrerContact"
                   type="text"
@@ -191,7 +191,7 @@ export default function ReferralPage() {
                   value={form.referrerContact}
                   onChange={handleChange}
                   placeholder="How we can reach you"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
                 />
               </div>
             </div>
@@ -205,12 +205,12 @@ export default function ReferralPage() {
         <button
           type="submit"
           disabled={state === 'submitting'}
-          className="w-full py-3 bg-teal-700 text-white font-semibold rounded-full hover:bg-teal-800 transition-colors disabled:opacity-60"
+          className="w-full py-3 bg-slate-900 text-white font-semibold uppercase tracking-[0.08em] border border-slate-900 hover:bg-slate-800 transition-colors disabled:opacity-60"
         >
           {state === 'submitting' ? 'Submitting…' : 'Submit Referral'}
         </button>
 
-        <p className="text-xs text-gray-600 text-center">
+        <p className="text-xs text-slate-600 text-center">
           All referrals are kept strictly confidential and reviewed only by licensed social workers.
         </p>
       </form>

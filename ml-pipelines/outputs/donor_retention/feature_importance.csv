@@ -1,5 +1,5 @@
 feature,importance_mean,importance_std
-days_since_last_donation,0.45,0.09185586535436918
+days_since_last_donation,0.265625,0.071602745233685
 total_donations,0.0,0.0
 avg_donation_amount,0.0,0.0
 total_donation_amount,0.0,0.0
