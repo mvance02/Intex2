@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/donor-risk")]
 public class DonorRiskController(IWebHostEnvironment env, ILogger<DonorRiskController> logger)
     : ControllerBase
 {
