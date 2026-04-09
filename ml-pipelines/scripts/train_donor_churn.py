@@ -29,7 +29,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train donor churn model")
     parser.add_argument(
         "--data_dir", type=str,
-        default=_default("lighthouse_csv_v7/lighthouse_csv_v7"),
+        default=_default("data"),
         help="Directory containing donations.csv, supporters.csv, donation_allocations.csv, social_media_posts.csv",
     )
     parser.add_argument(
