@@ -376,17 +376,17 @@ export default function LandingPage() {
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
-    Promise.all([
-      apiFetch<DashboardMetrics>('/api/dashboard/metrics'),
-      apiFetch<PublicOkrMetric>('/api/dashboard/public-okr'),
-      apiFetch<DonorWallEntry[]>('/api/donations/wall'),
-    ])
-      .then(([metricsData, okrData, donorWallData]) => {
-        setMetrics(metricsData);
-        setOkrMetric(okrData);
-        setDonorWallPreview(donorWallData.slice(0, 8));
-      })
+    void apiFetch<DashboardMetrics>('/api/dashboard/metrics')
+      .then((metricsData) => setMetrics(metricsData))
       .catch(() => null);
+
+    void apiFetch<PublicOkrMetric>('/api/dashboard/public-okr')
+      .then((okrData) => setOkrMetric(okrData))
+      .catch(() => setOkrMetric(null));
+
+    void apiFetch<DonorWallEntry[]>('/api/donations/wall')
+      .then((donorWallData) => setDonorWallPreview(donorWallData.slice(0, 8)))
+      .catch(() => setDonorWallPreview([]));
   }, []);
 
   const PHP_TO_USD = 56;

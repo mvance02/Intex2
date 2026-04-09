@@ -15,8 +15,9 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
     public async Task<IActionResult> GetPublicOkr()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        var cutoff = today.AddDays(-90);
-        var previousWindowStart = today.AddDays(-180);
+        var evaluationCutoff = today.AddDays(-90);
+        var currentWindowStart = today.AddDays(-180);
+        var previousWindowStart = today.AddDays(-270);
 
         string[] stableStatuses = [
             "completed",
@@ -26,43 +27,73 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
             "maintained"
         ];
 
+        // Current reporting window: exits from 180 to 90 days ago.
         var eligibleNow = await db.Residents
-            .Where(r => r.DateClosed != null && r.DateClosed <= cutoff)
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed > currentWindowStart &&
+                r.DateClosed <= evaluationCutoff)
             .CountAsync();
         var stableNow = await db.Residents
             .Where(r =>
                 r.DateClosed != null &&
-                r.DateClosed <= cutoff &&
+                r.DateClosed > currentWindowStart &&
+                r.DateClosed <= evaluationCutoff &&
                 r.ReintegrationStatus != null &&
                 stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
             .CountAsync();
 
+        // Previous reporting window: exits from 270 to 180 days ago.
         var eligiblePrev = await db.Residents
             .Where(r =>
                 r.DateClosed != null &&
                 r.DateClosed > previousWindowStart &&
-                r.DateClosed <= cutoff)
+                r.DateClosed <= currentWindowStart)
             .CountAsync();
         var stablePrev = await db.Residents
             .Where(r =>
                 r.DateClosed != null &&
                 r.DateClosed > previousWindowStart &&
-                r.DateClosed <= cutoff &&
+                r.DateClosed <= currentWindowStart &&
                 r.ReintegrationStatus != null &&
                 stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
             .CountAsync();
 
-        var currentRate = eligibleNow > 0 ? (double)stableNow / eligibleNow : 0;
+        // Fallback cohort: all exits that have reached the 90-day checkpoint.
+        var eligibleAllCheckpointed = await db.Residents
+            .Where(r => r.DateClosed != null && r.DateClosed <= evaluationCutoff)
+            .CountAsync();
+        var stableAllCheckpointed = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed <= evaluationCutoff &&
+                r.ReintegrationStatus != null &&
+                stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
+            .CountAsync();
+
+        // If the current 90-day cohort is empty/sparse, show the checkpointed total so the homepage
+        // stays connected to real outcomes instead of displaying zero.
+        var useCheckpointedFallback = stableNow == 0 && stableAllCheckpointed > 0;
+        var presentStableCount = useCheckpointedFallback ? stableAllCheckpointed : stableNow;
+        var presentEligibleCount = useCheckpointedFallback ? eligibleAllCheckpointed : eligibleNow;
+        var periodLabel = useCheckpointedFallback
+            ? "across all completed 90-day check-ins"
+            : "in the last 90 days";
+
+        var currentRate = presentEligibleCount > 0 ? (double)presentStableCount / presentEligibleCount : 0;
         var previousRate = eligiblePrev > 0 ? (double)stablePrev / eligiblePrev : 0;
 
         return Ok(new
         {
-            metricName = "90-day Stable Reintegration Rate",
+            metricName = "90-day Safe Reintegration Count",
             ratePercent = Math.Round(currentRate * 100, 1),
-            stableCount = stableNow,
-            eligibleCount = eligibleNow,
+            stableCount = presentStableCount,
+            eligibleCount = presentEligibleCount,
+            previousStableCount = stablePrev,
             previousRatePercent = Math.Round(previousRate * 100, 1),
-            deltaPoints = Math.Round((currentRate - previousRate) * 100, 1)
+            deltaPoints = Math.Round((currentRate - previousRate) * 100, 1),
+            deltaCount = presentStableCount - stablePrev,
+            periodLabel
         });
     }
 
