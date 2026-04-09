@@ -29,8 +29,10 @@ from sklearn.metrics import (
 from sklearn.model_selection import (
     RandomizedSearchCV,
     StratifiedKFold,
+    cross_val_predict,
     cross_validate,
 )
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
@@ -252,11 +254,30 @@ def fit_best_model(
 
     eval_df = pd.DataFrame(cv_rows)
     sort_col = "recall_mean" if prioritize == "recall" else "roc_auc_mean"
-    best_name = str(
-        eval_df.dropna(subset=[sort_col])
-        .sort_values(sort_col, ascending=False)
-        .iloc[0]["model"]
-    )
+    ranked = eval_df.dropna(subset=[sort_col]).sort_values(sort_col, ascending=False)
+
+    # ── Degenerate-probability fallback (Ch. 13 bias-variance) ───────────────
+    # Tree models on small datasets produce near-binary out-of-fold probability
+    # outputs, making risk tiers useless. Use cross_val_predict (OOF) to check
+    # whether a model produces a real probability gradient before accepting it.
+    # Walk down the CV ranking until a model passes the gradient check.
+    best_name = str(ranked.iloc[0]["model"])
+    cv_probe = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+    for candidate_name in ranked["model"].tolist():
+        try:
+            oof_probs = cross_val_predict(
+                clone(candidates[candidate_name]),
+                X_train, y_train,
+                cv=cv_probe,
+                method="predict_proba",
+                n_jobs=-1,
+            )[:, 1]
+            if len(set(oof_probs.round(2))) >= 5:
+                best_name = candidate_name
+                break
+        except Exception:
+            continue
+
     best_pipe = candidates[best_name]
 
     # ── Pass 3: RandomizedSearchCV on the winner ──────────────────────────────
