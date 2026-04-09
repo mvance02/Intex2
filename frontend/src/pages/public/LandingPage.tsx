@@ -762,11 +762,13 @@ export default function LandingPage() {
                 {okrMetric ? okrMetric.stableCount.toLocaleString() : '—'}
               </p>
               <p className="mt-3 text-sm font-medium text-slate-700">
-                Safely reintegrated in last 90 days
+                {okrMetric
+                  ? `Safely reintegrated ${okrMetric.periodLabel}`
+                  : 'Safely reintegrated'}
               </p>
               <p className="mt-6 text-base text-slate-700 leading-relaxed max-w-2xl mx-auto">
                 {okrMetric
-                  ? `${okrMetric.stableCount} girls safely reintegrated in the last 90 days.`
+                  ? `${okrMetric.stableCount} girls safely reintegrated ${okrMetric.periodLabel}.`
                   : 'Live OKR data is loading.'}
               </p>
             </div>
