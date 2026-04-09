@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Home, HeartPulse, GraduationCap, X } from 'lucide-react';
+import { Home, HeartPulse, GraduationCap, X, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
-import type { DashboardMetrics, DonorWallEntry, PublicOkrMetric } from '../../types/models';
+import type { DashboardMetrics, PublicOkrMetric } from '../../types/models';
 import heroBg from '../../assets/lighthousepic1.webp';
 import hopeHaven3 from '../../assets/hopeHaven3.jpg';
 import hopeHaven4 from '../../assets/hopehaven4.jpg';
@@ -53,10 +53,13 @@ function AnimatedStatBadge({ value, label }: { value: number | null; label: stri
   );
 }
 
-function DonationStatBadge({ value, label }: { value: string; label: string }) {
+function DonationStatBadge({ value, label }: { value: number | null; label: string }) {
+  const animated = useCountUp(value ?? 0);
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-3xl font-bold text-slate-900">{value}</span>
+      <span className="text-3xl font-bold text-slate-900">
+        {value === null ? '—' : `$${animated.toLocaleString()}`}
+      </span>
       <span className="text-sm text-sky-900">{label}</span>
     </div>
   );
@@ -363,7 +366,6 @@ export default function LandingPage() {
   const [okrMetric, setOkrMetric] = useState<PublicOkrMetric | null>(null);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
   const [showDonatePrompt, setShowDonatePrompt] = useState(false);
-  const [donorWallPreview, setDonorWallPreview] = useState<DonorWallEntry[]>([]);
 
   function handleDonateClick() {
     if (isAuthenticated) {
@@ -383,10 +385,6 @@ export default function LandingPage() {
     void apiFetch<PublicOkrMetric>('/api/dashboard/public-okr')
       .then((okrData) => setOkrMetric(okrData))
       .catch(() => setOkrMetric(null));
-
-    void apiFetch<DonorWallEntry[]>('/api/donations/wall')
-      .then((donorWallData) => setDonorWallPreview(donorWallData.slice(0, 8)))
-      .catch(() => setDonorWallPreview([]));
   }, []);
 
   const PHP_TO_USD = 56;
@@ -398,9 +396,7 @@ export default function LandingPage() {
   }, []);
 
   const ytdRaw = metrics ? Number(metrics.ytdDonations) : null;
-  const ytdDisplay = ytdRaw !== null
-    ? `$${Math.round(ytdRaw / PHP_TO_USD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-    : '—';
+  const ytdUsd = ytdRaw !== null ? Math.round(ytdRaw / PHP_TO_USD) : null;
 
   return (
     <div className="flex flex-col">
@@ -460,7 +456,7 @@ export default function LandingPage() {
           <AnimatedStatBadge value={metrics?.activeResidents ?? null}  label="Girls in Our Care" />
           <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
           <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" />
-          <DonationStatBadge value={ytdDisplay} label="Raised This Year" />
+          <DonationStatBadge value={ytdUsd} label="Raised This Year" />
         </div>
       </section>
 
@@ -547,12 +543,13 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="text-center mt-10">
-            <Link
-              to="/donate"
+            <button
+              type="button"
+              onClick={handleDonateClick}
               className="inline-block px-8 py-3 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] border border-sky-300 hover:bg-sky-300 hover:text-slate-900 transition-colors"
             >
               Make a Donation
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -700,9 +697,10 @@ export default function LandingPage() {
               <div className="pt-4 border-t border-slate-300">
                 <Link
                   to="/impact"
-                  className="text-slate-700 text-sm font-semibold uppercase tracking-[0.1em] hover:text-slate-900 transition-colors"
+                  className="inline-flex items-center gap-2 text-slate-700 text-sm font-semibold uppercase tracking-[0.1em] hover:text-slate-900 transition-colors"
                 >
-                  View impact by region →
+                  <span>View impact</span>
+                  <ArrowRight size={16} aria-hidden="true" />
                 </Link>
               </div>
             </div>
@@ -770,47 +768,6 @@ export default function LandingPage() {
               Give Now
             </button>
           </div>
-        </div>
-      </section>
-
-      <section className="bg-slate-50 py-24 px-6 border-y border-slate-200">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
-            <div>
-              <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase mb-3">
-                Donor Recognition
-              </p>
-              <h2 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900">
-                Wall of Donors
-              </h2>
-              <p className="text-slate-600 text-sm mt-2 max-w-xl">
-                Thank you to everyone who stands with our girls. See every name on the full wall.
-              </p>
-            </div>
-            <Link
-              to="/donor-wall"
-              className="inline-flex items-center justify-center shrink-0 px-6 py-3 border border-sky-300 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] hover:bg-sky-300 hover:text-slate-900 transition-colors"
-            >
-              View Full Wall
-            </Link>
-          </div>
-
-          {donorWallPreview.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {donorWallPreview.map((entry) => (
-                <div
-                  key={`${entry.displayName}-${entry.latestDonationDate ?? 'n/a'}`}
-                  className="border border-slate-200 bg-white px-4 py-4 text-center shadow-sm"
-                >
-                  <p className="font-semibold text-slate-800 text-sm truncate">{entry.displayName}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-600 max-w-xl">
-              Be the first to join our donor wall when you make a donation.
-            </p>
-          )}
         </div>
       </section>
 
