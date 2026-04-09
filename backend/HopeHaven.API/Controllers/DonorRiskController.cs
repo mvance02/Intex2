@@ -1,84 +1,88 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HopeHaven.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DonorRiskController(IHttpClientFactory httpClientFactory, ILogger<DonorRiskController> logger)
+public class DonorRiskController(IWebHostEnvironment env, ILogger<DonorRiskController> logger)
     : ControllerBase
 {
-    /// <summary>
-    /// GET /api/donor-risk/stats
-    /// Returns KPI summary: total donors, high-priority count, avg risk, tier breakdown.
-    /// </summary>
+    private readonly string _scoresPath = Path.Combine(
+        env.ContentRootPath, "Infrastructure", "donor_risk_scores.json");
+
+    private static JsonObject? _cache;
+
+    private JsonObject LoadScores()
+    {
+        if (_cache is not null) return _cache;
+
+        if (!System.IO.File.Exists(_scoresPath))
+        {
+            logger.LogWarning("donor_risk_scores.json not found at {Path}", _scoresPath);
+            throw new FileNotFoundException("Donor risk scores not found.", _scoresPath);
+        }
+
+        var json = System.IO.File.ReadAllText(_scoresPath);
+        _cache = JsonNode.Parse(json)!.AsObject();
+        return _cache;
+    }
+
+    /// <summary>GET /api/donor-risk/stats</summary>
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats()
+    public IActionResult GetStats()
     {
-        var client = httpClientFactory.CreateClient("DonorRiskService");
         try
         {
-            var response = await client.GetAsync("/donor-risk/stats");
-            if (!response.IsSuccessStatusCode)
-            {
-                logger.LogWarning("Donor risk service returned {Status}", response.StatusCode);
-                return StatusCode(503, new { message = "Donor risk service returned an error." });
-            }
-            var json = await response.Content.ReadAsStringAsync();
-            return Content(json, "application/json");
+            var data = LoadScores();
+            return Content(data["stats"]!.ToJsonString(), "application/json");
         }
-        catch (HttpRequestException ex)
+        catch (FileNotFoundException ex)
         {
-            logger.LogWarning(ex, "Donor risk service unreachable");
-            return StatusCode(503, new { message = "Donor risk service is not reachable. Run: uvicorn donor_retention_risk_api:app --port 8003" });
+            return StatusCode(503, new { message = ex.Message });
         }
     }
 
-    /// <summary>
-    /// GET /api/donor-risk/all?tier=Critical&minRisk=0.5
-    /// Returns all scored donors, optionally filtered by tier and minimum risk score.
-    /// </summary>
+    /// <summary>GET /api/donor-risk/all?tier=Critical&minRisk=0.5</summary>
     [HttpGet("all")]
-    public async Task<IActionResult> GetAll([FromQuery] string? tier, [FromQuery] double minRisk = 0.0)
+    public IActionResult GetAll([FromQuery] string? tier, [FromQuery] double minRisk = 0.0)
     {
-        var client = httpClientFactory.CreateClient("DonorRiskService");
         try
         {
-            var query = $"/donor-risk/all?min_risk={minRisk}";
-            if (!string.IsNullOrWhiteSpace(tier))
-                query += $"&tier={Uri.EscapeDataString(tier)}";
+            var data = LoadScores();
+            var donors = data["donors"]!.AsArray()
+                .Select(d => d!.AsObject())
+                .Where(d => (double?)d["churn_risk"] >= minRisk)
+                .Where(d => tier == null || (string?)d["risk_tier"] == tier)
+                .ToList();
 
-            var response = await client.GetAsync(query);
-            if (!response.IsSuccessStatusCode)
+            var result = new JsonObject
             {
-                logger.LogWarning("Donor risk service returned {Status}", response.StatusCode);
-                return StatusCode(503, new { message = "Donor risk service returned an error." });
-            }
-            var json = await response.Content.ReadAsStringAsync();
-            return Content(json, "application/json");
+                ["donors"] = new JsonArray(donors.Select(d => JsonNode.Parse(d.ToJsonString())).ToArray()),
+                ["count"]  = donors.Count,
+            };
+            return Content(result.ToJsonString(), "application/json");
         }
-        catch (HttpRequestException ex)
+        catch (FileNotFoundException ex)
         {
-            logger.LogWarning(ex, "Donor risk service unreachable");
-            return StatusCode(503, new { message = "Donor risk service is not reachable." });
+            return StatusCode(503, new { message = ex.Message });
         }
     }
 
-    /// <summary>
-    /// GET /api/donor-risk/health — check whether the donor risk sidecar is up.
-    /// </summary>
+    /// <summary>GET /api/donor-risk/health</summary>
     [HttpGet("health")]
-    public async Task<IActionResult> Health()
+    public IActionResult Health()
     {
-        var client = httpClientFactory.CreateClient("DonorRiskService");
         try
         {
-            var response = await client.GetAsync("/health");
-            var json = await response.Content.ReadAsStringAsync();
-            return Content(json, "application/json");
+            var data = LoadScores();
+            var count = data["donors"]!.AsArray().Count;
+            return Ok(new { status = "ok", donor_count = count });
         }
-        catch (HttpRequestException)
+        catch (FileNotFoundException)
         {
-            return StatusCode(503, new { status = "Donor risk service unreachable" });
+            return StatusCode(503, new { status = "scores_not_found" });
         }
     }
 }

@@ -125,8 +125,6 @@ builder.Services.AddHttpClient("MLService", c =>
 builder.Services.AddHttpClient("MLSocialService", c =>
     c.BaseAddress = new Uri(builder.Configuration["MLSocial:BaseUrl"] ?? "http://localhost:8002"));
 
-builder.Services.AddHttpClient("DonorRiskService", c =>
-    c.BaseAddress = new Uri(builder.Configuration["DonorRisk:BaseUrl"] ?? "http://localhost:8003"));
 
 var app = builder.Build();
 
