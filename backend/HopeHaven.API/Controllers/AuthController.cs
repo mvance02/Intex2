@@ -74,6 +74,7 @@ public class AuthController(
 
         var props = signInManager.ConfigureExternalAuthenticationProperties(
             GoogleDefaults.AuthenticationScheme, callbackUrl);
+        props.Items["prompt"] = "select_account";
         return Challenge(props, GoogleDefaults.AuthenticationScheme);
     }
 
