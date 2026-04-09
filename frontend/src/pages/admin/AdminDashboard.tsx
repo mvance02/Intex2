@@ -241,7 +241,7 @@ export default function AdminDashboard() {
                   name={displaySafehouseName(s.name)}
                   region={s.region ?? '—'}
                   status={s.status ?? '—'}
-                  occupancy={s.currentOccupancy ?? 0}
+                  occupancy={s.activeResidents ?? 0}
                   capacity={s.capacityGirls ?? 0}
                 />
               ))}
