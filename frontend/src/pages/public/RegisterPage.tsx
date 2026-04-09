@@ -1,6 +1,11 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registerUser } from '../../utils/authAPI';
+import {
+  buildExternalLoginUrl,
+  getExternalProviders,
+  registerUser,
+  type ExternalAuthProvider,
+} from '../../utils/authAPI';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -10,6 +15,11 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage]       = useState('');
   const [successMessage, setSuccessMessage]   = useState('');
   const [isSubmitting, setIsSubmitting]       = useState(false);
+  const [providers, setProviders]             = useState<ExternalAuthProvider[]>([]);
+
+  useEffect(() => {
+    getExternalProviders().then(setProviders).catch(() => setProviders([]));
+  }, []);
 
   useEffect(() => { document.title = 'Register — Hope Haven'; }, []);
 
@@ -124,6 +134,34 @@ export default function RegisterPage() {
               {isSubmitting ? 'Creating account…' : 'Create account'}
             </button>
           </form>
+
+          {providers.length > 0 && (
+            <>
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-2 text-gray-400">or</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                {providers.map((p) => (
+                  <button
+                    key={p.name}
+                    type="button"
+                    onClick={() => window.location.assign(buildExternalLoginUrl(p.name, '/login'))}
+                    className="w-full py-2.5 px-4 border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    Continue with {p.displayName}
+                  </button>
+                ))}
+                <p className="text-xs text-gray-400 text-center">
+                  Google sign-in may not work on Safari. Use email &amp; password or try Chrome.
+                </p>
+              </div>
+            </>
+          )}
 
           <p className="text-xs text-gray-400 text-center mt-6">
             Already have an account?{' '}
