@@ -67,7 +67,8 @@ export async function loginUser(
   twoFactorCode?: string, twoFactorRecoveryCode?: string
 ): Promise<void> {
   const params = new URLSearchParams();
-  rememberMe ? params.set('useCookies', 'true') : params.set('useSessionCookies', 'true');
+  if (rememberMe) params.set('useCookies', 'true');
+  else params.set('useSessionCookies', 'true');
   const body: Record<string, string> = { email, password };
   if (twoFactorCode)         body.twoFactorCode         = twoFactorCode;
   if (twoFactorRecoveryCode) body.twoFactorRecoveryCode = twoFactorRecoveryCode;

@@ -105,6 +105,7 @@ export default function ProcessRecordings() {
 
   const openEdit = (rec: ProcessRecording) => {
     setEditTarget(rec);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { recordingId: _id, ...rest } = rec;
     setForm(rest);
     setSaveError(null);

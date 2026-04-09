@@ -93,6 +93,7 @@ export default function HomeVisitations() {
 
   const openEdit = (v: HomeVisitation) => {
     setEditTarget(v);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { visitationId: _id, ...rest } = v;
     setForm(rest);
     setSaveError(null);

@@ -19,5 +19,12 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Data-fetching inside useEffect is standard React; the rule
+      // flags setState calls that are part of the async fetch chain.
+      'react-hooks/set-state-in-effect': 'off',
+      // Context files export both Provider component and useX hook — this is standard.
+      'react-refresh/only-export-components': ['warn', { allowExportNames: ['useAuth', 'useCookieConsent', 'useToast'] }],
+    },
   },
 ])
