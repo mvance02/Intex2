@@ -45,7 +45,7 @@ export default function FilterBar({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={searchPlaceholder}
-          className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
           aria-label={searchPlaceholder}
         />
       </div>
@@ -60,7 +60,7 @@ export default function FilterBar({
             id={`filter-${filter.key}`}
             value={filterValues[filter.key] ?? ''}
             onChange={(e) => onFilterChange?.(filter.key, e.target.value)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+            className="text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
           >
             <option value="">{filter.label}: All</option>
             {filter.options.map((opt) => (

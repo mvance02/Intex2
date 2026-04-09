@@ -169,8 +169,8 @@ function formatPeso(value: number): string {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <h2 className="text-xl font-semibold text-gray-700 mb-4">{title}</h2>
+    <div className="bg-white border border-gray-200 p-6">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 mb-4">{title}</h2>
       {children}
     </div>
   )
@@ -178,8 +178,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 bg-teal-50 border border-teal-100 rounded-lg px-4 py-3">
-      <span className="text-xs font-medium text-teal-700 uppercase tracking-wide">{label}</span>
+    <div className="flex flex-col gap-1 bg-teal-50 border border-teal-100 px-4 py-3">
+      <span className="text-xs font-semibold text-teal-700 uppercase tracking-[0.08em]">{label}</span>
       <span className="text-sm font-semibold text-gray-800">{value}</span>
     </div>
   )
@@ -187,8 +187,8 @@ function StatBox({ label, value }: { label: string; value: string }) {
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-4 flex-1 min-w-[130px]">
-      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
+    <div className="flex flex-col gap-1 bg-gray-50 border border-gray-200 px-4 py-4 flex-1 min-w-[130px]">
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-[0.08em]">{label}</span>
       <span className="text-lg font-bold text-teal-700">{value}</span>
     </div>
   )
@@ -406,7 +406,7 @@ export default function ReportsAnalytics() {
               min={2000}
               max={endYear}
               onChange={(e) => setStartYear(Number(e.target.value))}
-              className="ml-2 w-24 border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="ml-2 w-24 border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </label>
           <label className="text-sm font-medium text-gray-600">
@@ -417,20 +417,20 @@ export default function ReportsAnalytics() {
               min={startYear}
               max={currentYear + 5}
               onChange={(e) => setEndYear(Number(e.target.value))}
-              className="ml-2 w-24 border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="ml-2 w-24 border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </label>
           <button
             onClick={handleApply}
             disabled={loading}
-            className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-md hover:bg-teal-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-teal-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-teal-700 disabled:opacity-50 transition-colors"
           >
             Apply
           </button>
           <button
             onClick={generatePDF}
             disabled={loading || !annualData}
-            className="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded-md hover:bg-gray-900 disabled:opacity-50 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-slate-900 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center gap-2"
           >
             <FileDown size={16} />
             Generate Impact Report
@@ -507,7 +507,7 @@ export default function ReportsAnalytics() {
                     <XAxis type="number" tick={{ fontSize: 11 }} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={80} />
                     <Tooltip />
-                    <Bar dataKey="count" name="Residents" fill={COLORS.primary} radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="count" name="Residents" fill={COLORS.primary} radius={0} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -524,7 +524,7 @@ export default function ReportsAnalytics() {
                     <XAxis type="number" tick={{ fontSize: 11 }} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={70} />
                     <Tooltip formatter={(value) => [Number(value), 'Residents']} />
-                    <Bar dataKey="count" name="Residents" radius={[0, 4, 4, 0]}>
+                    <Bar dataKey="count" name="Residents" radius={0}>
                       {riskChartData.map((entry, index) => (
                         <Cell key={`risk-${index}`} fill={entry.color} />
                       ))}
@@ -561,8 +561,8 @@ export default function ReportsAnalytics() {
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="activeResidents" name="Active Residents" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="capacity" name="Capacity (Girls)" fill={COLORS.secondary} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="activeResidents" name="Active Residents" fill={COLORS.primary} radius={0} />
+                <Bar dataKey="capacity" name="Capacity (Girls)" fill={COLORS.secondary} radius={0} />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -579,7 +579,7 @@ export default function ReportsAnalytics() {
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={120} />
                 <Tooltip />
-                <Bar dataKey="count" name="Count" fill={COLORS.accent} radius={[0, 4, 4, 0]} />
+                <Bar dataKey="count" name="Count" fill={COLORS.accent} radius={0} />
               </BarChart>
             </ResponsiveContainer>
 

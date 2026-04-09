@@ -31,7 +31,7 @@ export default function DeleteConfirmDialog({
       />
 
       {/* Dialog */}
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 flex flex-col gap-4">
+      <div className="relative bg-white shadow-xl border border-gray-200 w-full max-w-sm p-6 flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <span className="text-2xl" aria-hidden="true">🗑️</span>
           <h2 id="delete-dialog-title" className="text-base font-semibold text-gray-800">
@@ -48,17 +48,17 @@ export default function DeleteConfirmDialog({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            className="px-4 py-2 text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className="px-4 py-2 text-sm rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-60 flex items-center gap-2"
+            className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 flex items-center gap-2"
           >
             {loading && (
-              <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+              <span className="h-4 w-4 border-2 border-white border-t-transparent animate-spin" aria-hidden="true" />
             )}
             Delete
           </button>
