@@ -69,7 +69,7 @@ export default function HomeVisitations() {
   // Load residents once
   useEffect(() => {
     apiFetch<PaginatedResponse<Resident>>('/api/residents?pageSize=200')
-      .then((data) => setResidents(data.items))
+      .then((data) => setResidents(data.items.sort((a, b) => a.residentId - b.residentId)))
       .catch(() => {/* non-critical */});
   }, []);
 
