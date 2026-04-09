@@ -52,7 +52,7 @@ type FormState = Record<FormField, string>;
 function statusBadge(status: string | null) {
   const color =
     status === 'Active'
-      ? 'bg-blue-100 text-blue-700'
+      ? 'bg-sky-100 text-slate-700'
       : status === 'Lapsed'
       ? 'bg-yellow-100 text-yellow-700'
       : 'bg-gray-100 text-gray-500';
@@ -232,7 +232,7 @@ export default function DonorManagement() {
         row.email ? (
           <a
             href={`mailto:${row.email}`}
-            className="text-blue-600 hover:underline"
+            className="text-slate-700 hover:underline"
             onClick={(e) => e.stopPropagation()}
           >
             {row.email}
@@ -259,7 +259,7 @@ export default function DonorManagement() {
         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => void openView(row)}
-            className="px-2 py-1 text-xs border border-blue-200 text-blue-700 hover:bg-blue-50"
+            className="px-2 py-1 text-xs border border-sky-200 text-slate-700 hover:bg-sky-300 hover:text-slate-900"
           >
             View
           </button>
@@ -307,7 +307,7 @@ export default function DonorManagement() {
       header: 'Recurring',
       render: (row) =>
         row.isRecurring ? (
-          <span className="text-blue-600 font-medium text-xs">Yes</span>
+          <span className="text-slate-700 font-medium text-xs">Yes</span>
         ) : (
           <span className="text-gray-400 text-xs">No</span>
         ),
@@ -324,7 +324,7 @@ export default function DonorManagement() {
         </div>
         <button
           onClick={openCreate}
-          className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="px-4 py-2 bg-white border border-sky-300 text-slate-900 text-xs font-semibold uppercase tracking-[0.08em] hover:bg-sky-300 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
         >
           + Add Supporter
         </button>
@@ -352,7 +352,7 @@ export default function DonorManagement() {
           action={
             <button
               onClick={openCreate}
-              className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-blue-700"
+              className="px-4 py-2 bg-white border border-sky-300 text-slate-900 text-xs font-semibold uppercase tracking-[0.08em] hover:bg-sky-300 hover:text-slate-900"
             >
               Add Supporter
             </button>
@@ -389,7 +389,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.displayName}
                 onChange={(e) => handleFormField('displayName', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -398,7 +398,7 @@ export default function DonorManagement() {
               <select
                 value={formState.supporterType}
                 onChange={(e) => handleFormField('supporterType', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
               >
                 <option value="">— Select —</option>
                 {TYPE_OPTIONS.map((o) => (
@@ -412,7 +412,7 @@ export default function DonorManagement() {
               <select
                 value={formState.status}
                 onChange={(e) => handleFormField('status', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
               >
                 {STATUS_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -426,7 +426,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.firstName}
                 onChange={(e) => handleFormField('firstName', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -436,7 +436,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.lastName}
                 onChange={(e) => handleFormField('lastName', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -446,7 +446,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.organizationName}
                 onChange={(e) => handleFormField('organizationName', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -456,7 +456,7 @@ export default function DonorManagement() {
                 type="email"
                 value={formState.email}
                 onChange={(e) => handleFormField('email', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -466,7 +466,7 @@ export default function DonorManagement() {
                 type="tel"
                 value={formState.phone}
                 onChange={(e) => handleFormField('phone', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -476,7 +476,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.country}
                 onChange={(e) => handleFormField('country', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -486,7 +486,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.region}
                 onChange={(e) => handleFormField('region', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -496,7 +496,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.acquisitionChannel}
                 onChange={(e) => handleFormField('acquisitionChannel', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
           </div>
@@ -513,7 +513,7 @@ export default function DonorManagement() {
             <button
               type="submit"
               disabled={formLoading}
-              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center gap-2"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-white border border-sky-300 text-slate-900 hover:bg-sky-300 hover:text-slate-900 disabled:opacity-60 flex items-center gap-2"
             >
               {formLoading && (
                 <span className="h-4 w-4 border-2 border-white border-t-transparent animate-spin" aria-hidden="true" />

@@ -95,8 +95,8 @@ interface TimelineEvent {
 
 function dotColor(type: TimelineEvent['type']): string {
   switch (type) {
-    case 'Admission':     return 'bg-blue-500'
-    case 'Session':       return 'bg-blue-500'
+    case 'Admission':     return 'bg-sky-300'
+    case 'Session':       return 'bg-sky-300'
     case 'Visit':         return 'bg-green-500'
     case 'Incident':      return 'bg-red-500'
     case 'Plan':          return 'bg-purple-500'
@@ -106,8 +106,8 @@ function dotColor(type: TimelineEvent['type']): string {
 
 function typeBadgeColor(type: TimelineEvent['type']): string {
   switch (type) {
-    case 'Admission':     return 'bg-blue-100 text-blue-700'
-    case 'Session':       return 'bg-blue-100 text-blue-700'
+    case 'Admission':     return 'bg-sky-100 text-slate-700'
+    case 'Session':       return 'bg-sky-100 text-slate-700'
     case 'Visit':         return 'bg-green-100 text-green-700'
     case 'Incident':      return 'bg-red-100 text-red-700'
     case 'Plan':          return 'bg-purple-100 text-purple-700'
@@ -350,7 +350,7 @@ function EmotionalJourneyChart({ recordings }: { recordings: ProcessRecording[] 
           Before Session
         </span>
         <span className="flex items-center gap-1.5 text-xs text-gray-500">
-          <span className="inline-block w-4 h-0.5 bg-blue-600" />
+          <span className="inline-block w-4 h-0.5 bg-sky-600" />
           After Session
         </span>
       </div>
@@ -400,7 +400,7 @@ function ProfileTab({ resident }: { resident: Resident }) {
         {subCats.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {subCats.map((s) => (
-              <Badge key={s} label={s} color="bg-indigo-100 text-indigo-700" />
+              <Badge key={s} label={s} color="bg-sky-100 text-slate-700" />
             ))}
           </div>
         )}
@@ -793,7 +793,7 @@ export default function ResidentDetail() {
       <div className="space-y-4">
         <button
           onClick={() => navigate(-1)}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm text-slate-700 hover:underline"
         >
           ← Back to Residents
         </button>
@@ -818,15 +818,15 @@ export default function ResidentDetail() {
   }
 
   const statusColor = (s: string | null): string => {
-    if (s === 'Active') return 'bg-blue-100 text-blue-700'
-    if (s === 'Reintegrated') return 'bg-blue-100 text-blue-700'
+    if (s === 'Active') return 'bg-sky-100 text-slate-700'
+    if (s === 'Reintegrated') return 'bg-sky-100 text-slate-700'
     return 'bg-gray-100 text-gray-600'
   }
 
   return (
     <div className="space-y-6">
       {/* Back */}
-      <Link to="/admin/residents" className="text-sm text-blue-600 hover:underline">
+      <Link to="/admin/residents" className="text-sm text-slate-700 hover:underline">
         ← Back to Residents
       </Link>
 
@@ -946,7 +946,7 @@ export default function ResidentDetail() {
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab
-                    ? 'border-blue-600 text-blue-600'
+                    ? 'border-sky-300 text-slate-700'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
                 aria-current={activeTab === tab ? 'page' : undefined}

@@ -93,7 +93,7 @@ export default function AdminLayout() {
               aria-current={active ? 'page' : undefined}
               className={`flex items-center gap-3 px-3 py-3 text-sm font-semibold uppercase tracking-[0.06em] transition-colors duration-150 border-l-[3px] ${
                 active
-                  ? 'bg-slate-800 text-white border-blue-500'
+                  ? 'bg-slate-800 text-white border-sky-500'
                   : 'text-slate-300 hover:bg-slate-800 hover:text-white border-transparent'
               }`}
             >

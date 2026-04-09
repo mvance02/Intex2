@@ -178,8 +178,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 bg-blue-50 border border-blue-100 px-4 py-3">
-      <span className="text-xs font-semibold text-blue-700 uppercase tracking-[0.08em]">{label}</span>
+    <div className="flex flex-col gap-1 bg-sky-50 border border-sky-100 px-4 py-3">
+      <span className="text-xs font-semibold text-slate-700 uppercase tracking-[0.08em]">{label}</span>
       <span className="text-sm font-semibold text-gray-800">{value}</span>
     </div>
   )
@@ -189,7 +189,7 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1 bg-gray-50 border border-gray-200 px-4 py-4 flex-1 min-w-[130px]">
       <span className="text-xs font-semibold text-gray-500 uppercase tracking-[0.08em]">{label}</span>
-      <span className="text-lg font-bold text-blue-700">{value}</span>
+      <span className="text-lg font-bold text-slate-700">{value}</span>
     </div>
   )
 }
@@ -406,7 +406,7 @@ export default function ReportsAnalytics() {
               min={2000}
               max={endYear}
               onChange={(e) => setStartYear(Number(e.target.value))}
-              className="ml-2 w-24 border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="ml-2 w-24 border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
           </label>
           <label className="text-sm font-medium text-gray-600">
@@ -417,13 +417,13 @@ export default function ReportsAnalytics() {
               min={startYear}
               max={currentYear + 5}
               onChange={(e) => setEndYear(Number(e.target.value))}
-              className="ml-2 w-24 border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="ml-2 w-24 border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
           </label>
           <button
             onClick={handleApply}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-white border border-sky-300 text-slate-900 text-xs font-semibold uppercase tracking-[0.08em] hover:bg-sky-300 hover:text-slate-900 disabled:opacity-50 transition-colors"
           >
             Apply
           </button>
@@ -585,7 +585,7 @@ export default function ReportsAnalytics() {
 
             {reintData && (
               <p className="mt-4 text-sm font-medium text-gray-600">
-                <span className="text-blue-700 font-bold">
+                <span className="text-slate-700 font-bold">
                   {reintData.totalReintegrated.toLocaleString()}
                 </span>{' '}
                 residents successfully reintegrated

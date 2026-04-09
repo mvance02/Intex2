@@ -476,9 +476,9 @@ export default function LandingPage() {
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
               <div className="sm:col-span-1 bg-slate-50 border border-slate-200 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Current Rate</p>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Current Count</p>
                 <p className="text-4xl font-extrabold text-slate-900 mt-1">
-                  {okrMetric ? `${okrMetric.ratePercent.toFixed(1)}%` : '—'}
+                  {okrMetric ? okrMetric.stableCount : '—'}
                 </p>
               </div>
 
@@ -492,11 +492,11 @@ export default function LandingPage() {
                 {okrMetric && (
                   <p
                     className={`text-sm mt-2 font-semibold ${
-                      okrMetric.deltaPoints >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                      okrMetric.deltaCount >= 0 ? 'text-emerald-700' : 'text-rose-700'
                     }`}
                   >
-                    {okrMetric.deltaPoints >= 0 ? 'Up ' : 'Down '}
-                    {Math.abs(okrMetric.deltaPoints).toFixed(1)} percentage points from the previous group
+                    {okrMetric.deltaCount >= 0 ? 'Up ' : 'Down '}
+                    {Math.abs(okrMetric.deltaCount)} girls from the previous group
                   </p>
                 )}
               </div>

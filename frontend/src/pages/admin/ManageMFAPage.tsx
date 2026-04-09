@@ -137,14 +137,14 @@ export default function ManageMFAPage() {
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
                       required
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
                       placeholder="6-digit code from app"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={busy}
-                    className="w-full py-2.5 bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-60"
+                    className="w-full py-2.5 bg-white border border-sky-300 text-slate-900 text-sm font-semibold hover:bg-sky-300 hover:text-slate-900 transition-colors disabled:opacity-60"
                   >
                     {busy ? 'Enabling…' : 'Enable MFA'}
                   </button>
