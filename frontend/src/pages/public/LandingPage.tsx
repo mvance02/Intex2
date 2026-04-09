@@ -376,17 +376,17 @@ export default function LandingPage() {
 
   useEffect(() => {
     document.title = 'Hope Haven — Safe Homes for Survivors';
-    Promise.all([
-      apiFetch<DashboardMetrics>('/api/dashboard/metrics'),
-      apiFetch<PublicOkrMetric>('/api/dashboard/public-okr'),
-      apiFetch<DonorWallEntry[]>('/api/donations/wall'),
-    ])
-      .then(([metricsData, okrData, donorWallData]) => {
-        setMetrics(metricsData);
-        setOkrMetric(okrData);
-        setDonorWallPreview(donorWallData.slice(0, 8));
-      })
+    void apiFetch<DashboardMetrics>('/api/dashboard/metrics')
+      .then((metricsData) => setMetrics(metricsData))
       .catch(() => null);
+
+    void apiFetch<PublicOkrMetric>('/api/dashboard/public-okr')
+      .then((okrData) => setOkrMetric(okrData))
+      .catch(() => setOkrMetric(null));
+
+    void apiFetch<DonorWallEntry[]>('/api/donations/wall')
+      .then((donorWallData) => setDonorWallPreview(donorWallData.slice(0, 8)))
+      .catch(() => setDonorWallPreview([]));
   }, []);
 
   const PHP_TO_USD = 56;
@@ -748,30 +748,27 @@ export default function LandingPage() {
       </section>
 
       <section className="bg-slate-50 py-20 px-6 border-y border-slate-200">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white p-8 sm:p-10">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 shadow-sm">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-center">
               90-Day Stable Reintegration
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600">
+            <p className="mt-2 text-sm sm:text-base text-slate-600 text-center">
               Girls in safe, stable placement after leaving shelter
             </p>
 
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-[minmax(0,280px)_1fr] gap-10 items-start">
-              <div>
-                <p className="text-7xl sm:text-8xl font-extrabold leading-none text-slate-900 tabular-nums">
-                  {okrMetric ? okrMetric.stableCount : '0'}
-                </p>
-                <p className="mt-3 text-sm font-medium text-slate-700">
-                  Safely reintegrated in last 90 days
-                </p>
-              </div>
-
-              <div className="max-w-2xl">
-                <p className="text-base text-slate-700 leading-relaxed">
-                  This metric tracks how many girls remained in safe placement 90 days after exit.
-                </p>
-              </div>
+            <div className="mt-10 text-center">
+              <p className="text-7xl sm:text-8xl font-extrabold leading-none text-slate-900 tabular-nums">
+                {okrMetric ? okrMetric.stableCount.toLocaleString() : '—'}
+              </p>
+              <p className="mt-3 text-sm font-medium text-slate-700">
+                Safely reintegrated in last 90 days
+              </p>
+              <p className="mt-6 text-base text-slate-700 leading-relaxed max-w-2xl mx-auto">
+                {okrMetric
+                  ? `${okrMetric.stableCount} girls safely reintegrated in the last 90 days.`
+                  : 'Live OKR data is loading.'}
+              </p>
             </div>
           </div>
         </div>
