@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Menu, X, LogOut } from 'lucide-react';
+import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg';
 
 export default function PublicLayout() {
   const { isAuthenticated, authSession, logout } = useAuth();
@@ -19,28 +20,28 @@ export default function PublicLayout() {
       <Link
         to="/"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Home
       </Link>
       <Link
         to="/impact"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Our Impact
       </Link>
       <Link
         to="/referral"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Get Help
       </Link>
       <Link
         to="/donor-wall"
         onClick={() => setMenuOpen(false)}
-        className="hover:text-teal-200 transition-colors py-1 md:py-0"
+        className="hover:text-slate-600 transition-colors py-1 md:py-0"
       >
         Donor Wall
       </Link>
@@ -48,7 +49,7 @@ export default function PublicLayout() {
         <Link
           to="/admin"
           onClick={() => setMenuOpen(false)}
-          className="hover:text-teal-200 transition-colors py-1 md:py-0"
+          className="hover:text-slate-600 transition-colors py-1 md:py-0"
         >
           Admin Portal
         </Link>
@@ -57,17 +58,18 @@ export default function PublicLayout() {
         <Link
           to="/donor"
           onClick={() => setMenuOpen(false)}
-          className="hover:text-teal-200 transition-colors py-1 md:py-0"
+          className="hover:text-slate-600 transition-colors py-1 md:py-0"
         >
           Donor Portal
         </Link>
       )}
       {isAuthenticated && (
         <button
+          type="button"
           onClick={handleLogout}
-          className="flex items-center gap-1.5 hover:text-teal-200 transition-colors py-1 md:py-0"
+          className="flex items-center gap-1.5 hover:text-slate-600 transition-colors py-1 md:py-0"
         >
-          <LogOut size={14} />
+          <LogOut size={14} aria-hidden="true" />
           Sign Out
         </button>
       )}
@@ -75,7 +77,7 @@ export default function PublicLayout() {
         <Link
           to="/login"
           onClick={() => setMenuOpen(false)}
-          className="bg-white text-teal-700 px-4 py-2.5 rounded-full hover:bg-teal-50 transition-colors text-center"
+          className="border border-sky-300 bg-white text-slate-900 px-4 py-2 hover:bg-sky-300 hover:border-sky-300 transition-colors text-center"
         >
           Login
         </Link>
@@ -84,33 +86,37 @@ export default function PublicLayout() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <nav className="bg-teal-700 text-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold tracking-tight">
-            Hope Haven
+    <div className="min-h-screen flex flex-col bg-white text-slate-900">
+      <nav className="sticky top-0 z-30 h-14 bg-white border-b border-slate-200 px-6 relative">
+        <div className="max-w-6xl mx-auto h-full flex items-center justify-between gap-4">
+          <Link to="/" className="inline-flex items-center bg-white h-10 w-44 shrink-0 overflow-hidden">
+            <img
+              src={hopeHavenLogo}
+              alt="Hope Haven logo"
+              className="h-full w-full object-cover scale-95"
+            />
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex gap-6 text-sm font-medium items-center">
+          <div className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em]">
             {navLinks}
           </div>
 
-          {/* Mobile hamburger */}
           <button
+            type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2.5 rounded-lg hover:bg-teal-600 transition-colors min-h-11 min-w-11"
+            className="md:hidden p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors min-h-11 min-w-11"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
           </button>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
-          <div className="md:hidden flex flex-col gap-4 pt-4 pb-2 text-sm font-medium border-t border-teal-600 mt-4">
-            {navLinks}
+          <div className="md:hidden absolute right-0 top-full w-fit min-w-44 max-w-52 border border-slate-200 bg-white px-4 py-3 shadow-md">
+            <div className="flex flex-col gap-2 text-sm font-semibold uppercase tracking-[0.08em] whitespace-nowrap">
+              {navLinks}
+            </div>
           </div>
         )}
       </nav>
@@ -119,7 +125,7 @@ export default function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="bg-gray-900 text-gray-400 text-sm px-6 py-6">
+      <footer className="bg-slate-950 text-slate-400 text-sm px-6 py-6">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between gap-2">
           <p>&copy; {new Date().getFullYear()} Hope Haven. All rights reserved.</p>
           <Link to="/privacy" className="hover:text-white transition-colors">

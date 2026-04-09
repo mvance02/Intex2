@@ -2,13 +2,16 @@
 
 /* Base typography */
 :root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 0;
 }
 
 body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: #0f172a;
+  background: #ffffff;
 }
 
 /* Cursor intent — Tailwind preflight doesn't set cursor:pointer on buttons */
@@ -21,9 +24,9 @@ summary {
 
 /* Visible focus rings for keyboard nav (WCAG AA) */
 :focus-visible {
-  outline: 2px solid #0d9488;
+  outline: 2px solid #0f766e;
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 /* Respect reduced motion preferences */

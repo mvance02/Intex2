@@ -1,0 +1,518 @@
+
+	<!doctype html>
+	<html lang="en">
+	<meta charset="utf-8" />
+	<title>Donor Retention - Quick View</title>
+	
+	<style>
+	body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, Arial, 'Helvetica Neue', sans-serif; margin: 24px; }
+	h1 { margin-bottom: 8px; }
+	.subtitle { color: #666; margin-bottom: 20px; }
+	table { border-collapse: collapse; width: 100%; }
+	th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+	tr:nth-child(even) { background: #fafafa; }
+	.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; background: #fde047; }
+	.risk { font-variant-numeric: tabular-nums; }
+	</style>
+	
+	<body>
+		<h1>Donor Retention Prediction</h1>
+		<div class="subtitle">Top-scored donors (first 100 rows)</div>
+		<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>supporter_id</th>
+      <th>churn_risk</th>
+      <th>label_churn</th>
+      <th>segment</th>
+      <th>suggested_action</th>
+      <th>suggested_why</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>53</td>
+      <td>0.955</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($2264) and long lapse (477 days).</td>
+    </tr>
+    <tr>
+      <td>50</td>
+      <td>0.954</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Handwritten note + impact update; offer matched-gift opportunity</td>
+      <td>High average gift ($1255) and recent lapse (236 days).</td>
+    </tr>
+    <tr>
+      <td>41</td>
+      <td>0.953</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($1345) and long lapse (402 days).</td>
+    </tr>
+    <tr>
+      <td>36</td>
+      <td>0.951</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($906) and long lapse (624 days).</td>
+    </tr>
+    <tr>
+      <td>33</td>
+      <td>0.951</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($688) and long lapse (334 days).</td>
+    </tr>
+    <tr>
+      <td>58</td>
+      <td>0.950</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($250) and long lapse (774 days).</td>
+    </tr>
+    <tr>
+      <td>37</td>
+      <td>0.950</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($967) and long lapse (413 days).</td>
+    </tr>
+    <tr>
+      <td>52</td>
+      <td>0.949</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($1053) and long lapse (530 days).</td>
+    </tr>
+    <tr>
+      <td>40</td>
+      <td>0.948</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Handwritten note + impact update; offer matched-gift opportunity</td>
+      <td>High average gift ($1634) and recent lapse (222 days).</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>0.948</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($463) and long lapse (532 days).</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>0.947</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($813) and long lapse (351 days).</td>
+    </tr>
+    <tr>
+      <td>34</td>
+      <td>0.947</td>
+      <td>1</td>
+      <td>Top 20%</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($663) and long lapse (298 days).</td>
+    </tr>
+    <tr>
+      <td>23</td>
+      <td>0.946</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($601) and long lapse (340 days).</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>0.946</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Low-friction 1-click $15 ask + gratitude; option to choose favorite cause</td>
+      <td>Low average gift ($0) and long lapse (797 days).</td>
+    </tr>
+    <tr>
+      <td>60</td>
+      <td>0.943</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($663) and long lapse (276 days).</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>0.941</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($1740) and long lapse (297 days).</td>
+    </tr>
+    <tr>
+      <td>39</td>
+      <td>0.937</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Handwritten note + impact update; offer matched-gift opportunity</td>
+      <td>High average gift ($369) and recent lapse (259 days).</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>0.936</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($1001) and long lapse (294 days).</td>
+    </tr>
+    <tr>
+      <td>55</td>
+      <td>0.936</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Handwritten note + impact update; offer matched-gift opportunity</td>
+      <td>High average gift ($3015) and recent lapse (258 days).</td>
+    </tr>
+    <tr>
+      <td>30</td>
+      <td>0.912</td>
+      <td>1</td>
+      <td>Other</td>
+      <td>Handwritten note + impact update; offer matched-gift opportunity</td>
+      <td>High average gift ($2357) and recent lapse (215 days).</td>
+    </tr>
+    <tr>
+      <td>28</td>
+      <td>0.172</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>46</td>
+      <td>0.060</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Handwritten note + impact update; offer matched-gift opportunity</td>
+      <td>High average gift ($677) and recent lapse (180 days).</td>
+    </tr>
+    <tr>
+      <td>47</td>
+      <td>0.037</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>0.037</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>0.035</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>0.034</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>49</td>
+      <td>0.034</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>44</td>
+      <td>0.034</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>0.033</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>57</td>
+      <td>0.033</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>42</td>
+      <td>0.032</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>43</td>
+      <td>0.030</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>48</td>
+      <td>0.029</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>0.024</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>0.021</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>59</td>
+      <td>0.021</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>32</td>
+      <td>0.020</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>29</td>
+      <td>0.020</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>0.020</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>56</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>25</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>45</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>26</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>24</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Director call + tailored impact report; invite to briefing</td>
+      <td>High average gift ($1087) and long lapse (9999 days).</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>54</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>31</td>
+      <td>0.019</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>51</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>35</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>27</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>38</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>0.018</td>
+      <td>0</td>
+      <td>Other</td>
+      <td>Personalized email with recent impact story + easy donate link</td>
+      <td>General follow-up due to risk and limited preference signals.</td>
+    </tr>
+  </tbody>
+</table>
+		<p style="margin-top:16px;color:#666">Tip: Use the Streamlit app for filtering and exploration.</p>
+	</body>
+	</html>
+	

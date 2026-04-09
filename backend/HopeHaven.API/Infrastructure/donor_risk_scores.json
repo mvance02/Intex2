@@ -1,0 +1,487 @@
+{
+  "stats": {
+    "total_donors": 59,
+    "high_priority_count": 12,
+    "avg_risk": 0.3857,
+    "tier_counts": {
+      "Critical": 10,
+      "High": 9,
+      "Moderate": 12,
+      "Low": 28
+    }
+  },
+  "donors": [
+    {
+      "supporter_id": 53,
+      "churn_risk": 0.871208152797881,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Transport success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Transport."
+    },
+    {
+      "supporter_id": 40,
+      "churn_risk": 0.8537754383317137,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Outreach success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Outreach."
+    },
+    {
+      "supporter_id": 14,
+      "churn_risk": 0.8535875657453796,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 15,
+      "churn_risk": 0.8505869943358647,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 58,
+      "churn_risk": 0.838656510437316,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Outreach success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Outreach."
+    },
+    {
+      "supporter_id": 41,
+      "churn_risk": 0.8335450189203379,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 23,
+      "churn_risk": 0.8240709405904366,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 2,
+      "churn_risk": 0.8075094044838778,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 37,
+      "churn_risk": 0.7677633952123961,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Outreach success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Outreach."
+    },
+    {
+      "supporter_id": 36,
+      "churn_risk": 0.7550542093269391,
+      "risk_tier": "Critical",
+      "at_risk_top20": true,
+      "suggested_action": "Send Maintenance success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Maintenance."
+    },
+    {
+      "supporter_id": 50,
+      "churn_risk": 0.7390932450491402,
+      "risk_tier": "High",
+      "at_risk_top20": true,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 17,
+      "churn_risk": 0.7359740467744433,
+      "risk_tier": "High",
+      "at_risk_top20": true,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 39,
+      "churn_risk": 0.7072867528884177,
+      "risk_tier": "High",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 52,
+      "churn_risk": 0.6941826400181015,
+      "risk_tier": "High",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 30,
+      "churn_risk": 0.683504866806493,
+      "risk_tier": "High",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 60,
+      "churn_risk": 0.6768029322514288,
+      "risk_tier": "High",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 55,
+      "churn_risk": 0.6466295752866718,
+      "risk_tier": "High",
+      "at_risk_top20": false,
+      "suggested_action": "Send Maintenance success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Maintenance."
+    },
+    {
+      "supporter_id": 34,
+      "churn_risk": 0.5619516281537522,
+      "risk_tier": "High",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 33,
+      "churn_risk": 0.5608516523821382,
+      "risk_tier": "High",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 20,
+      "churn_risk": 0.49516406019697057,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 59,
+      "churn_risk": 0.48236215168832075,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Outreach success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Outreach."
+    },
+    {
+      "supporter_id": 57,
+      "churn_risk": 0.4653129285041076,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 56,
+      "churn_risk": 0.41572740401554165,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 49,
+      "churn_risk": 0.41474906003808676,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 27,
+      "churn_risk": 0.357671339049309,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 16,
+      "churn_risk": 0.31965408505646614,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 11,
+      "churn_risk": 0.31090323007503073,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Transport success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Transport."
+    },
+    {
+      "supporter_id": 18,
+      "churn_risk": 0.3040751784022334,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 48,
+      "churn_risk": 0.2672162079001645,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Maintenance success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Maintenance."
+    },
+    {
+      "supporter_id": 29,
+      "churn_risk": 0.26282029561041936,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Maintenance success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Maintenance."
+    },
+    {
+      "supporter_id": 46,
+      "churn_risk": 0.25568210982784206,
+      "risk_tier": "Moderate",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 42,
+      "churn_risk": 0.23173147900348204,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 51,
+      "churn_risk": 0.22314362074083016,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 47,
+      "churn_risk": 0.22110530375251525,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 19,
+      "churn_risk": 0.20142462691973934,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Maintenance success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Maintenance."
+    },
+    {
+      "supporter_id": 12,
+      "churn_risk": 0.19835398495227563,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 44,
+      "churn_risk": 0.19727691505050507,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 43,
+      "churn_risk": 0.19100304559394513,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 5,
+      "churn_risk": 0.19017349575019862,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Transport success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Transport."
+    },
+    {
+      "supporter_id": 32,
+      "churn_risk": 0.1824852727062979,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 3,
+      "churn_risk": 0.16214426851051977,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 13,
+      "churn_risk": 0.15589032792009855,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 22,
+      "churn_risk": 0.1552362574183384,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 10,
+      "churn_risk": 0.1439719920780706,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Outreach success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Outreach."
+    },
+    {
+      "supporter_id": 21,
+      "churn_risk": 0.14196306027618366,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 24,
+      "churn_risk": 0.13587369280813372,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 9,
+      "churn_risk": 0.1352017224444591,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 38,
+      "churn_risk": 0.13300696636916667,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 25,
+      "churn_risk": 0.1277307913037035,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 31,
+      "churn_risk": 0.12521667686845467,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 6,
+      "churn_risk": 0.12284208594711847,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 35,
+      "churn_risk": 0.12116461965123096,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Operations success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Operations."
+    },
+    {
+      "supporter_id": 7,
+      "churn_risk": 0.1065141019858372,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Outreach success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Outreach."
+    },
+    {
+      "supporter_id": 8,
+      "churn_risk": 0.1048871774275002,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 26,
+      "churn_risk": 0.10322486634495635,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Education success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Education."
+    },
+    {
+      "supporter_id": 45,
+      "churn_risk": 0.10145288514291506,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Transport success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Transport."
+    },
+    {
+      "supporter_id": 54,
+      "churn_risk": 0.09678703755990242,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Outreach success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Outreach."
+    },
+    {
+      "supporter_id": 1,
+      "churn_risk": 0.07740024908160176,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Send Wellbeing success story + evidence of impact; thank and invite feedback",
+      "suggested_why": "Donor shows preference for Wellbeing."
+    },
+    {
+      "supporter_id": 4,
+      "churn_risk": 0.05734099734726474,
+      "risk_tier": "Low",
+      "at_risk_top20": false,
+      "suggested_action": "Re-engagement series highlighting recent Wellbeing wins; invite to event",
+      "suggested_why": "High engagement (score 9) but long lapse (9999 days)."
+    }
+  ]
+}

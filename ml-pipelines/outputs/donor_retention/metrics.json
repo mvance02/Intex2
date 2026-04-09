@@ -1,0 +1,58 @@
+{
+  "model_name": "random_forest",
+  "test_metrics": {
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "recall_at_50": 1.0
+  },
+  "tune_info": {
+    "best_params": {
+      "clf__n_estimators": 300,
+      "clf__min_samples_leaf": 4,
+      "clf__max_depth": null
+    },
+    "best_cv_score": 0.8166666666666667
+  },
+  "cv_metrics": [
+    {
+      "model": "random_forest",
+      "roc_auc_mean": 0.9666666666666668,
+      "roc_auc_std": 0.044444444444444425,
+      "recall_mean": 0.75,
+      "recall_std": 0.2472066162365221
+    },
+    {
+      "model": "gradient_boosting",
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0,
+      "recall_mean": 1.0,
+      "recall_std": 0.0
+    },
+    {
+      "model": "decision_tree",
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0,
+      "recall_mean": 1.0,
+      "recall_std": 0.0
+    },
+    {
+      "model": "log_reg",
+      "roc_auc_mean": 0.8476190476190476,
+      "roc_auc_std": 0.097253801155812,
+      "recall_mean": 0.6666666666666666,
+      "recall_std": 0.21081851067789195
+    }
+  ],
+  "log_transformed_cols": [
+    "total_donations",
+    "avg_donation_amount",
+    "days_since_last_donation",
+    "days_since_first_donation",
+    "donation_frequency",
+    "pct_recurring"
+  ],
+  "churn_window_days": 180,
+  "prioritize": "recall",
+  "train_size": 47,
+  "test_size_n": 12
+}

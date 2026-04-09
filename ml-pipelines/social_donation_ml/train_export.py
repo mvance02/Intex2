@@ -211,14 +211,17 @@ def main() -> None:
     y_ref = pd.to_numeric(m["donation_referrals"], errors="coerce").fillna(0)
     y_val = pd.to_numeric(m["estimated_donation_value_php"], errors="coerce").fillna(0)
 
-    X_train, X_test, y_ref_train, y_ref_test, y_val_train, y_val_test = train_test_split(
-        X, y_ref, y_val, test_size=TEST_SIZE, random_state=RANDOM_STATE,
+    # Compute binary classification target BEFORE splitting so stratify= uses it (Ch. 13).
+    # q75 must be computed on the full y_ref so the threshold is stable across runs.
+    q75_global = float(y_ref.quantile(0.75))
+    y_hi = (y_ref >= q75_global).astype(int)
+
+    X_train, X_test, y_ref_train, y_ref_test, y_val_train, y_val_test, y_hi_train, y_hi_test = train_test_split(
+        X, y_ref, y_val, y_hi, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y_hi,
     )
 
     # --- Classifier: high-referral detection ---
-    q75 = float(y_ref_train.quantile(0.75))
-    y_hi_train = (y_ref_train >= q75).astype(int)
-    y_hi_test = (y_ref_test >= q75).astype(int)
+    q75 = float(y_ref_train.quantile(0.75))  # kept for per-fold threshold logging
 
     clf_name, clf_pipe, clf_diagnostics = _pick_classifier(X_train, y_hi_train)
     clf_test_metrics = _evaluate_classifier(clf_pipe, X_test, y_hi_test)

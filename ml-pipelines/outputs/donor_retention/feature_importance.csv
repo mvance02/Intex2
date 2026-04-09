@@ -1,0 +1,16 @@
+feature,importance_mean,importance_std
+days_since_last_donation,0.265625,0.071602745233685
+total_donations,0.0,0.0
+avg_donation_amount,0.0,0.0
+total_donation_amount,0.0,0.0
+days_since_first_donation,0.0,0.0
+donation_frequency,0.0,0.0
+pct_recurring,0.0,0.0
+num_posts,0.0,0.0
+engagement_score,0.0,0.0
+supporter_type,0.0,0.0
+relationship_type,0.0,0.0
+region,0.0,0.0
+country,0.0,0.0
+acquisition_channel,0.0,0.0
+status,0.0,0.0

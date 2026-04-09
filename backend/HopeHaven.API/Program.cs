@@ -125,6 +125,7 @@ builder.Services.AddHttpClient("MLService", c =>
 builder.Services.AddHttpClient("MLSocialService", c =>
     c.BaseAddress = new Uri(builder.Configuration["MLSocial:BaseUrl"] ?? "http://localhost:8002"));
 
+
 var app = builder.Build();
 
 // ── Seed Identity roles and default admin ─────────────────────────────────

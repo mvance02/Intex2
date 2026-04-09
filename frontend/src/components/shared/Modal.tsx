@@ -50,7 +50,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
 
       {/* Panel */}
       <div
-        className={`relative bg-white rounded-xl shadow-xl w-full ${sizeClass[size]} max-h-[90vh] flex flex-col`}
+        className={`relative bg-white shadow-xl w-full ${sizeClass[size]} max-h-[90vh] flex flex-col border border-gray-200`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">

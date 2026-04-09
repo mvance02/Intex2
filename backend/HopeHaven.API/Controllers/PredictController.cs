@@ -231,7 +231,6 @@ public record SocialOptimizeRequest(
     [property: JsonPropertyName("top_n")] int TopN = 10
 );
 public record SocialWeeklyScheduleRequest(
-    [property: JsonPropertyName("platform")] string Platform,
     [property: JsonPropertyName("optimize_for")] string OptimizeFor = "donation_value",
     [property: JsonPropertyName("is_boosted")] bool? IsBoosted = null,
     [property: JsonPropertyName("boost_budget_php")] double? BoostBudgetPhp = null,
