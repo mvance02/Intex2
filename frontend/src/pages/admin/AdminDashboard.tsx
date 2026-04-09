@@ -50,12 +50,12 @@ function CapacityGauge({ name, region, status, occupancy, capacity }: {
   const offset = circumference - (pct / 100) * circumference;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col items-center gap-3">
+    <div className="bg-white border border-gray-200 p-5 flex flex-col items-center gap-3">
       <div className="relative w-28 h-28">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r={radius} fill="none" stroke="#f3f4f6" strokeWidth="8" />
           <circle cx="50" cy="50" r={radius} fill="none" stroke={color} strokeWidth="8"
-            strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
+            strokeLinecap="butt" strokeDasharray={circumference} strokeDashoffset={offset}
             className="transition-all duration-1000" />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -67,7 +67,7 @@ function CapacityGauge({ name, region, status, occupancy, capacity }: {
         <p className="font-semibold text-gray-800 text-sm">{name}</p>
         <p className="text-xs text-gray-400">{region}</p>
       </div>
-      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+      <span className={`text-xs font-semibold uppercase tracking-[0.06em] px-2 py-0.5 ${
         status?.toLowerCase() === 'active' ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500'
       }`}>{status}</span>
     </div>
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
             <Link
               key={to}
               to={to}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-teal-600 text-white hover:bg-teal-700 transition-colors"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-teal-600 text-white hover:bg-teal-700 transition-colors"
             >
               {label}
             </Link>
@@ -196,14 +196,14 @@ export default function AdminDashboard() {
           <ErrorAlert message={activityError} onRetry={fetchActivity} />
         )}
         {!activityLoading && !activityError && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+          <div className="bg-white border border-gray-200 divide-y divide-gray-100">
             {activity.length === 0 && (
               <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p>
             )}
             {activity.map((item, idx) => (
               <div key={idx} className="flex items-start gap-3 px-5 py-4">
                 <span
-                  className={`mt-1.5 h-2.5 w-2.5 rounded-full flex-shrink-0 ${ACTIVITY_DOT[item.type]}`}
+                  className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 ${ACTIVITY_DOT[item.type]}`}
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-gray-800 leading-snug">{item.description}</p>

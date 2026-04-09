@@ -57,7 +57,7 @@ function statusBadge(status: string | null) {
       ? 'bg-yellow-100 text-yellow-700'
       : 'bg-gray-100 text-gray-500';
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${color}`}>
+    <span className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.06em] ${color}`}>
       {status ?? '—'}
     </span>
   );
@@ -259,19 +259,19 @@ export default function DonorManagement() {
         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={() => void openView(row)}
-            className="px-2 py-1 text-xs rounded border border-teal-200 text-teal-700 hover:bg-teal-50"
+            className="px-2 py-1 text-xs border border-teal-200 text-teal-700 hover:bg-teal-50"
           >
             View
           </button>
           <button
             onClick={() => openEdit(row)}
-            className="px-2 py-1 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
+            className="px-2 py-1 text-xs border border-gray-200 text-gray-600 hover:bg-gray-50"
           >
             Edit
           </button>
           <button
             onClick={() => openDelete(row)}
-            className="px-2 py-1 text-xs rounded border border-red-200 text-red-600 hover:bg-red-50"
+            className="px-2 py-1 text-xs border border-red-200 text-red-600 hover:bg-red-50"
           >
             Delete
           </button>
@@ -324,7 +324,7 @@ export default function DonorManagement() {
         </div>
         <button
           onClick={openCreate}
-          className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+          className="px-4 py-2 bg-teal-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
         >
           + Add Supporter
         </button>
@@ -352,7 +352,7 @@ export default function DonorManagement() {
           action={
             <button
               onClick={openCreate}
-              className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700"
+              className="px-4 py-2 bg-teal-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-teal-700"
             >
               Add Supporter
             </button>
@@ -389,7 +389,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.displayName}
                 onChange={(e) => handleFormField('displayName', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -398,7 +398,7 @@ export default function DonorManagement() {
               <select
                 value={formState.supporterType}
                 onChange={(e) => handleFormField('supporterType', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
               >
                 <option value="">— Select —</option>
                 {TYPE_OPTIONS.map((o) => (
@@ -412,7 +412,7 @@ export default function DonorManagement() {
               <select
                 value={formState.status}
                 onChange={(e) => handleFormField('status', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
               >
                 {STATUS_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -426,7 +426,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.firstName}
                 onChange={(e) => handleFormField('firstName', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -436,7 +436,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.lastName}
                 onChange={(e) => handleFormField('lastName', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -446,7 +446,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.organizationName}
                 onChange={(e) => handleFormField('organizationName', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -456,7 +456,7 @@ export default function DonorManagement() {
                 type="email"
                 value={formState.email}
                 onChange={(e) => handleFormField('email', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -466,7 +466,7 @@ export default function DonorManagement() {
                 type="tel"
                 value={formState.phone}
                 onChange={(e) => handleFormField('phone', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -476,7 +476,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.country}
                 onChange={(e) => handleFormField('country', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -486,7 +486,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.region}
                 onChange={(e) => handleFormField('region', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
@@ -496,7 +496,7 @@ export default function DonorManagement() {
                 type="text"
                 value={formState.acquisitionChannel}
                 onChange={(e) => handleFormField('acquisitionChannel', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
           </div>
@@ -506,17 +506,17 @@ export default function DonorManagement() {
               type="button"
               onClick={closeForm}
               disabled={formLoading}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+              className="px-4 py-2 text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={formLoading}
-              className="px-4 py-2 text-sm rounded-lg bg-teal-600 text-white font-medium hover:bg-teal-700 disabled:opacity-60 flex items-center gap-2"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-60 flex items-center gap-2"
             >
               {formLoading && (
-                <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                <span className="h-4 w-4 border-2 border-white border-t-transparent animate-spin" aria-hidden="true" />
               )}
               {editTarget ? 'Save Changes' : 'Create Supporter'}
             </button>
