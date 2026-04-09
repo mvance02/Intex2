@@ -90,7 +90,7 @@ export default function PublicLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900">
-      <nav className="sticky top-0 z-30 h-14 bg-white border-b border-slate-200 px-6">
+      <nav className="sticky top-0 z-30 h-14 bg-white border-b border-slate-200 px-6 relative">
         <div className="max-w-6xl mx-auto h-full flex items-center justify-between gap-4">
           <Link to="/" className="inline-flex items-center bg-white h-10 w-44 shrink-0 overflow-hidden">
             <img
@@ -116,8 +116,8 @@ export default function PublicLayout() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden border-t border-slate-200 px-6 pb-4 pt-3">
-            <div className="flex flex-col gap-3 text-sm font-semibold uppercase tracking-[0.08em]">
+          <div className="md:hidden absolute right-0 top-full w-fit min-w-44 max-w-52 border border-slate-200 bg-white px-4 py-3 shadow-md">
+            <div className="flex flex-col gap-2 text-sm font-semibold uppercase tracking-[0.08em] whitespace-nowrap">
               {navLinks}
             </div>
           </div>

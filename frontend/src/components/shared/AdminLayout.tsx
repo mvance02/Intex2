@@ -63,22 +63,22 @@ export default function AdminLayout() {
     )?.label ?? 'Admin';
 
   const Sidebar = (
-    <aside className="w-64 bg-teal-800 text-white flex flex-col h-full" aria-label="Admin navigation">
-      <div className="px-6 py-5 border-b border-teal-700 flex items-center justify-between">
+    <aside className="w-64 bg-slate-900 text-white flex flex-col h-full" aria-label="Admin navigation">
+      <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between">
         <div>
-          <Link to="/" className="text-xl font-bold tracking-tight hover:text-teal-200 transition-colors">Hope Haven</Link>
-          <p className="text-teal-300 text-xs mt-0.5 font-medium">Staff Portal</p>
+          <Link to="/" className="text-lg font-extrabold tracking-[0.14em] uppercase hover:text-slate-200 transition-colors">Hope Haven</Link>
+          <p className="text-slate-400 text-xs mt-0.5 font-semibold uppercase tracking-[0.08em]">Staff Portal</p>
         </div>
         <button
           onClick={() => setSidebarOpen(false)}
-          className="lg:hidden text-teal-300 hover:text-white transition-colors p-2.5 rounded min-h-11 min-w-11"
+          className="lg:hidden text-slate-400 hover:text-white transition-colors p-2.5 rounded min-h-11 min-w-11"
           aria-label="Close navigation"
         >
           <X size={18} />
         </button>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map(({ label, path, Icon }) => {
           const active =
             path === '/admin'
@@ -89,10 +89,10 @@ export default function AdminLayout() {
               key={path}
               to={path}
               aria-current={active ? 'page' : undefined}
-              className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors duration-150 ${
+              className={`flex items-center gap-3 px-3 py-3 text-sm font-semibold uppercase tracking-[0.06em] transition-colors duration-150 ${
                 active
-                  ? 'bg-teal-600 text-white shadow-sm'
-                  : 'text-teal-100 hover:bg-teal-700 hover:text-white'
+                  ? 'bg-sky-300 text-slate-900'
+                  : 'text-slate-200 hover:bg-slate-800 hover:text-white'
               }`}
             >
               <Icon size={17} aria-hidden="true" className="shrink-0" />
@@ -102,12 +102,12 @@ export default function AdminLayout() {
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-teal-700">
+      <div className="px-4 py-4 border-t border-slate-800">
         <p className="text-sm font-medium text-white truncate">{authSession.email}</p>
-        <p className="text-xs mt-0.5 text-teal-400">{authSession.roles[0] ?? 'Member'}</p>
+        <p className="text-xs mt-0.5 text-slate-400">{authSession.roles[0] ?? 'Member'}</p>
         <button
           onClick={handleLogout}
-          className="mt-3 flex items-center gap-1.5 text-teal-400 hover:text-white transition-colors text-xs font-medium"
+          className="mt-3 flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors text-xs font-semibold uppercase tracking-[0.06em]"
           aria-label="Sign out"
         >
           <LogOut size={13} aria-hidden="true" />
@@ -118,7 +118,7 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="min-h-screen flex bg-slate-50 text-slate-900">
       {/* Desktop sidebar — fixed */}
       <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:z-30">
         {Sidebar}
@@ -140,21 +140,21 @@ export default function AdminLayout() {
 
       {/* Main content — offset by sidebar width on desktop */}
       <div className="flex-1 flex flex-col lg:pl-64 min-h-screen">
-        <header className="bg-white border-b border-gray-200 px-4 lg:px-6 py-3.5 flex items-center gap-4 sticky top-0 z-30 shadow-sm">
+        <header className="bg-white border-b border-slate-200 px-4 lg:px-6 py-3.5 flex items-center gap-4 sticky top-0 z-30 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
-          className="lg:hidden p-2.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors min-h-11 min-w-11"
+          className="lg:hidden p-2.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors min-h-11 min-w-11"
             aria-label="Open navigation"
             aria-expanded={sidebarOpen}
           >
             <Menu size={20} aria-hidden="true" />
           </button>
 
-          <h1 className="text-base font-semibold text-gray-800 flex-1">{currentLabel}</h1>
-          <span className="text-sm text-gray-400 hidden sm:block truncate max-w-48">{authSession.email}</span>
+          <h1 className="text-base font-extrabold uppercase tracking-[0.06em] text-slate-900 flex-1">{currentLabel}</h1>
+          <span className="text-sm text-slate-400 hidden sm:block truncate max-w-48">{authSession.email}</span>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-auto p-4 lg:p-6 bg-slate-50">
           <Outlet />
         </main>
       </div>
