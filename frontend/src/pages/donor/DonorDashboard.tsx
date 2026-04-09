@@ -4,6 +4,7 @@ import { Heart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import { portalSupporterTypeLabel } from '../../utils/supporterPortal';
+import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
 const API = import.meta.env.VITE_API_URL ?? '';
 
@@ -101,14 +102,10 @@ export default function DonorDashboard() {
               <div key={d.donationId} className="flex items-center justify-between py-3">
                 <div>
                   <p className="text-sm font-medium text-gray-800">
-                    {d.campaignName || d.donationType || 'Donation'}
+                    {primaryDonationLabel(d.campaignName, d.donationType, d.isRecurring)}
                     {d.isRecurring && (
                       <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                        {(d.recurringFrequency || 'Weekly').toLowerCase() === 'monthly'
-                          ? 'Monthly'
-                          : (d.recurringFrequency || 'Weekly').toLowerCase() === 'yearly'
-                            ? 'Yearly'
-                            : 'Weekly'}
+                        {recurringIntervalBadge(d.isRecurring, d.recurringFrequency, d.campaignName)}
                       </span>
                     )}
                   </p>
