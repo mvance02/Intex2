@@ -715,7 +715,6 @@ export default function SocialDonationPredictor() {
           {socialResult && (
             <div className="mt-6 space-y-2">
               <h4 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Predicted Impact Flow</h4>
-              <FunnelBar label="Post Published" value={100} detail="1 post" color="bg-sky-600" />
               <FunnelBar label="High Performer" value={Math.round(socialResult.high_performer_probability * 100)} detail={`${Math.round(socialResult.high_performer_probability * 100)}% probability`} color="bg-sky-500" />
               <FunnelBar label="Referral Clicks" value={Math.min(100, Math.round(socialResult.predicted_donation_referrals * 15))} detail={`${socialResult.predicted_donation_referrals.toFixed(1)} referrals`} color="bg-sky-400" />
               <FunnelBar label="Donation Value" value={Math.min(100, Math.round(socialResult.predicted_estimated_donation_value_php / 100))} detail={`₱${Math.round(socialResult.predicted_estimated_donation_value_php).toLocaleString()}`} color="bg-teal-500" />

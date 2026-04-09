@@ -10,6 +10,7 @@ import autoTable from 'jspdf-autotable'
 import { apiFetch, displaySafehouseName } from '../../utils/api'
 import LoadingSpinner from '../../components/shared/LoadingSpinner'
 import ErrorAlert from '../../components/shared/ErrorAlert'
+import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg'
 
 // ── Local interfaces ──────────────────────────────────────────────────────────
 
@@ -265,11 +266,19 @@ export default function ReportsAnalytics() {
     // Branded header
     doc.setFillColor(15, 23, 42);
     doc.rect(0, 0, 210, 32, 'F');
+
+    // Logo — load from imported asset
+    try {
+      const img = new Image();
+      img.src = hopeHavenLogo;
+      doc.addImage(img, 'JPEG', 170, 4, 24, 24);
+    } catch { /* logo is optional */ }
+
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
-    doc.text('Hope Haven \u2014 Annual Impact Report', 14, 16);
+    doc.text('Hope Haven - Annual Impact Report', 14, 16);
     doc.setFontSize(10);
-    doc.text(`${appliedStart}\u2013${appliedEnd}  |  Generated ${new Date().toLocaleDateString()}`, 14, 24);
+    doc.text(`${appliedStart}-${appliedEnd}  |  Generated ${new Date().toLocaleDateString()}`, 14, 24);
     doc.setTextColor(0, 0, 0);
 
     // Executive summary
