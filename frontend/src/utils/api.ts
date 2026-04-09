@@ -6,10 +6,14 @@ export function displaySafehouseName(name: string | null | undefined): string {
   return name.replace(/^Lighthouse\s+/i, '');
 }
 const DEFAULT_TIMEOUT_MS = 15_000;
+const LONG_TIMEOUT_MS = 120_000;
+
+const LONG_TIMEOUT_PATHS = ['/predict/social/optimize', '/predict/social/weekly-schedule'];
 
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const timeout = LONG_TIMEOUT_PATHS.some(p => path.includes(p)) ? LONG_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeout);
 
   try {
     const res = await fetch(`${API_URL}${path}`, {
