@@ -13,10 +13,6 @@ import type {
   SafehouseSummaryItem,
 } from '../../types/models';
 
-function formatPeso(amount: number): string {
-  return `₱${amount.toLocaleString('en-PH')}`;
-}
-
 function relativeDate(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60_000);
@@ -33,6 +29,28 @@ const ACTIVITY_DOT: Record<RecentActivityItem['type'], string> = {
   session: 'bg-sky-300',
   incident: 'bg-red-500',
 };
+
+function useCountUp(end: number, duration = 1500): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (end === 0) { setValue(0); return; }
+    const start = performance.now();
+    let raf: number;
+    function tick(now: number) {
+      const t = Math.min((now - start) / duration, 1);
+      setValue(Math.floor(t * end));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [end, duration]);
+  return value;
+}
+
+function AnimatedKpi({ value, prefix = '' }: { value: number; prefix?: string }) {
+  const animated = useCountUp(value);
+  return <>{prefix}{animated.toLocaleString()}</>;
+}
 
 const CASE_CATEGORIES = ['Surrendered', 'Abandoned', 'Foundling', 'Neglected'] as const;
 const CASE_STATUSES = ['Active', 'Closed', 'Transferred'] as const;
@@ -224,18 +242,18 @@ export default function AdminDashboard() {
         )}
         {!metricsLoading && !metricsError && metrics && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <KpiCard label="Active Residents"   value={metrics.activeResidents}             Icon={Users}        iconColor="text-slate-700" />
-            <KpiCard label="YTD Donations"      value={formatPeso(metrics.ytdDonations)}    Icon={DollarSign}   iconColor="text-green-600" />
-            <KpiCard label="Total Supporters"   value={metrics.totalSupporters}             Icon={HandHeart}    iconColor="text-slate-700" />
-            <KpiCard label="Active Safehouses"  value={metrics.activeSafehouses}            Icon={Home}         iconColor="text-slate-700" />
+            <KpiCard label="Active Residents"   value={<AnimatedKpi value={metrics.activeResidents} />}             Icon={Users}        iconColor="text-slate-700" />
+            <KpiCard label="YTD Donations"      value={<AnimatedKpi value={Math.round(metrics.ytdDonations)} prefix="₱" />}    Icon={DollarSign}   iconColor="text-green-600" />
+            <KpiCard label="Total Supporters"   value={<AnimatedKpi value={metrics.totalSupporters} />}             Icon={HandHeart}    iconColor="text-slate-700" />
+            <KpiCard label="Active Safehouses"  value={<AnimatedKpi value={metrics.activeSafehouses} />}            Icon={Home}         iconColor="text-slate-700" />
             <KpiCard
               label="Open Incidents"
-              value={metrics.openIncidents}
+              value={<AnimatedKpi value={metrics.openIncidents} />}
               Icon={AlertTriangle}
               iconColor="text-amber-600"
               colorClass={metrics.openIncidents > 0 ? 'bg-amber-50' : 'bg-white'}
             />
-            <KpiCard label="High Risk Residents" value={metrics.highRiskResidents}          Icon={ShieldAlert}  iconColor="text-red-600" />
+            <KpiCard label="High Risk Residents" value={<AnimatedKpi value={metrics.highRiskResidents} />}          Icon={ShieldAlert}  iconColor="text-red-600" />
           </div>
         )}
       </section>

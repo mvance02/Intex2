@@ -7,6 +7,7 @@ import SkeletonLoader from '../../components/shared/SkeletonLoader'
 import ErrorAlert from '../../components/shared/ErrorAlert'
 import { HelpCircle } from 'lucide-react'
 import { apiFetch, displaySafehouseName } from '../../utils/api'
+import { useToast } from '../../contexts/ToastContext'
 import type { Resident, Safehouse, PaginatedResponse } from '../../types/models'
 
 const PAGE_SIZE = 20
@@ -106,6 +107,7 @@ function buildColumns(
 
 export default function CaseloadInventory() {
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [residents, setResidents] = useState<Resident[]>([])
   const [safehouses, setSafehouses] = useState<Safehouse[]>([])
@@ -176,6 +178,7 @@ export default function CaseloadInventory() {
         }
         return next
       })
+      toast.success('Readiness predictions loaded')
     } catch {
       // ML service unavailable — clear loading states and surface warning
       setReadiness((prev) => {
@@ -184,6 +187,7 @@ export default function CaseloadInventory() {
         return next
       })
       setPredictionError('Readiness predictions are currently unavailable.')
+      toast.error('Readiness predictions unavailable')
     } finally {
       setPredictionsLoading(false)
       setPredictionsLoaded(true)

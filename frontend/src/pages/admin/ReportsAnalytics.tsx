@@ -262,20 +262,29 @@ export default function ReportsAnalytics() {
   function generatePDF() {
     const doc = new jsPDF();
 
-    // Header
-    doc.setFontSize(20);
-    doc.setTextColor(13, 148, 136); // teal
-    doc.text('Hope Haven Impact Report', 20, 25);
+    // Branded header
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 32, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text('Hope Haven \u2014 Annual Impact Report', 14, 16);
     doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Reporting Period: ${appliedStart} \u2014 ${appliedEnd}`, 20, 33);
-    doc.text(`Generated: ${new Date().toLocaleDateString('en-PH')}`, 20, 39);
+    doc.text(`${appliedStart}\u2013${appliedEnd}  |  Generated ${new Date().toLocaleDateString()}`, 14, 24);
+    doc.setTextColor(0, 0, 0);
 
-    // Line separator
-    doc.setDrawColor(13, 148, 136);
-    doc.line(20, 43, 190, 43);
-
-    let y = 55;
+    // Executive summary
+    let y = 40;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Executive Summary', 14, y);
+    y += 8;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const residentTotal = annualData?.residentStats?.reduce((s: number, r: { count: number }) => s + r.count, 0) ?? 0;
+    doc.text(`In ${appliedEnd}, Hope Haven served ${residentTotal} residents across its network of safehouses.`, 14, y); y += 5;
+    doc.text(`The organization received PHP ${(annualData?.totalDonations ?? 0).toLocaleString()} in donations.`, 14, y); y += 5;
+    doc.text(`Staff conducted ${annualData?.sessionCount ?? 0} counseling sessions and ${annualData?.visitCount ?? 0} home visitations.`, 14, y); y += 5;
+    doc.text(`${annualData?.reintegrationCount ?? 0} residents were successfully reintegrated during this period.`, 14, y); y += 12;
 
     // Annual Summary
     if (annualData) {

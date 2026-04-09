@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface KpiCardProps {
   label: string;
-  value: string | number;
+  value: React.ReactNode;
   Icon?: LucideIcon;
   iconColor?: string;
   trend?: 'up' | 'down' | 'neutral';
