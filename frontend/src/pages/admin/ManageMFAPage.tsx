@@ -82,27 +82,27 @@ export default function ManageMFAPage() {
       {isLoading && <p className="text-sm text-gray-500">Checking session…</p>}
 
       {!isLoading && !isAuthenticated && (
-        <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+        <div className="bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
           Please <Link to="/login" className="underline font-medium">sign in</Link> to manage MFA settings.
         </div>
       )}
 
       {error && (
-        <div role="alert" className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div role="alert" className="mb-4 bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
       {success && (
-        <div role="status" className="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+        <div role="status" className="mb-4 bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
           {success}
         </div>
       )}
 
       {isAuthenticated && status && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white shadow-sm border border-gray-100 p-6">
           {/* Status badge */}
           <div className="mb-5">
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+            <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold ${
               status.isTwoFactorEnabled
                 ? 'bg-green-100 text-green-800'
                 : 'bg-amber-100 text-amber-800'
@@ -113,8 +113,8 @@ export default function ManageMFAPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* QR code + shared key */}
-            <div className="rounded-xl bg-gray-50 border border-gray-100 p-4 flex flex-col items-center">
-              {qr && <img src={qr} alt="MFA QR code" className="mb-3 rounded-lg" />}
+            <div className="bg-gray-50 border border-gray-100 p-4 flex flex-col items-center">
+              {qr && <img src={qr} alt="MFA QR code" className="mb-3" />}
               <p className="text-xs font-semibold text-gray-600 mb-1">Shared key</p>
               <code className="text-xs text-gray-700 break-all text-center">
                 {status.sharedKey ?? 'Unavailable'}
@@ -137,14 +137,14 @@ export default function ManageMFAPage() {
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
                       required
-                      className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="6-digit code from app"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={busy}
-                    className="w-full py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-60"
+                    className="w-full py-2.5 bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-60"
                   >
                     {busy ? 'Enabling…' : 'Enable MFA'}
                   </button>
@@ -154,14 +154,14 @@ export default function ManageMFAPage() {
                   <button
                     onClick={handleReset}
                     disabled={busy}
-                    className="py-2.5 px-4 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60"
+                    className="py-2.5 px-4 border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-60"
                   >
                     Reset recovery codes
                   </button>
                   <button
                     onClick={handleDisable}
                     disabled={busy}
-                    className="py-2.5 px-4 border border-red-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors disabled:opacity-60"
+                    className="py-2.5 px-4 border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-60"
                   >
                     Disable MFA
                   </button>
@@ -172,7 +172,7 @@ export default function ManageMFAPage() {
 
           {/* Recovery codes */}
           {codes.length > 0 && (
-            <div className="mt-6 rounded-lg bg-amber-50 border border-amber-200 p-4">
+            <div className="mt-6 bg-amber-50 border border-amber-200 p-4">
               <h2 className="text-sm font-semibold text-amber-800 mb-2">
                 Recovery codes — save these now, they will not be shown again
               </h2>

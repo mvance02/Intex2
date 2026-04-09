@@ -68,7 +68,7 @@ function CapacityGauge({ name, region, status, occupancy, capacity }: {
         <p className="text-xs text-gray-400">{region}</p>
       </div>
       <span className={`text-xs font-semibold uppercase tracking-[0.06em] px-2 py-0.5 ${
-        status?.toLowerCase() === 'active' ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500'
+        status?.toLowerCase() === 'active' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-500'
       }`}>{status}</span>
     </div>
   );
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
             <Link
               key={to}
               to={to}
-              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-teal-600 text-white hover:bg-teal-700 transition-colors"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             >
               {label}
             </Link>
@@ -166,10 +166,10 @@ export default function AdminDashboard() {
         )}
         {!metricsLoading && !metricsError && metrics && (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <KpiCard label="Active Residents"   value={metrics.activeResidents}             Icon={Users}        iconColor="text-teal-600" />
+            <KpiCard label="Active Residents"   value={metrics.activeResidents}             Icon={Users}        iconColor="text-blue-600" />
             <KpiCard label="YTD Donations"      value={formatPeso(metrics.ytdDonations)}    Icon={DollarSign}   iconColor="text-green-600" />
             <KpiCard label="Total Supporters"   value={metrics.totalSupporters}             Icon={HandHeart}    iconColor="text-blue-600" />
-            <KpiCard label="Active Safehouses"  value={metrics.activeSafehouses}            Icon={Home}         iconColor="text-teal-600" />
+            <KpiCard label="Active Safehouses"  value={metrics.activeSafehouses}            Icon={Home}         iconColor="text-blue-600" />
             <KpiCard
               label="Open Incidents"
               value={metrics.openIncidents}

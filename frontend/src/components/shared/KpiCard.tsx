@@ -15,7 +15,7 @@ export default function KpiCard({
   label,
   value,
   Icon,
-  iconColor = 'text-teal-600',
+  iconColor = 'text-blue-600',
   trend,
   trendLabel,
   colorClass = 'bg-white',

@@ -14,7 +14,7 @@ export default function CookieConsentBanner() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <p className="text-sm text-gray-600 flex-1">
           We use cookies to keep you signed in and improve your experience. See our{' '}
-          <a href="/privacy" className="underline text-teal-700 hover:text-teal-800">
+          <a href="/privacy" className="underline text-blue-700 hover:text-blue-800">
             Privacy Policy
           </a>
           .
@@ -23,13 +23,13 @@ export default function CookieConsentBanner() {
         <div className="flex gap-3 shrink-0">
           <button
             onClick={declineConsent}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-600 font-medium hover:bg-gray-50"
+            className="px-4 py-2 text-sm border border-gray-300 text-gray-600 font-medium hover:bg-gray-50"
           >
             Decline
           </button>
           <button
             onClick={acknowledgeConsent}
-            className="px-4 py-2 text-sm rounded-lg bg-teal-700 text-white font-medium hover:bg-teal-800"
+            className="px-4 py-2 text-sm bg-blue-700 text-white font-medium hover:bg-blue-800"
           >
             Accept
           </button>

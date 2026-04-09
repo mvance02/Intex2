@@ -161,7 +161,7 @@ export default function UserManagement() {
                     disabled={updatingId === user.id}
                     className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.06em] transition-colors ${
                       user.roles.includes('Admin')
-                        ? 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                         : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                     }`}
                     title={user.roles.includes('Admin') ? 'Remove Admin role' : 'Grant Admin role'}
@@ -205,7 +205,7 @@ export default function UserManagement() {
                     </button>
                     <button
                       onClick={() => openEdit(user)}
-                      className="w-full sm:w-auto px-2.5 py-2 text-xs border border-teal-200 text-teal-700 hover:bg-teal-50"
+                      className="w-full sm:w-auto px-2.5 py-2 text-xs border border-blue-200 text-blue-700 hover:bg-blue-50"
                     >
                       Edit
                     </button>
@@ -287,7 +287,7 @@ export default function UserManagement() {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-teal-700 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-teal-800 disabled:opacity-60"
+              className="px-4 py-2 bg-blue-700 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-blue-800 disabled:opacity-60"
               disabled={formLoading}
             >
               {formLoading ? 'Saving...' : 'Save Changes'}
