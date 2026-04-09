@@ -190,8 +190,8 @@ export default function DonorRetentionRisk() {
               Icon={Activity}
               label="Total Donors"
               value={stats.total_donors.toLocaleString()}
-              iconColor="text-blue-600"
-              iconBg="bg-blue-50"
+              iconColor="text-slate-700"
+              iconBg="bg-sky-50"
             />
             <KpiCard
               Icon={AlertTriangle}
@@ -275,7 +275,7 @@ export default function DonorRetentionRisk() {
                   onClick={() => setTierFilter(t)}
                   className={`px-3 py-1.5 transition-colors ${
                     tierFilter === t
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-white border border-sky-300 text-slate-900'
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
