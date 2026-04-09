@@ -15,8 +15,9 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
     public async Task<IActionResult> GetPublicOkr()
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        var cutoff = today.AddDays(-90);
-        var previousWindowStart = today.AddDays(-180);
+        var evaluationCutoff = today.AddDays(-90);
+        var currentWindowStart = today.AddDays(-180);
+        var previousWindowStart = today.AddDays(-270);
 
         string[] stableStatuses = [
             "completed",
@@ -26,28 +27,34 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
             "maintained"
         ];
 
+        // Current reporting window: exits from 180 to 90 days ago.
         var eligibleNow = await db.Residents
-            .Where(r => r.DateClosed != null && r.DateClosed <= cutoff)
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed > currentWindowStart &&
+                r.DateClosed <= evaluationCutoff)
             .CountAsync();
         var stableNow = await db.Residents
             .Where(r =>
                 r.DateClosed != null &&
-                r.DateClosed <= cutoff &&
+                r.DateClosed > currentWindowStart &&
+                r.DateClosed <= evaluationCutoff &&
                 r.ReintegrationStatus != null &&
                 stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
             .CountAsync();
 
+        // Previous reporting window: exits from 270 to 180 days ago.
         var eligiblePrev = await db.Residents
             .Where(r =>
                 r.DateClosed != null &&
                 r.DateClosed > previousWindowStart &&
-                r.DateClosed <= cutoff)
+                r.DateClosed <= currentWindowStart)
             .CountAsync();
         var stablePrev = await db.Residents
             .Where(r =>
                 r.DateClosed != null &&
                 r.DateClosed > previousWindowStart &&
-                r.DateClosed <= cutoff &&
+                r.DateClosed <= currentWindowStart &&
                 r.ReintegrationStatus != null &&
                 stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
             .CountAsync();
@@ -57,12 +64,14 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
 
         return Ok(new
         {
-            metricName = "90-day Stable Reintegration Rate",
+            metricName = "90-day Safe Reintegration Count",
             ratePercent = Math.Round(currentRate * 100, 1),
             stableCount = stableNow,
             eligibleCount = eligibleNow,
+            previousStableCount = stablePrev,
             previousRatePercent = Math.Round(previousRate * 100, 1),
-            deltaPoints = Math.Round((currentRate - previousRate) * 100, 1)
+            deltaPoints = Math.Round((currentRate - previousRate) * 100, 1),
+            deltaCount = stableNow - stablePrev
         });
     }
 
