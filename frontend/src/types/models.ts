@@ -410,8 +410,10 @@ export interface PublicOkrMetric {
   ratePercent: number;
   stableCount: number;
   eligibleCount: number;
+  previousStableCount: number;
   previousRatePercent: number;
   deltaPoints: number;
+  deltaCount: number;
 }
 
 export interface SocialOptimizeRequest {
