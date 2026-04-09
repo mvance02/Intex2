@@ -7,6 +7,7 @@ import {
   loginUser,
   type ExternalAuthProvider,
 } from '../../utils/authAPI';
+import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -66,8 +67,12 @@ export default function LoginPage() {
         <div className="bg-white border border-gray-200 p-8">
           {/* Brand */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-slate-900 mb-4">
-              <span className="text-2xl" aria-hidden="true">🏠</span>
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-900 mb-4">
+              <img
+                src={hopeHavenLogo}
+                alt="Hope Haven logo"
+                className="h-full w-full object-contain bg-white"
+              />
             </div>
             <h1 className="text-2xl font-extrabold uppercase tracking-[0.08em] text-slate-900">Sign In</h1>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 mt-1">Hope Haven Staff Portal</p>
@@ -155,7 +160,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowMfa(true)}
-                className="mb-4 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                className="mb-4 text-sm text-sky-700 hover:text-sky-800 transition-colors font-semibold"
               >
                 Have an authenticator or recovery code?
               </button>
@@ -168,7 +173,7 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 border-gray-300 text-sky-300 focus:ring-sky-300"
               />
               <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
                 Keep me signed in across browser restarts
@@ -178,7 +183,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-blue-600 text-white text-sm font-semibold uppercase tracking-[0.1em] hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-sky-300 text-slate-900 text-sm font-semibold uppercase tracking-[0.1em] hover:bg-sky-200 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading && (
                 <span
@@ -229,7 +234,7 @@ export default function LoginPage() {
             Need an account?{' '}
             <Link
               to="/register"
-              className="inline-block ml-1 px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold uppercase tracking-[0.08em] hover:bg-blue-700 transition-colors"
+              className="inline-block ml-1 px-4 py-1.5 bg-sky-300 text-slate-900 text-sm font-semibold uppercase tracking-[0.08em] hover:bg-sky-200 transition-colors"
             >
               Register
             </Link>

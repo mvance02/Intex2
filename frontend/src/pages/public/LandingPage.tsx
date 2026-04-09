@@ -467,39 +467,20 @@ export default function LandingPage() {
       <section className="bg-slate-50 py-24 px-6 border-y border-slate-200">
         <div className="max-w-4xl mx-auto">
           <div className="border border-slate-200 bg-white p-7 sm:p-8 shadow-sm">
-            <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase text-center mb-3">
-              Most Important Outcome Metric
-            </p>
             <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 text-center">
               {okrMetric?.metricName ?? '90-day Stable Reintegration Rate'}
             </h2>
 
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
-              <div className="sm:col-span-1 bg-slate-50 border border-slate-200 p-4">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Current Count</p>
-                <p className="text-4xl font-extrabold text-slate-900 mt-1">
-                  {okrMetric ? okrMetric.stableCount : '—'}
-                </p>
-              </div>
-
-              <div className="sm:col-span-2 bg-white border border-slate-200 p-4 flex flex-col justify-center">
-                <p className="text-sm text-slate-700 font-medium leading-relaxed">
-                  {okrMetric
-                    ? `${okrMetric.stableCount} of ${okrMetric.eligibleCount} girls were still safe and stable 90 days after leaving our care.`
-                    : 'We track whether girls remain safe and stable 90 days after leaving our care.'}
-                </p>
-
-                {okrMetric && (
-                  <p
-                    className={`text-sm mt-2 font-semibold ${
-                      okrMetric.deltaCount >= 0 ? 'text-emerald-700' : 'text-rose-700'
-                    }`}
-                  >
-                    {okrMetric.deltaCount >= 0 ? 'Up ' : 'Down '}
-                    {Math.abs(okrMetric.deltaCount)} girls from the previous group
-                  </p>
-                )}
-              </div>
+            <div className="mt-8 flex flex-col items-center gap-3 text-center">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Current Count</p>
+              <p className="text-7xl font-extrabold text-slate-900">
+                {okrMetric ? okrMetric.stableCount : '—'}
+              </p>
+              <p className="text-sm text-slate-600 font-medium">
+                {okrMetric
+                  ? 'girls living safely and stably 90 days after leaving our care'
+                  : 'We track whether girls remain safe and stable 90 days after leaving our care.'}
+              </p>
             </div>
 
             <p className="text-xs text-slate-500 mt-4 text-center leading-relaxed">
