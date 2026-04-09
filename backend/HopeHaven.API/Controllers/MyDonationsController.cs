@@ -14,6 +14,61 @@ public class MyDonationsController(
     HopeHavenDbContext db,
     UserManager<ApplicationUser> userManager) : ControllerBase
 {
+    /// <summary>Matches legacy CSV column supporter_type (supporters.csv).</summary>
+    private static readonly HashSet<string> ValidSupporterTypes = new(StringComparer.Ordinal)
+    {
+        "MonetaryDonor",
+        "InKindDonor",
+        "Volunteer",
+        "SocialMediaAdvocate",
+        "PartnerOrganization",
+        "SkillsContributor",
+    };
+
+    private static string? NormalizeSupporterType(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+
+        var t = raw.Trim();
+        if (ValidSupporterTypes.Contains(t))
+            return t;
+
+        // Friendly alias from product copy ("Individual") → CSV value used for monetary donors.
+        if (string.Equals(t, "Individual", StringComparison.OrdinalIgnoreCase))
+            return "MonetaryDonor";
+
+        return null;
+    }
+
+    private static readonly HashSet<string> ValidRecurringFrequencies = new(StringComparer.Ordinal)
+    {
+        "Weekly",
+        "Monthly",
+        "Yearly",
+    };
+
+    private static string? NormalizeRecurringFrequency(bool isRecurring, string? raw)
+    {
+        if (!isRecurring)
+            return null;
+
+        if (string.IsNullOrWhiteSpace(raw))
+            return "Weekly";
+
+        var t = raw.Trim();
+        if (ValidRecurringFrequencies.Contains(t))
+            return t;
+
+        foreach (var v in ValidRecurringFrequencies)
+        {
+            if (string.Equals(v, t, StringComparison.OrdinalIgnoreCase))
+                return v;
+        }
+
+        return "Weekly";
+    }
+
     [HttpGet("/api/donations/wall")]
     [AllowAnonymous]
     public async Task<IActionResult> GetDonorWall()
@@ -64,6 +119,7 @@ public class MyDonationsController(
                 supporter.SupporterId,
                 supporter.DisplayName,
                 supporter.Email,
+                supporter.SupporterType,
                 supporter.CreatedAt
             },
             donations
@@ -88,11 +144,12 @@ public class MyDonationsController(
             var supporter = await db.Supporters.FirstOrDefaultAsync(s => s.Email == email);
             if (supporter is null)
             {
+                var initialType = NormalizeSupporterType(request.SupporterType) ?? "MonetaryDonor";
                 supporter = new Supporter
                 {
                     DisplayName = email.Split('@')[0],
                     Email = email,
-                    SupporterType = "Individual",
+                    SupporterType = initialType,
                     Status = "Active",
                     CreatedAt = DateTime.UtcNow,
                     FirstDonationDate = DateOnly.FromDateTime(DateTime.UtcNow),
@@ -100,6 +157,12 @@ public class MyDonationsController(
                 };
                 db.Supporters.Add(supporter);
                 await db.SaveChangesAsync();
+            }
+            else
+            {
+                var updatedType = NormalizeSupporterType(request.SupporterType);
+                if (updatedType is not null)
+                    supporter.SupporterType = updatedType;
             }
 
             var donation = new Donation
@@ -117,7 +180,8 @@ public class MyDonationsController(
                 ShareOnDonorWall = request.ShareOnDonorWall,
                 DonorWallName = request.ShareOnDonorWall
                     ? NormalizeDonorWallName(request.DonorWallName, supporter.DisplayName, email)
-                    : null
+                    : null,
+                RecurringFrequency = NormalizeRecurringFrequency(request.IsRecurring, request.RecurringFrequency)
             };
 
             db.Donations.Add(donation);
@@ -132,6 +196,7 @@ public class MyDonationsController(
                 donation.IsRecurring,
                 donation.CampaignName,
                 donation.DonationType,
+                donation.RecurringFrequency,
                 donation.ShareOnDonorWall,
                 donation.DonorWallName
             });
@@ -161,5 +226,7 @@ public record CreateMyDonationRequest(
     string? Notes = null,
     string? ImpactUnit = null,
     bool ShareOnDonorWall = false,
-    string? DonorWallName = null
+    string? DonorWallName = null,
+    string? SupporterType = null,
+    string? RecurringFrequency = null
 );

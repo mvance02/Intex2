@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import { portalSupporterTypeLabel } from '../../utils/supporterPortal';
 
 const API = import.meta.env.VITE_API_URL ?? '';
 
@@ -12,13 +13,20 @@ interface DonationRecord {
   currencyCode: string | null;
   donationDate: string | null;
   isRecurring: boolean;
+  recurringFrequency?: string | null;
   campaignName: string | null;
   donationType: string | null;
   impactUnit: string | null;
 }
 
 interface MyDonationsResponse {
-  supporter: { supporterId: number; displayName: string; email: string; createdAt: string | null } | null;
+  supporter: {
+    supporterId: number;
+    displayName: string;
+    email: string;
+    supporterType: string | null;
+    createdAt: string | null;
+  } | null;
   donations: DonationRecord[];
 }
 
@@ -56,7 +64,14 @@ export default function DonorDashboard() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Supporter type</p>
+          <p className="text-lg font-bold text-teal-700 mt-1 leading-snug">
+            {portalSupporterTypeLabel(data?.supporter?.supporterType)}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">Updated when you donate</p>
+        </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Donated</p>
           <p className="text-2xl font-bold text-teal-700 mt-1">
@@ -89,7 +104,11 @@ export default function DonorDashboard() {
                     {d.campaignName || d.donationType || 'Donation'}
                     {d.isRecurring && (
                       <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                        Recurring
+                        {(d.recurringFrequency || 'Weekly').toLowerCase() === 'monthly'
+                          ? 'Monthly'
+                          : (d.recurringFrequency || 'Weekly').toLowerCase() === 'yearly'
+                            ? 'Yearly'
+                            : 'Weekly'}
                       </span>
                     )}
                   </p>

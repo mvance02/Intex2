@@ -49,6 +49,8 @@ export interface Donation {
   donationType: string | null;
   donationDate: string | null;
   isRecurring: boolean;
+  /** When recurring: Weekly, Monthly, or Yearly */
+  recurringFrequency?: string | null;
   campaignName: string | null;
   channelSource: string | null;
   currencyCode: string | null;

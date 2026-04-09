@@ -3,6 +3,12 @@ import { useEffect, useState } from 'react';
 const API = import.meta.env.VITE_API_URL ?? '';
 import { Link } from 'react-router-dom';
 import {
+  DEFAULT_PORTAL_SUPPORTER_TYPE,
+  PORTAL_SUPPORTER_TYPES,
+  type PortalSupporterType,
+  isPortalSupporterType,
+} from '../../utils/supporterPortal';
+import {
   Home,
   HeartPulse,
   GraduationCap,
@@ -160,14 +166,43 @@ function formatPhp(php: number): string {
 // Sub-components
 // ---------------------------------------------------------------------------
 
+type GiftFrequency = 'once' | 'weekly' | 'monthly' | 'yearly';
+
+function frequencyToPayload(frequency: GiftFrequency): {
+  isRecurring: boolean;
+  recurringFrequency: string | null;
+} {
+  switch (frequency) {
+    case 'once':
+      return { isRecurring: false, recurringFrequency: null };
+    case 'weekly':
+      return { isRecurring: true, recurringFrequency: 'Weekly' };
+    case 'monthly':
+      return { isRecurring: true, recurringFrequency: 'Monthly' };
+    case 'yearly':
+      return { isRecurring: true, recurringFrequency: 'Yearly' };
+    default:
+      return { isRecurring: false, recurringFrequency: null };
+  }
+}
+
+function recurringThankYouPhrase(isRecurring: boolean, recurringFrequency: string | null): string {
+  if (!isRecurring) return '';
+  const f = (recurringFrequency || 'Weekly').toLowerCase();
+  if (f === 'monthly') return ' monthly recurring';
+  if (f === 'yearly') return ' yearly recurring';
+  return ' weekly recurring';
+}
+
 interface ThankYouModalProps {
   isRecurring: boolean;
+  recurringFrequency: string | null;
   label: string;
   phpAmount: number;
   onClose: () => void;
 }
 
-function ThankYouModal({ isRecurring, label, phpAmount, onClose }: ThankYouModalProps) {
+function ThankYouModal({ isRecurring, recurringFrequency, label, phpAmount, onClose }: ThankYouModalProps) {
   const usd = phpToUsd(phpAmount);
   return (
     <div
@@ -191,7 +226,7 @@ function ThankYouModal({ isRecurring, label, phpAmount, onClose }: ThankYouModal
         </div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Thank You!</h2>
         <p className="text-gray-500 mb-4 leading-relaxed">
-          Your{isRecurring ? ' weekly recurring' : ''} gift of{' '}
+          Your{recurringThankYouPhrase(isRecurring, recurringFrequency)} gift of{' '}
           <span className="font-semibold text-teal-700">
             {formatUsd(usd)} (≈ {formatPhp(phpAmount)})
           </span>{' '}
@@ -214,7 +249,7 @@ function ThankYouModal({ isRecurring, label, phpAmount, onClose }: ThankYouModal
 
 interface RecurringPromptProps {
   item: QuickGiveItem;
-  onChoose: (recurring: boolean) => void;
+  onChoose: (frequency: GiftFrequency) => void;
   onCancel: () => void;
 }
 
@@ -222,13 +257,16 @@ interface PendingDonation {
   label: string;
   phpAmount: number;
   isRecurring: boolean;
+  recurringFrequency: string | null;
   payload: {
     amount: number;
     currencyCode: string;
     isRecurring: boolean;
+    recurringFrequency: string | null;
     donationType: string;
     campaignName: string;
     impactUnit?: string;
+    supporterType: PortalSupporterType;
   };
 }
 
@@ -261,22 +299,40 @@ function RecurringPrompt({ item, onChoose, onCancel }: RecurringPromptProps) {
           {item.impactLine}.
         </p>
         <p className="text-sm font-medium text-gray-700 mb-4 text-center">
-          Would you like to make this a weekly recurring gift?
+          How often would you like to give?
         </p>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <button
-            onClick={() => onChoose(true)}
-            className="flex items-center justify-center gap-2 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
-          >
-            <RefreshCw size={16} />
-            Yes, give weekly
-          </button>
-          <button
-            onClick={() => onChoose(false)}
+            type="button"
+            onClick={() => onChoose('once')}
             className="flex items-center justify-center gap-2 w-full py-3 border border-teal-600 text-teal-700 font-semibold rounded-full hover:bg-teal-50 transition-colors"
           >
-            <Heart size={16} />
+            <Heart size={16} aria-hidden="true" />
             One-time gift
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose('weekly')}
+            className="flex items-center justify-center gap-2 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+            Weekly
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose('monthly')}
+            className="flex items-center justify-center gap-2 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+            Monthly
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose('yearly')}
+            className="flex items-center justify-center gap-2 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+          >
+            <RefreshCw size={16} aria-hidden="true" />
+            Yearly
           </button>
         </div>
       </div>
@@ -373,7 +429,13 @@ type ModalState =
   | { type: 'none' }
   | { type: 'recurring-prompt'; item: QuickGiveItem }
   | { type: 'wall-prompt'; pending: PendingDonation }
-  | { type: 'thank-you'; label: string; phpAmount: number; isRecurring: boolean };
+  | {
+      type: 'thank-you';
+      label: string;
+      phpAmount: number;
+      isRecurring: boolean;
+      recurringFrequency: string | null;
+    };
 
 export default function DonatePage() {
   // Custom amount state
@@ -381,8 +443,30 @@ export default function DonatePage() {
   const [customRaw, setCustomRaw] = useState('');
   const [modal, setModal] = useState<ModalState>({ type: 'none' });
   const [donationError, setDonationError] = useState('');
+  const [supporterType, setSupporterType] = useState<PortalSupporterType>(DEFAULT_PORTAL_SUPPORTER_TYPE);
+  const [customGiftFrequency, setCustomGiftFrequency] = useState<'once' | 'monthly' | 'yearly'>('once');
 
   useEffect(() => { document.title = 'Donate — Hope Haven'; }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`${API}/api/my-donations`, { credentials: 'include' });
+        if (!res.ok || cancelled) return;
+        const body: { supporter?: { supporterType?: string | null } | null } = await res.json();
+        const t = body.supporter?.supporterType;
+        if (!t) return;
+        if (isPortalSupporterType(t)) setSupporterType(t);
+        else if (t.toLowerCase() === 'individual') setSupporterType('MonetaryDonor');
+      } catch {
+        /* keep default */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Derived custom amount values
   const customNumeric = parseFloat(customRaw) || 0;
@@ -419,6 +503,7 @@ export default function DonatePage() {
         label: pending.label,
         phpAmount: pending.phpAmount,
         isRecurring: pending.isRecurring,
+        recurringFrequency: pending.recurringFrequency,
       });
     } catch {
       setDonationError('Unable to reach the server. Please try again.');
@@ -428,19 +513,38 @@ export default function DonatePage() {
 
   function handleCustomDonate() {
     if (customPhp <= 0) return;
+    const giftFreq: GiftFrequency =
+      customGiftFrequency === 'once'
+        ? 'once'
+        : customGiftFrequency === 'monthly'
+          ? 'monthly'
+          : 'yearly';
+    const { isRecurring, recurringFrequency } = frequencyToPayload(giftFreq);
+    const label =
+      giftFreq === 'once'
+        ? 'Custom Donation'
+        : giftFreq === 'monthly'
+          ? 'Custom monthly donation'
+          : 'Custom yearly donation';
+    const campaignName =
+      giftFreq === 'once' ? 'Custom Donation' : `Custom Donation (${recurringFrequency})`;
+
     setModal({
       type: 'wall-prompt',
       pending: {
-        label: 'Custom Donation',
+        label,
         phpAmount: Math.round(customPhp),
-        isRecurring: false,
+        isRecurring,
+        recurringFrequency,
         payload: {
           amount: Math.round(customPhp),
           currencyCode: 'PHP',
-          isRecurring: false,
+          isRecurring,
+          recurringFrequency,
           donationType: 'Monetary',
-          campaignName: 'Custom Donation',
+          campaignName,
           impactUnit: customImpact || undefined,
+          supporterType,
         },
       },
     });
@@ -450,22 +554,28 @@ export default function DonatePage() {
     setModal({ type: 'recurring-prompt', item });
   }
 
-  function handleRecurringChoice(recurring: boolean) {
+  function handleRecurringChoice(frequency: GiftFrequency) {
     if (modal.type !== 'recurring-prompt') return;
     const item = modal.item;
+    const { isRecurring, recurringFrequency } = frequencyToPayload(frequency);
+    const recurTag =
+      frequency === 'once' ? '' : ` (${recurringFrequency})`;
     setModal({
       type: 'wall-prompt',
       pending: {
-        label: item.label,
+        label: `${item.label}${recurTag}`,
         phpAmount: item.phpAmount,
-        isRecurring: recurring,
+        isRecurring,
+        recurringFrequency,
         payload: {
           amount: item.phpAmount,
           currencyCode: 'PHP',
-          isRecurring: recurring,
+          isRecurring,
+          recurringFrequency,
           donationType: 'Monetary',
-          campaignName: item.label,
+          campaignName: isRecurring ? `${item.label} (${recurringFrequency})` : item.label,
           impactUnit: item.impactLine,
+          supporterType,
         },
       },
     });
@@ -491,6 +601,7 @@ export default function DonatePage() {
           label={modal.label}
           phpAmount={modal.phpAmount}
           isRecurring={modal.isRecurring}
+          recurringFrequency={modal.recurringFrequency}
           onClose={closeModal}
         />
       )}
@@ -518,6 +629,68 @@ export default function DonatePage() {
             <p className="text-sm font-semibold text-teal-700 uppercase tracking-wide mb-4">
               Custom Donation Amount
             </p>
+
+            <div className="mb-5">
+              <label htmlFor="portal-supporter-type" className="block text-sm font-medium text-gray-700 mb-1">
+                How do you support Hope Haven?
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                We use the same categories as our historical supporter records (for example Volunteer, in-kind
+                donor, or individual monetary gifts).
+              </p>
+              <select
+                id="portal-supporter-type"
+                value={supporterType}
+                onChange={(e) =>
+                  setSupporterType(
+                    isPortalSupporterType(e.target.value) ? e.target.value : DEFAULT_PORTAL_SUPPORTER_TYPE
+                  )
+                }
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
+              >
+                {PORTAL_SUPPORTER_TYPES.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-5">
+              <span id="custom-gift-frequency-label" className="block text-sm font-medium text-gray-700 mb-1">
+                Gift frequency
+              </span>
+              <p className="text-xs text-gray-500 mb-2">
+                One-time gift, or the same custom amount billed each month or each year (demo — no real
+                charges).
+              </p>
+              <div
+                className="grid grid-cols-3 gap-2"
+                role="group"
+                aria-labelledby="custom-gift-frequency-label"
+              >
+                {(
+                  [
+                    { id: 'once' as const, label: 'One-time' },
+                    { id: 'monthly' as const, label: 'Monthly' },
+                    { id: 'yearly' as const, label: 'Yearly' },
+                  ] as const
+                ).map(({ id, label: freqLabel }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setCustomGiftFrequency(id)}
+                    className={`py-2.5 px-2 text-xs sm:text-sm font-semibold rounded-lg border transition-colors ${
+                      customGiftFrequency === id
+                        ? 'border-teal-600 bg-teal-50 text-teal-800'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {freqLabel}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Currency toggle */}
             <div className="flex rounded-lg overflow-hidden border border-gray-200 mb-4 w-fit">
