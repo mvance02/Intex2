@@ -4,9 +4,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Menu, X, LogOut } from 'lucide-react';
 import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg';
 
-const linkClass =
-  'hover:text-slate-600 transition-colors py-1 text-xs sm:text-sm font-semibold uppercase tracking-[0.08em]';
-
 export default function PublicLayout() {
   const { isAuthenticated, authSession, logout } = useAuth();
   const navigate = useNavigate();
