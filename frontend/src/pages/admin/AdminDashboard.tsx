@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, DollarSign, HandHeart, Home, AlertTriangle, ShieldAlert } from 'lucide-react';
 import KpiCard from '../../components/shared/KpiCard';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorAlert from '../../components/shared/ErrorAlert';
+import Modal from '../../components/shared/Modal';
 import { SkeletonKpiCards } from '../../components/shared/SkeletonLoader';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
 import type {
@@ -33,8 +34,10 @@ const ACTIVITY_DOT: Record<RecentActivityItem['type'], string> = {
   incident: 'bg-red-500',
 };
 
+const CASE_CATEGORIES = ['Surrendered', 'Abandoned', 'Foundling', 'Neglected'] as const;
+const CASE_STATUSES = ['Active', 'Closed', 'Transferred'] as const;
+
 const QUICK_ACTIONS: { label: string; to: string }[] = [
-  { label: 'Add Resident', to: '/admin/residents' },
   { label: 'Log Session', to: '/admin/process-recordings' },
   { label: 'Log Visit', to: '/admin/visits' },
   { label: 'View Reports', to: '/admin/reports' },
@@ -86,6 +89,49 @@ export default function AdminDashboard() {
   const [safehouses, setSafehouses] = useState<SafehouseSummaryItem[]>([]);
   const [safehousesLoading, setSafehousesLoading] = useState(true);
   const [safehousesError, setSafehousesError] = useState<string | null>(null);
+
+  const [activityPage, setActivityPage] = useState(1);
+  const ACTIVITY_PAGE_SIZE = 10;
+
+  const [showAddResident, setShowAddResident] = useState(false);
+  const [addResidentSubmitting, setAddResidentSubmitting] = useState(false);
+  const [addResidentError, setAddResidentError] = useState<string | null>(null);
+  const [newResident, setNewResident] = useState({
+    internalCode: '',
+    safehouseId: '' as string,
+    caseCategory: '',
+    caseStatus: '',
+  });
+
+  function resetAddResidentForm() {
+    setNewResident({ internalCode: '', safehouseId: '', caseCategory: '', caseStatus: '' });
+    setAddResidentError(null);
+  }
+
+  async function handleAddResident(e: FormEvent) {
+    e.preventDefault();
+    setAddResidentSubmitting(true);
+    setAddResidentError(null);
+    try {
+      await apiFetch('/api/residents', {
+        method: 'POST',
+        body: JSON.stringify({
+          internalCode: newResident.internalCode.trim(),
+          safehouseId: newResident.safehouseId ? Number(newResident.safehouseId) : null,
+          caseCategory: newResident.caseCategory || null,
+          caseStatus: newResident.caseStatus || null,
+        }),
+      });
+      setShowAddResident(false);
+      resetAddResidentForm();
+      fetchMetrics();
+      fetchSafehouses();
+    } catch (err: unknown) {
+      setAddResidentError(err instanceof Error ? err.message : 'Failed to add resident.');
+    } finally {
+      setAddResidentSubmitting(false);
+    }
+  }
 
   useEffect(() => {
     document.title = 'Dashboard — Hope Haven';
@@ -143,6 +189,12 @@ export default function AdminDashboard() {
           <p className="text-sm text-gray-500 mt-0.5">Hope Haven Case Management</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setShowAddResident(true)}
+            className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-white border border-sky-300 text-slate-900 hover:bg-sky-300 hover:text-slate-900 transition-colors"
+          >
+            Add Resident
+          </button>
           {QUICK_ACTIONS.map(({ label, to }) => (
             <Link
               key={to}
@@ -195,26 +247,53 @@ export default function AdminDashboard() {
         {activityError && (
           <ErrorAlert message={activityError} onRetry={fetchActivity} />
         )}
-        {!activityLoading && !activityError && (
-          <div className="bg-white border border-gray-200 divide-y divide-gray-100">
-            {activity.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p>
-            )}
-            {activity.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-3 px-5 py-4">
-                <span
-                  className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 ${ACTIVITY_DOT[item.type]}`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-800 leading-snug">{item.description}</p>
-                  <p className="text-xs text-gray-400 mt-0.5 capitalize">
-                    {item.type} · {relativeDate(item.date)}
-                  </p>
-                </div>
+        {!activityLoading && !activityError && (() => {
+          const totalPages = Math.max(1, Math.ceil(activity.length / ACTIVITY_PAGE_SIZE));
+          const paged = activity.slice((activityPage - 1) * ACTIVITY_PAGE_SIZE, activityPage * ACTIVITY_PAGE_SIZE);
+          return (
+            <>
+              <div className="bg-white border border-gray-200 divide-y divide-gray-100">
+                {activity.length === 0 && (
+                  <p className="text-sm text-gray-400 text-center py-8">No recent activity.</p>
+                )}
+                {paged.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 px-5 py-4">
+                    <span
+                      className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 ${ACTIVITY_DOT[item.type]}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-800 leading-snug">{item.description}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 capitalize">
+                        {item.type} · {relativeDate(item.date)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-3">
+                  <button
+                    onClick={() => setActivityPage((p) => Math.max(1, p - 1))}
+                    disabled={activityPage === 1}
+                    className="px-3 py-1 text-xs border border-gray-300 text-gray-600 disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-xs text-gray-500">
+                    {activityPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setActivityPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={activityPage === totalPages}
+                    className="px-3 py-1 text-xs border border-gray-300 text-gray-600 disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </section>
 
       {/* Safehouse Capacity — full-width gauge grid */}
@@ -249,6 +328,107 @@ export default function AdminDashboard() {
           )
         )}
       </section>
+
+      {/* Add Resident Modal */}
+      <Modal
+        isOpen={showAddResident}
+        onClose={() => { setShowAddResident(false); resetAddResidentForm(); }}
+        title="Add Resident"
+        size="md"
+      >
+        <form onSubmit={handleAddResident} className="space-y-4">
+          {addResidentError && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2">
+              {addResidentError}
+            </p>
+          )}
+
+          <div>
+            <label htmlFor="ar-name" className="block text-sm font-medium text-gray-700 mb-1">
+              Name / Internal Code <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="ar-name"
+              type="text"
+              required
+              value={newResident.internalCode}
+              onChange={(e) => setNewResident((p) => ({ ...p, internalCode: e.target.value }))}
+              className="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400"
+              placeholder="e.g. R-2026-042"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="ar-safehouse" className="block text-sm font-medium text-gray-700 mb-1">
+              Safehouse
+            </label>
+            <select
+              id="ar-safehouse"
+              value={newResident.safehouseId}
+              onChange={(e) => setNewResident((p) => ({ ...p, safehouseId: e.target.value }))}
+              className="w-full border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400"
+            >
+              <option value="">-- Select --</option>
+              {safehouses.map((s) => (
+                <option key={s.safehouseId} value={s.safehouseId}>
+                  {displaySafehouseName(s.name)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="ar-category" className="block text-sm font-medium text-gray-700 mb-1">
+              Case Category
+            </label>
+            <select
+              id="ar-category"
+              value={newResident.caseCategory}
+              onChange={(e) => setNewResident((p) => ({ ...p, caseCategory: e.target.value }))}
+              className="w-full border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400"
+            >
+              <option value="">-- Select --</option>
+              {CASE_CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="ar-status" className="block text-sm font-medium text-gray-700 mb-1">
+              Case Status
+            </label>
+            <select
+              id="ar-status"
+              value={newResident.caseStatus}
+              onChange={(e) => setNewResident((p) => ({ ...p, caseStatus: e.target.value }))}
+              className="w-full border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-sky-400 focus:border-sky-400"
+            >
+              <option value="">-- Select --</option>
+              {CASE_STATUSES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => { setShowAddResident(false); resetAddResidentForm(); }}
+              className="px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={addResidentSubmitting}
+              className="px-4 py-2 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-50 transition-colors"
+            >
+              {addResidentSubmitting ? 'Adding...' : 'Add Resident'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

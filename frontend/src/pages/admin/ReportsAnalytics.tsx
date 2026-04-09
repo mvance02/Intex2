@@ -38,6 +38,11 @@ interface StatusCount {
   count: number
 }
 
+interface RiskLevelCount {
+  riskLevel: string | null
+  count: number
+}
+
 interface CategoryCount {
   category: string | null
   count: number
@@ -109,7 +114,7 @@ interface DonationTrendsResponse {
 
 interface ResidentOutcomesResponse {
   byStatus: StatusCount[]
-  byRiskLevel: StatusCount[]
+  byRiskLevel: RiskLevelCount[]
   byCategory: CategoryCount[]
   byReintegrationType: TypeCount[]
   educationProgress: EduCount[]
@@ -373,9 +378,9 @@ export default function ReportsAnalytics() {
   const riskChartData = (residentData?.byRiskLevel ?? [])
     .filter((r) => r.count > 0)
     .map((r) => ({
-      name: r.status ?? 'Unknown',
+      name: r.riskLevel ?? 'Unknown',
       count: r.count,
-      color: riskColor(r.status),
+      color: riskColor(r.riskLevel),
     }))
 
   const safehouseChartData = safehouseData?.safehouses.map((sh) => ({
@@ -577,7 +582,7 @@ export default function ReportsAnalytics() {
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={120} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={160} />
                 <Tooltip />
                 <Bar dataKey="count" name="Count" fill={COLORS.accent} radius={0} />
               </BarChart>

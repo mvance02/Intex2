@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Shield, ShieldCheck, Loader2 } from 'lucide-react';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import Pagination from '../../components/shared/Pagination';
 import Modal from '../../components/shared/Modal';
 import DeleteConfirmDialog from '../../components/shared/DeleteConfirmDialog';
 import { useToast } from '../../contexts/ToastContext';
@@ -29,6 +30,8 @@ export default function UserManagement() {
   const [form, setForm] = useState({ email: '', userName: '' });
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -105,7 +108,12 @@ export default function UserManagement() {
     setDeleteLoading(true);
     try {
       await apiFetch<unknown>(`/api/users/${deleteTarget.id}`, { method: 'DELETE' });
-      setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+      setUsers(prev => {
+        const next = prev.filter(u => u.id !== deleteTarget.id);
+        const maxPage = Math.max(1, Math.ceil(next.length / pageSize));
+        if (page > maxPage) setPage(maxPage);
+        return next;
+      });
       toast.success('User deleted.');
       setDeleteTarget(null);
     } catch (err) {
@@ -114,6 +122,9 @@ export default function UserManagement() {
       setDeleteLoading(false);
     }
   }
+
+  const totalPages = Math.max(1, Math.ceil(users.length / pageSize));
+  const paginatedUsers = users.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading users…" />;
 
@@ -146,7 +157,7 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {users.map(user => (
+            {paginatedUsers.map(user => (
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3 text-gray-800 font-medium">{user.email}</td>
                 <td className="px-4 py-3 text-center">
@@ -226,6 +237,8 @@ export default function UserManagement() {
           <div className="px-4 py-10 text-center text-gray-400 text-sm">No registered users found.</div>
         )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       <p className="text-xs text-gray-400 mt-4">
         {users.length} registered user{users.length !== 1 ? 's' : ''}
