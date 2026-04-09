@@ -766,11 +766,6 @@ export default function LandingPage() {
                   ? `Safely reintegrated ${okrMetric.periodLabel}`
                   : 'Safely reintegrated'}
               </p>
-              <p className="mt-6 text-base text-slate-700 leading-relaxed max-w-2xl mx-auto">
-                {okrMetric
-                  ? `${okrMetric.stableCount} girls safely reintegrated ${okrMetric.periodLabel}.`
-                  : 'Live OKR data is loading.'}
-              </p>
             </div>
           </div>
         </div>
