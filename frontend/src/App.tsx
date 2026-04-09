@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CookieConsentProvider } from './contexts/CookieConsentContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -59,6 +59,16 @@ function ProtectedRoute({ children, requiredRoles }: { children: React.ReactNode
   return <>{children}</>;
 }
 
+function ScrollToTopOnRouteChange() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -66,6 +76,7 @@ export default function App() {
         <AuthProvider>
           <CookieConsentProvider>
             <BrowserRouter>
+              <ScrollToTopOnRouteChange />
               <Routes>
                 {/* Public */}
                 <Route element={<PublicLayout />}>
