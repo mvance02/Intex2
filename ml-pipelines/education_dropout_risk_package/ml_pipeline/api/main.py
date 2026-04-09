@@ -13,7 +13,6 @@ app = FastAPI(title="Education Dropout Risk API", version="0.3.0")
 LEAKAGE = {TARGET_COLUMN, SURROGATE_TARGET, "resident_id"}
 _model = None
 _train_df = None
-_train_X = None
 _residents_meta = None
 _importance = None
 
@@ -43,20 +42,6 @@ def _load_residents_meta() -> pd.DataFrame:
             ]
             _residents_meta = r[keep].copy()
     return _residents_meta
-
-
-def _build_feature_matrix(df: pd.DataFrame) -> pd.DataFrame:
-    feats = [c for c in df.columns if c not in LEAKAGE]
-    X = pd.get_dummies(df[feats], drop_first=True)
-    X = X.apply(pd.to_numeric, errors="coerce")
-    return X
-
-
-def _load_train_X() -> pd.DataFrame:
-    global _train_X
-    if _train_X is None:
-        _train_X = _build_feature_matrix(_load_train_df())
-    return _train_X
 
 
 def _load_model():
@@ -196,9 +181,9 @@ def predict_resident(resident_id: int):
     if row.empty:
         raise HTTPException(404, f"Resident {resident_id} not found")
 
-    X_all = _load_train_X()
-    X_row = X_all.loc[row.index]
     model = _load_model()
+    feature_cols = [c for c in df.columns if c not in LEAKAGE]
+    X_row = df.loc[row.index, feature_cols]
 
     p = float(model.predict_proba(X_row)[:, 1][0])
 

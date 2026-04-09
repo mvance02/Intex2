@@ -11,11 +11,13 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score, recall_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 
+_SCRIPTS_DIR = Path(__file__).resolve().parent
+_REPO_ROOT = _SCRIPTS_DIR.parent
 
-DATA_DIR_DEFAULT = "C:/Users/Lukeb/OneDrive/Desktop/Pipelines/lighthouse_csv_v7/lighthouse_csv_v7"
-OUT_DIR_DEFAULT = "C:/Users/Lukeb/OneDrive/Desktop/Pipelines/outputs/education_dropout"
+DATA_DIR_DEFAULT = str(_REPO_ROOT / "data")
+OUT_DIR_DEFAULT = str(_REPO_ROOT / "outputs" / "education_dropout")
 
 
 def load_tables(data_dir: str):
@@ -138,31 +140,33 @@ def build_preprocessor(X: pd.DataFrame):
 	return prep
 
 
-def pick_model(X_train, y_train, X_test, y_test):
-	prep = build_preprocessor(X_train)
+def pick_model(X_train: pd.DataFrame, y_train: pd.Series) -> tuple:
+	"""Select the best model using StratifiedKFold CV on training data only.
+
+	The test set is NOT touched here — it is reserved for the single final
+	evaluation after selection (Ch. 15: never use the test set for model
+	selection or hyperparameter tuning).
+	"""
+	cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 	candidates = {
 		"log_reg": LogisticRegression(max_iter=300, class_weight="balanced", solver="liblinear"),
-		"random_forest": RandomForestClassifier(n_estimators=350, min_samples_leaf=4, class_weight="balanced", random_state=42, n_jobs=-1)
+		"random_forest": RandomForestClassifier(n_estimators=350, min_samples_leaf=4, class_weight="balanced", random_state=42, n_jobs=-1),
 	}
 	best_name = None
-	best_pipe = None
-	best_tuple = (-1.0, -1.0)  # recall, auc
+	best_cv_auc = -1.0
 	report = []
 	for name, clf in candidates.items():
-		pipe = Pipeline([("prep", prep), ("clf", clf)])
-		pipe.fit(X_train, y_train)
-		p = pipe.predict_proba(X_test)[:, 1]
-		yhat = (p >= 0.5).astype(int)
-		rec = recall_score(y_test, yhat, zero_division=0)
-		try:
-			auc = roc_auc_score(y_test, p)
-		except ValueError:
-			auc = 0.5
-		report.append({"model": name, "recall": float(rec), "roc_auc": float(auc)})
-		if (rec, auc) > best_tuple:
-			best_tuple = (rec, auc)
+		pipe = Pipeline([("prep", build_preprocessor(X_train)), ("clf", clf)])
+		scores = cross_val_score(pipe, X_train, y_train, cv=cv, scoring="roc_auc", n_jobs=-1)
+		cv_mean = float(scores.mean())
+		cv_std = float(scores.std())
+		report.append({"model": name, "cv_roc_auc_mean": cv_mean, "cv_roc_auc_std": cv_std})
+		if cv_mean > best_cv_auc:
+			best_cv_auc = cv_mean
 			best_name = name
-			best_pipe = pipe
+	# Refit the winner on the full training set
+	best_pipe = Pipeline([("prep", build_preprocessor(X_train)), ("clf", candidates[best_name])])
+	best_pipe.fit(X_train, y_train)
 	return best_name, best_pipe, report
 
 
@@ -209,7 +213,23 @@ def main():
 		raise ValueError("Dropout label has only one class in current data; cannot train classifier.")
 
 	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
-	best_name, model, eval_report = pick_model(X_train, y_train, X_test, y_test)
+
+	# Model selection via StratifiedKFold CV on training data only (Ch. 15)
+	best_name, model, cv_report = pick_model(X_train, y_train)
+
+	# Final honest evaluation on held-out test set (run exactly once, after selection)
+	p_test = model.predict_proba(X_test)[:, 1]
+	yhat_test = (p_test >= 0.5).astype(int)
+	try:
+		test_auc = float(roc_auc_score(y_test, p_test))
+	except ValueError:
+		test_auc = None
+	eval_report = {
+		"selected_model": best_name,
+		"test_roc_auc": test_auc,
+		"test_recall": float(recall_score(y_test, yhat_test, zero_division=0)),
+		"cv_report": cv_report,
+	}
 
 	model_path = out_dir / f"education_dropout_{best_name}.joblib"
 	joblib.dump(model, model_path)
@@ -231,9 +251,8 @@ def main():
 	scores_path = out_dir / "education_dropout_scores.parquet"
 	scores.to_parquet(scores_path, index=False)
 
-	metrics = {"selected_model": best_name, "evaluation": eval_report}
 	with open(out_dir / "metrics.json", "w", encoding="utf-8") as f:
-		json.dump(metrics, f, indent=2)
+		json.dump(eval_report, f, indent=2)
 
 	print(f"Saved model: {model_path}")
 	print(f"Saved scores: {scores_path}")

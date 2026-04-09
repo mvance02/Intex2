@@ -1,0 +1,16 @@
+column,dtype,n_missing,pct_missing,n_unique,mean,std,min,p25,median,p75,max,skew,top_value
+total_donations,int64,0,0.0,17,7.1186,4.5147,1.0,4.0,6.0,9.0,23.0,1.5582,
+avg_donation_amount,float64,2,3.39,57,1069.4565,504.8383,250.0,705.18,990.8425,1255.045,3014.8675,1.6203,
+total_donation_amount,float64,0,0.0,58,4080.0769,3093.9109,0.0,1869.805,3157.76,5916.655,12059.47,0.8552,
+days_since_last_donation,float64,0,0.0,56,185.5424,186.8525,0.0,59.5,118.0,267.5,797.0,1.5928,
+days_since_first_donation,float64,0,0.0,56,951.8475,195.7826,388.0,827.0,1025.0,1091.0,1147.0,-1.3181,
+donation_frequency,float64,0,0.0,57,2.6863,1.4718,0.4583,1.778,2.293,3.2239,7.7498,1.3911,
+pct_recurring,float64,0,0.0,2,0.3051,0.4644,0.0,0.0,0.0,1.0,1.0,0.8689,
+num_posts,int64,0,0.0,6,1.3051,1.2213,0.0,0.0,1.0,2.0,5.0,0.795,
+engagement_score,float64,0,0.0,6,3.9153,3.6638,0.0,0.0,3.0,6.0,15.0,0.795,
+supporter_type,str,0,0.0,6,,,,,,,,,MonetaryDonor
+relationship_type,str,0,0.0,3,,,,,,,,,Local
+region,str,0,0.0,3,,,,,,,,,Luzon
+country,str,0,0.0,4,,,,,,,,,Philippines
+acquisition_channel,str,0,0.0,6,,,,,,,,,WordOfMouth
+status,str,0,0.0,2,,,,,,,,,Active

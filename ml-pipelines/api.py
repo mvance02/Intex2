@@ -6,12 +6,12 @@ The .NET backend calls: POST http://localhost:8001/predict/{resident_id}
 
 Install: pip install fastapi uvicorn scikit-learn numpy pandas statsmodels shap
 """
-import pickle
 import re
 import warnings
 from pathlib import Path
 from typing import Any
 
+import joblib
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -29,8 +29,7 @@ if not MODEL_PATH.exists():
         "Run the notebook (reintegration-readiness.ipynb) first to generate it."
     )
 
-with open(MODEL_PATH, "rb") as f:
-    artefacts = pickle.load(f)
+artefacts = joblib.load(MODEL_PATH)
 
 model_readiness: Any   = artefacts["model1_readiness"]
 model_type: Any        = artefacts["model2_type"]

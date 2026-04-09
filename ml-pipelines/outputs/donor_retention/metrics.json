@@ -1,40 +1,65 @@
 {
-  "model_name": "xgboost",
-  "train_metrics": {
+  "model_name": "gradient_boosting",
+  "test_metrics": {
     "roc_auc": 1.0,
     "pr_auc": 1.0,
     "recall_at_50": 1.0
   },
+  "tune_info": {
+    "best_params": {
+      "clf__n_estimators": 200,
+      "clf__max_depth": 5,
+      "clf__learning_rate": 0.05
+    },
+    "best_cv_score": 1.0
+  },
   "cv_metrics": [
     {
       "model": "xgboost",
-      "roc_auc_mean": 0.990625,
-      "roc_auc_std": 0.018750000000000003,
-      "recall_mean": 0.95,
-      "recall_std": 0.09999999999999999
+      "roc_auc_mean": 0.9666666666666666,
+      "roc_auc_std": 0.0666666666666667,
+      "recall_mean": 0.9333333333333332,
+      "recall_std": 0.13333333333333336
     },
     {
       "model": "random_forest",
-      "roc_auc_mean": 0.9875,
-      "roc_auc_std": 0.015309310892394862,
-      "recall_mean": 0.95,
-      "recall_std": 0.09999999999999999
+      "roc_auc_mean": 0.9666666666666668,
+      "roc_auc_std": 0.044444444444444425,
+      "recall_mean": 0.75,
+      "recall_std": 0.2472066162365221
+    },
+    {
+      "model": "gradient_boosting",
+      "roc_auc_mean": 1.0,
+      "roc_auc_std": 0.0,
+      "recall_mean": 1.0,
+      "recall_std": 0.0
     },
     {
       "model": "decision_tree",
-      "roc_auc_mean": 0.5,
+      "roc_auc_mean": 1.0,
       "roc_auc_std": 0.0,
-      "recall_mean": 0.0,
+      "recall_mean": 1.0,
       "recall_std": 0.0
     },
     {
       "model": "log_reg",
-      "roc_auc_mean": NaN,
-      "roc_auc_std": NaN,
-      "recall_mean": NaN,
-      "recall_std": NaN
+      "roc_auc_mean": 0.8476190476190476,
+      "roc_auc_std": 0.097253801155812,
+      "recall_mean": 0.6666666666666666,
+      "recall_std": 0.21081851067789195
     }
   ],
+  "log_transformed_cols": [
+    "total_donations",
+    "avg_donation_amount",
+    "days_since_last_donation",
+    "days_since_first_donation",
+    "donation_frequency",
+    "pct_recurring"
+  ],
   "churn_window_days": 180,
-  "prioritize": "recall"
+  "prioritize": "recall",
+  "train_size": 47,
+  "test_size_n": 12
 }
