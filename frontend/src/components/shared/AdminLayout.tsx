@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   LogOut,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -26,6 +27,7 @@ const navItems = [
   { label: 'Reports',            path: '/admin/reports',            Icon: BarChart2 },
   { label: 'Social Media',       path: '/admin/social-media',       Icon: Share2 },
   { label: 'Social Donation ML', path: '/admin/social-donation',    Icon: TrendingUp },
+  { label: 'Donor Retention',   path: '/admin/donor-retention',    Icon: AlertTriangle },
   { label: 'Users',              path: '/admin/users',              Icon: UserCog },
   { label: 'Manage MFA',         path: '/admin/manage-mfa',         Icon: Shield },
 ];

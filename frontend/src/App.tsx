@@ -32,6 +32,7 @@ const ManageMFAPage      = lazy(() => import('./pages/admin/ManageMFAPage'));
 const SocialMediaPage    = lazy(() => import('./pages/public/SocialMediaPage'));
 const SocialDonationPredictor = lazy(() => import('./pages/admin/SocialDonationPredictor'));
 const UserManagement     = lazy(() => import('./pages/admin/UserManagement'));
+const DonorRetentionRisk = lazy(() => import('./pages/admin/DonorRetentionRisk'));
 
 // Donor pages — lazy loaded
 const DonorLayout    = lazy(() => import('./components/shared/DonorLayout'));
@@ -207,6 +208,14 @@ export default function App() {
                     element={
                       <Suspense fallback={<PageFallback />}>
                         <SocialDonationPredictor />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="/admin/donor-retention"
+                    element={
+                      <Suspense fallback={<PageFallback />}>
+                        <DonorRetentionRisk />
                       </Suspense>
                     }
                   />

@@ -13,8 +13,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 
 
-DATA_DIR_DEFAULT = "C:/Users/Lukeb/OneDrive/Desktop/Pipelines/lighthouse_csv_v7/lighthouse_csv_v7"
-OUT_DIR_DEFAULT = "C:/Users/Lukeb/OneDrive/Desktop/Pipelines/outputs/first_visit_personalizer"
+_SCRIPTS_DIR = Path(__file__).resolve().parent
+_REPO_ROOT = _SCRIPTS_DIR.parent
+
+DATA_DIR_DEFAULT = str(_REPO_ROOT / "data")
+OUT_DIR_DEFAULT = str(_REPO_ROOT / "outputs" / "first_visit_personalizer")
 
 
 def build_training_frame(data_dir: str) -> pd.DataFrame:

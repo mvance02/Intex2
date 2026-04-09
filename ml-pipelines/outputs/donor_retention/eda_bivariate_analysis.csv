@@ -1,0 +1,16 @@
+feature,dtype,stat_type,stat_value,p_value
+total_donations,int64,pearson_r,-0.3453,0.0174
+avg_donation_amount,float64,pearson_r,0.1324,0.386
+total_donation_amount,float64,pearson_r,-0.2076,0.1614
+days_since_last_donation,float64,pearson_r,0.8261,0.0
+days_since_first_donation,float64,pearson_r,-0.0624,0.6767
+donation_frequency,float64,pearson_r,-0.4055,0.0047
+pct_recurring,float64,pearson_r,-0.2435,0.0991
+num_posts,int64,pearson_r,-0.4023,0.0051
+engagement_score,float64,pearson_r,-0.4023,0.0051
+supporter_type,str,chi2,3.7019,0.5931
+relationship_type,str,chi2,2.4192,0.2983
+region,str,chi2,0.1615,0.9224
+country,str,chi2,4.3445,0.2266
+acquisition_channel,str,chi2,1.4212,0.922
+status,str,chi2,0.0026,0.9591
