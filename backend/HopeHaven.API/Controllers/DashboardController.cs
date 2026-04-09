@@ -59,19 +59,41 @@ public class DashboardController(HopeHavenDbContext db) : ControllerBase
                 stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
             .CountAsync();
 
-        var currentRate = eligibleNow > 0 ? (double)stableNow / eligibleNow : 0;
+        // Fallback cohort: all exits that have reached the 90-day checkpoint.
+        var eligibleAllCheckpointed = await db.Residents
+            .Where(r => r.DateClosed != null && r.DateClosed <= evaluationCutoff)
+            .CountAsync();
+        var stableAllCheckpointed = await db.Residents
+            .Where(r =>
+                r.DateClosed != null &&
+                r.DateClosed <= evaluationCutoff &&
+                r.ReintegrationStatus != null &&
+                stableStatuses.Contains(r.ReintegrationStatus.ToLower()))
+            .CountAsync();
+
+        // If the current 90-day cohort is empty/sparse, show the checkpointed total so the homepage
+        // stays connected to real outcomes instead of displaying zero.
+        var useCheckpointedFallback = stableNow == 0 && stableAllCheckpointed > 0;
+        var presentStableCount = useCheckpointedFallback ? stableAllCheckpointed : stableNow;
+        var presentEligibleCount = useCheckpointedFallback ? eligibleAllCheckpointed : eligibleNow;
+        var periodLabel = useCheckpointedFallback
+            ? "across all completed 90-day check-ins"
+            : "in the last 90 days";
+
+        var currentRate = presentEligibleCount > 0 ? (double)presentStableCount / presentEligibleCount : 0;
         var previousRate = eligiblePrev > 0 ? (double)stablePrev / eligiblePrev : 0;
 
         return Ok(new
         {
             metricName = "90-day Safe Reintegration Count",
             ratePercent = Math.Round(currentRate * 100, 1),
-            stableCount = stableNow,
-            eligibleCount = eligibleNow,
+            stableCount = presentStableCount,
+            eligibleCount = presentEligibleCount,
             previousStableCount = stablePrev,
             previousRatePercent = Math.Round(previousRate * 100, 1),
             deltaPoints = Math.Round((currentRate - previousRate) * 100, 1),
-            deltaCount = stableNow - stablePrev
+            deltaCount = presentStableCount - stablePrev,
+            periodLabel
         });
     }
 

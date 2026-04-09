@@ -414,6 +414,7 @@ export interface PublicOkrMetric {
   previousRatePercent: number;
   deltaPoints: number;
   deltaCount: number;
+  periodLabel: string;
 }
 
 export interface SocialOptimizeRequest {
