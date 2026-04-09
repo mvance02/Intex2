@@ -574,15 +574,16 @@ export default function ReportsAnalytics() {
 
           {/* Section 5: Reintegration Stats */}
           <Card title="Reintegration Stats">
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={Math.max(220, reintChartData.length * 50)}>
               <BarChart
                 data={reintChartData}
                 layout="vertical"
                 margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                barSize={24}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={160} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={160} interval={0} />
                 <Tooltip />
                 <Bar dataKey="count" name="Count" fill={COLORS.accent} radius={0} />
               </BarChart>
