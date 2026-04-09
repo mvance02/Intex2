@@ -53,10 +53,13 @@ function AnimatedStatBadge({ value, label }: { value: number | null; label: stri
   );
 }
 
-function DonationStatBadge({ value, label }: { value: string; label: string }) {
+function DonationStatBadge({ value, label }: { value: number | null; label: string }) {
+  const animated = useCountUp(value ?? 0);
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-3xl font-bold text-slate-900">{value}</span>
+      <span className="text-3xl font-bold text-slate-900">
+        {value === null ? '—' : `$${animated.toLocaleString()}`}
+      </span>
       <span className="text-sm text-sky-900">{label}</span>
     </div>
   );
@@ -398,9 +401,7 @@ export default function LandingPage() {
   }, []);
 
   const ytdRaw = metrics ? Number(metrics.ytdDonations) : null;
-  const ytdDisplay = ytdRaw !== null
-    ? `$${Math.round(ytdRaw / PHP_TO_USD).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-    : '—';
+  const ytdUsd = ytdRaw !== null ? Math.round(ytdRaw / PHP_TO_USD) : null;
 
   return (
     <div className="flex flex-col">
@@ -460,7 +461,7 @@ export default function LandingPage() {
           <AnimatedStatBadge value={metrics?.activeResidents ?? null}  label="Girls in Our Care" />
           <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
           <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" />
-          <DonationStatBadge value={ytdDisplay} label="Raised This Year" />
+          <DonationStatBadge value={ytdUsd} label="Raised This Year" />
         </div>
       </section>
 
@@ -547,12 +548,13 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="text-center mt-10">
-            <Link
-              to="/donate"
+            <button
+              type="button"
+              onClick={handleDonateClick}
               className="inline-block px-8 py-3 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] border border-sky-300 hover:bg-sky-300 hover:text-slate-900 transition-colors"
             >
               Make a Donation
-            </Link>
+            </button>
           </div>
         </div>
       </section>
