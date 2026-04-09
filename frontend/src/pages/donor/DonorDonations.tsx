@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
-const API = import.meta.env.VITE_API_URL ?? '';
+const API = '';
 
 interface DonationRecord {
   donationId: number;

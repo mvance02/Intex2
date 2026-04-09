@@ -3,7 +3,11 @@ import type { TwoFactorStatus } from '../types/TwofactorStatus';
 
 export interface ExternalAuthProvider { name: string; displayName: string; }
 
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? '';
+// Auth calls MUST go through the same-origin Vercel proxy (/api/*)
+// so cookies are first-party and work on mobile browsers.
+// Direct cross-domain calls to Railway fail on mobile due to
+// third-party cookie blocking.
+const apiBaseUrl = '';
 
 async function readApiError(res: Response, fallback: string): Promise<string> {
   const ct = res.headers.get('content-type') ?? '';

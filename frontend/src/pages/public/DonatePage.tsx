@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const API = import.meta.env.VITE_API_URL ?? '';
+const API = '';
 import { Link } from 'react-router-dom';
 import {
   DEFAULT_PORTAL_SUPPORTER_TYPE,

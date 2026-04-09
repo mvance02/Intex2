@@ -6,7 +6,7 @@ import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import { portalSupporterTypeLabel } from '../../utils/supporterPortal';
 import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
-const API = import.meta.env.VITE_API_URL ?? '';
+const API = '';
 
 interface DonationRecord {
   donationId: number;
