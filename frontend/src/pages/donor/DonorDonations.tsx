@@ -5,12 +5,21 @@ import LoadingSpinner from '../../components/shared/LoadingSpinner';
 
 const API = import.meta.env.VITE_API_URL ?? '';
 
+function recurringBadgeLabel(isRecurring: boolean, recurringFrequency: string | null | undefined): string | null {
+  if (!isRecurring) return null;
+  const f = (recurringFrequency || 'Weekly').toLowerCase();
+  if (f === 'monthly') return 'Monthly';
+  if (f === 'yearly') return 'Yearly';
+  return 'Weekly';
+}
+
 interface DonationRecord {
   donationId: number;
   amount: number | null;
   currencyCode: string | null;
   donationDate: string | null;
   isRecurring: boolean;
+  recurringFrequency?: string | null;
   campaignName: string | null;
   donationType: string | null;
   impactUnit: string | null;
@@ -93,7 +102,7 @@ export default function DonorDonations() {
                     {d.campaignName || d.donationType || 'Donation'}
                     {d.isRecurring && (
                       <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                        Weekly
+                        {recurringBadgeLabel(d.isRecurring, d.recurringFrequency)}
                       </span>
                     )}
                   </td>
