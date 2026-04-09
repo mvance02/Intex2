@@ -116,6 +116,7 @@ export default function CaseloadInventory() {
   const [readiness, setReadiness] = useState<Map<number, ReadinessPrediction | 'loading'>>(new Map())
   const [predictionsLoaded, setPredictionsLoaded] = useState(false)
   const [predictionsLoading, setPredictionsLoading] = useState(false)
+  const [predictionError, setPredictionError] = useState<string | null>(null)
 
   const [statusTooltipOpen, setStatusTooltipOpen] = useState(false)
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -151,6 +152,7 @@ export default function CaseloadInventory() {
   const fetchReadinessScores = useCallback(async (items: Resident[]) => {
     if (items.length === 0) return
     setPredictionsLoading(true)
+    setPredictionError(null)
     // Mark all as loading immediately so the UI shows spinners
     setReadiness((prev) => {
       const next = new Map(prev)
@@ -175,12 +177,13 @@ export default function CaseloadInventory() {
         return next
       })
     } catch {
-      // ML service unavailable — clear loading states silently
+      // ML service unavailable — clear loading states and surface warning
       setReadiness((prev) => {
         const next = new Map(prev)
         items.forEach((r) => next.delete(r.residentId))
         return next
       })
+      setPredictionError('Readiness predictions are currently unavailable.')
     } finally {
       setPredictionsLoading(false)
       setPredictionsLoaded(true)
@@ -348,6 +351,12 @@ export default function CaseloadInventory() {
           </button>
         </div>
       </div>
+
+      {predictionError && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2 mb-4">
+          {predictionError}
+        </div>
+      )}
 
       {error && <ErrorAlert message={error} onRetry={fetchResidents} />}
 

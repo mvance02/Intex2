@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import ErrorAlert from '../../components/shared/ErrorAlert';
 import { portalSupporterTypeLabel } from '../../utils/supporterPortal';
 import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
@@ -35,12 +36,15 @@ export default function DonorDashboard() {
   const { authSession } = useAuth();
   const [data, setData] = useState<MyDonationsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`${API}/api/my-donations`, { credentials: 'include' });
       if (res.ok) setData(await res.json());
-    } catch { /* ignore */ }
+    } catch {
+      setError('Unable to load dashboard. Please try again.');
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -48,6 +52,7 @@ export default function DonorDashboard() {
   useEffect(() => { void fetchData(); }, [fetchData]);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading dashboard…" />;
+  if (error) return <ErrorAlert message={error} />;
 
   const donations = data?.donations ?? [];
   const totalPhp = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0);

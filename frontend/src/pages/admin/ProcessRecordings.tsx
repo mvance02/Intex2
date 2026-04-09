@@ -508,7 +508,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.progressNoted}
                 onChange={(e) => setForm((f) => ({ ...f, progressNoted: e.target.checked }))}
-                className="h-4 w-4border-gray-300 text-slate-700 focus:ring-sky-500"
+                className="h-4 w-4 border-gray-300 text-slate-700 focus:ring-sky-500"
               />
               Progress Noted
             </label>
@@ -517,7 +517,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.concernsFlagged}
                 onChange={(e) => setForm((f) => ({ ...f, concernsFlagged: e.target.checked }))}
-                className="h-4 w-4border-gray-300 text-slate-700 focus:ring-sky-500"
+                className="h-4 w-4 border-gray-300 text-slate-700 focus:ring-sky-500"
               />
               Concerns Flagged
             </label>
@@ -526,7 +526,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.referralMade}
                 onChange={(e) => setForm((f) => ({ ...f, referralMade: e.target.checked }))}
-                className="h-4 w-4border-gray-300 text-slate-700 focus:ring-sky-500"
+                className="h-4 w-4 border-gray-300 text-slate-700 focus:ring-sky-500"
               />
               Referral Made
             </label>

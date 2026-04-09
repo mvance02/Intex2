@@ -41,8 +41,18 @@ function useCountUp(end: number, duration = 2000): number {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function AnimatedStatBadge({ value, label }: { value: number | null; label: string }) {
+function StatPlaceholder() {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="h-9 w-16 rounded bg-slate-200 animate-pulse" />
+      <span className="h-4 w-24 rounded bg-slate-200 animate-pulse mt-1" />
+    </div>
+  );
+}
+
+function AnimatedStatBadge({ value, label, loading }: { value: number | null; label: string; loading?: boolean }) {
   const animated = useCountUp(value ?? 0);
+  if (loading) return <StatPlaceholder />;
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="text-3xl font-bold text-slate-900">
@@ -53,8 +63,9 @@ function AnimatedStatBadge({ value, label }: { value: number | null; label: stri
   );
 }
 
-function DonationStatBadge({ value, label }: { value: number | null; label: string }) {
+function DonationStatBadge({ value, label, loading }: { value: number | null; label: string; loading?: boolean }) {
   const animated = useCountUp(value ?? 0);
+  if (loading) return <StatPlaceholder />;
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="text-3xl font-bold text-slate-900">
@@ -363,7 +374,9 @@ export default function LandingPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
   const [okrMetric, setOkrMetric] = useState<PublicOkrMetric | null>(null);
+  const [okrLoading, setOkrLoading] = useState(true);
   const [hoveredCity, setHoveredCity] = useState<SafehouseName | null>(null);
   const [showDonatePrompt, setShowDonatePrompt] = useState(false);
 
@@ -380,11 +393,13 @@ export default function LandingPage() {
     document.title = 'Hope Haven — Safe Homes for Survivors';
     void apiFetch<DashboardMetrics>('/api/dashboard/metrics')
       .then((metricsData) => setMetrics(metricsData))
-      .catch(() => null);
+      .catch(() => null)
+      .finally(() => setMetricsLoading(false));
 
     void apiFetch<PublicOkrMetric>('/api/dashboard/public-okr')
       .then((okrData) => setOkrMetric(okrData))
-      .catch(() => setOkrMetric(null));
+      .catch(() => setOkrMetric(null))
+      .finally(() => setOkrLoading(false));
   }, []);
 
   const PHP_TO_USD = 56;
@@ -453,10 +468,10 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       <section className="bg-slate-100 py-10 px-6 border-y border-slate-200" aria-label="Key statistics">
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
-          <AnimatedStatBadge value={metrics?.activeResidents ?? null}  label="Girls in Our Care" />
-          <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" />
-          <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" />
-          <DonationStatBadge value={ytdUsd} label="Raised This Year" />
+          <AnimatedStatBadge value={metrics?.activeResidents ?? null}  label="Girls in Our Care" loading={metricsLoading} />
+          <AnimatedStatBadge value={metrics?.activeSafehouses ?? null} label="Active Safehouses" loading={metricsLoading} />
+          <AnimatedStatBadge value={metrics?.totalSupporters ?? null}  label="Generous Supporters" loading={metricsLoading} />
+          <DonationStatBadge value={ytdUsd} label="Raised This Year" loading={metricsLoading} />
         </div>
       </section>
 
@@ -469,9 +484,13 @@ export default function LandingPage() {
 
             <div className="mt-8 flex flex-col items-center gap-3 text-center">
               <p className="text-xs uppercase tracking-wide text-slate-500">Current Count</p>
-              <p className="text-7xl font-extrabold text-slate-900">
-                {okrMetric ? okrMetric.stableCount : '—'}
-              </p>
+              {okrLoading ? (
+                <div className="h-20 w-24 rounded bg-slate-200 animate-pulse mx-auto" />
+              ) : (
+                <p className="text-7xl font-extrabold text-slate-900">
+                  {okrMetric ? okrMetric.stableCount : '—'}
+                </p>
+              )}
               <p className="text-sm text-slate-600 font-medium">
                 {okrMetric
                   ? 'girls living safely and stably 90 days after leaving our care'

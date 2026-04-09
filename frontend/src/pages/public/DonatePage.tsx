@@ -344,10 +344,12 @@ function DonorWallPrompt({
   pending,
   onCancel,
   onSubmit,
+  submitting = false,
 }: {
   pending: PendingDonation;
   onCancel: () => void;
   onSubmit: (shareOnDonorWall: boolean, donorWallName: string) => void;
+  submitting?: boolean;
 }) {
   const [shareOnWall, setShareOnWall] = useState(false);
   const [wallName, setWallName] = useState('');
@@ -412,9 +414,10 @@ function DonorWallPrompt({
 
         <button
           onClick={() => onSubmit(shareOnWall, wallName)}
-          className="mt-6 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+          disabled={submitting}
+          className="mt-6 w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Confirm Donation
+          {submitting ? 'Submitting...' : 'Confirm Donation'}
         </button>
       </div>
     </div>
@@ -443,6 +446,7 @@ export default function DonatePage() {
   const [customRaw, setCustomRaw] = useState('');
   const [modal, setModal] = useState<ModalState>({ type: 'none' });
   const [donationError, setDonationError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [supporterType, setSupporterType] = useState<PortalSupporterType>(DEFAULT_PORTAL_SUPPORTER_TYPE);
   const [customGiftFrequency, setCustomGiftFrequency] = useState<'once' | 'monthly' | 'yearly'>('once');
 
@@ -481,6 +485,7 @@ export default function DonatePage() {
     shareOnDonorWall: boolean,
     donorWallName: string
   ) {
+    setSubmitting(true);
     try {
       const res = await fetch(`${API}/api/my-donations`, {
         method: 'POST',
@@ -495,6 +500,9 @@ export default function DonatePage() {
       if (!res.ok) {
         setDonationError('Unable to process donation. Please try again.');
         setModal({ type: 'none' });
+        setTimeout(() => {
+          document.getElementById('donation-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
         return;
       }
       setDonationError('');
@@ -508,6 +516,11 @@ export default function DonatePage() {
     } catch {
       setDonationError('Unable to reach the server. Please try again.');
       setModal({ type: 'none' });
+      setTimeout(() => {
+        document.getElementById('donation-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -609,6 +622,7 @@ export default function DonatePage() {
         <DonorWallPrompt
           pending={modal.pending}
           onCancel={closeModal}
+          submitting={submitting}
           onSubmit={(shareOnDonorWall, donorWallName) => {
             void submitDonation(modal.pending, shareOnDonorWall, donorWallName);
           }}
@@ -772,7 +786,7 @@ export default function DonatePage() {
           </div>
 
           {donationError && (
-            <div role="alert" className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-left">
+            <div id="donation-error" role="alert" className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 text-left">
               {donationError}
             </div>
           )}

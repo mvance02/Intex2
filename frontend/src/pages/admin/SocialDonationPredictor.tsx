@@ -114,7 +114,7 @@ export default function SocialDonationPredictor() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to run social prediction.';
       setSocialError(message);
-      if (message.includes('503')) setServiceUnavailable(true);
+      if (message.includes('503') || message.includes('timed out') || message.includes('Failed to fetch')) setServiceUnavailable(true);
     } finally {
       setSocialLoading(false);
     }
@@ -138,7 +138,7 @@ export default function SocialDonationPredictor() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to run optimizer.';
       setOptError(message);
-      if (message.includes('503')) setServiceUnavailable(true);
+      if (message.includes('503') || message.includes('timed out') || message.includes('Failed to fetch')) setServiceUnavailable(true);
     } finally {
       setOptLoading(false);
     }
@@ -161,7 +161,7 @@ export default function SocialDonationPredictor() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to generate schedule.';
       setWeeklyError(message);
-      if (message.includes('503')) setServiceUnavailable(true);
+      if (message.includes('503') || message.includes('timed out') || message.includes('Failed to fetch')) setServiceUnavailable(true);
     } finally {
       setWeeklyLoading(false);
     }

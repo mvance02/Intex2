@@ -222,18 +222,20 @@ export default function ReportsAnalytics() {
     setLoading(true)
     setError(null)
     try {
-      const [donations, residents, safehouses, reint, annual] = await Promise.all([
+      const results = await Promise.allSettled([
         apiFetch<DonationTrendsResponse>(`/api/reports/donation-trends?startYear=${start}&endYear=${end}`),
         apiFetch<ResidentOutcomesResponse>(`/api/reports/resident-outcomes?startYear=${start}&endYear=${end}`),
         apiFetch<SafehouseComparisonResponse>('/api/reports/safehouse-comparison'),
         apiFetch<ReintegrationResponse>('/api/reports/reintegration'),
         apiFetch<AnnualSummary>(`/api/reports/annual-summary?year=${end}`),
       ])
-      setDonationData(donations)
-      setResidentData(residents)
-      setSafehouseData(safehouses)
-      setReintData(reint)
-      setAnnualData(annual)
+      if (results[0].status === 'fulfilled') setDonationData(results[0].value)
+      if (results[1].status === 'fulfilled') setResidentData(results[1].value)
+      if (results[2].status === 'fulfilled') setSafehouseData(results[2].value)
+      if (results[3].status === 'fulfilled') setReintData(results[3].value)
+      if (results[4].status === 'fulfilled') setAnnualData(results[4].value)
+      const allFailed = results.every((r) => r.status === 'rejected')
+      if (allFailed) setError('Failed to load report data.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load report data.')
     } finally {
@@ -452,92 +454,100 @@ export default function ReportsAnalytics() {
 
           {/* Section 1: Donation Trends */}
           <Card title="Donation Trends">
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={trendChartData} margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-                <YAxis
-                  tickFormatter={(v: number) => `\u20b1${(v / 1000).toFixed(0)}k`}
-                  tick={{ fontSize: 11 }}
-                  width={60}
-                />
-                <Tooltip formatter={(value) => [formatPeso(Number(value)), 'Total Amount']} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="amount"
-                  name="Total Amount (\u20b1)"
-                  stroke={COLORS.primary}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {donationData ? (
+              <>
+                <ResponsiveContainer width="100%" height={260}>
+                  <LineChart data={trendChartData} margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+                    <YAxis
+                      tickFormatter={(v: number) => `\u20b1${(v / 1000).toFixed(0)}k`}
+                      tick={{ fontSize: 11 }}
+                      width={60}
+                    />
+                    <Tooltip formatter={(value) => [formatPeso(Number(value)), 'Total Amount']} />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="amount"
+                      name="Total Amount (\u20b1)"
+                      stroke={COLORS.primary}
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
 
-            {donationData && (
-              <div className="mt-4 flex gap-3 flex-wrap">
-                <StatBox
-                  label="Top Currency"
-                  value={
-                    donationData.byCurrency[0]
-                      ? `${donationData.byCurrency[0].currency ?? 'N/A'} \u2014 ${formatPeso(donationData.byCurrency[0].totalAmount)}`
-                      : 'No data'
-                  }
-                />
-                <StatBox
-                  label="Top Donation Type"
-                  value={
-                    donationData.byType[0]
-                      ? `${donationData.byType[0].donationType ?? 'N/A'} \u2014 ${donationData.byType[0].donationCount} donations`
-                      : 'No data'
-                  }
-                />
-              </div>
+                <div className="mt-4 flex gap-3 flex-wrap">
+                  <StatBox
+                    label="Top Currency"
+                    value={
+                      donationData.byCurrency[0]
+                        ? `${donationData.byCurrency[0].currency ?? 'N/A'} \u2014 ${formatPeso(donationData.byCurrency[0].totalAmount)}`
+                        : 'No data'
+                    }
+                  />
+                  <StatBox
+                    label="Top Donation Type"
+                    value={
+                      donationData.byType[0]
+                        ? `${donationData.byType[0].donationType ?? 'N/A'} \u2014 ${donationData.byType[0].donationCount} donations`
+                        : 'No data'
+                    }
+                  />
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-8">No data available for this section.</p>
             )}
           </Card>
 
           {/* Section 2: Resident Outcomes */}
           <Card title="Resident Outcomes">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-3">By Status</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart
-                    data={statusChartData}
-                    layout="vertical"
-                    margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11 }} />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={80} />
-                    <Tooltip />
-                    <Bar dataKey="count" name="Residents" fill={COLORS.primary} radius={0} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+            {residentData ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-3">By Status</p>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart
+                      data={statusChartData}
+                      layout="vertical"
+                      margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                      <XAxis type="number" tick={{ fontSize: 11 }} />
+                      <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={80} />
+                      <Tooltip />
+                      <Bar dataKey="count" name="Residents" fill={COLORS.primary} radius={0} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
 
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-3">By Risk Level</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart
-                    data={riskChartData}
-                    layout="vertical"
-                    margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11 }} />
-                    <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={70} />
-                    <Tooltip formatter={(value) => [Number(value), 'Residents']} />
-                    <Bar dataKey="count" name="Residents" radius={0}>
-                      {riskChartData.map((entry, index) => (
-                        <Cell key={`risk-${index}`} fill={entry.color} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-3">By Risk Level</p>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart
+                      data={riskChartData}
+                      layout="vertical"
+                      margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                      <XAxis type="number" tick={{ fontSize: 11 }} />
+                      <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={70} />
+                      <Tooltip formatter={(value) => [Number(value), 'Residents']} />
+                      <Bar dataKey="count" name="Residents" radius={0}>
+                        {riskChartData.map((entry, index) => (
+                          <Cell key={`risk-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-8">No data available for this section.</p>
+            )}
           </Card>
 
           {/* Section 3: Annual Summary */}
@@ -556,46 +566,54 @@ export default function ReportsAnalytics() {
 
           {/* Section 4: Safehouse Comparison */}
           <Card title="Safehouse Comparison">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart
-                data={safehouseChartData}
-                margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="activeResidents" name="Active Residents" fill={COLORS.primary} radius={0} />
-                <Bar dataKey="capacity" name="Capacity (Girls)" fill={COLORS.secondary} radius={0} />
-              </BarChart>
-            </ResponsiveContainer>
+            {safehouseData ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart
+                  data={safehouseChartData}
+                  margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="activeResidents" name="Active Residents" fill={COLORS.primary} radius={0} />
+                  <Bar dataKey="capacity" name="Capacity (Girls)" fill={COLORS.secondary} radius={0} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-8">No data available for this section.</p>
+            )}
           </Card>
 
           {/* Section 5: Reintegration Stats */}
           <Card title="Reintegration Stats">
-            <ResponsiveContainer width="100%" height={Math.max(220, reintChartData.length * 50)}>
-              <BarChart
-                data={reintChartData}
-                layout="vertical"
-                margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
-                barSize={24}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={160} interval={0} />
-                <Tooltip />
-                <Bar dataKey="count" name="Count" fill={COLORS.accent} radius={0} />
-              </BarChart>
-            </ResponsiveContainer>
+            {reintData ? (
+              <>
+                <ResponsiveContainer width="100%" height={Math.max(220, reintChartData.length * 50)}>
+                  <BarChart
+                    data={reintChartData}
+                    layout="vertical"
+                    margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                    barSize={24}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={160} interval={0} />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Count" fill={COLORS.accent} radius={0} />
+                  </BarChart>
+                </ResponsiveContainer>
 
-            {reintData && (
-              <p className="mt-4 text-sm font-medium text-gray-600">
-                <span className="text-slate-700 font-bold">
-                  {reintData.totalReintegrated.toLocaleString()}
-                </span>{' '}
-                residents successfully reintegrated
-              </p>
+                <p className="mt-4 text-sm font-medium text-gray-600">
+                  <span className="text-slate-700 font-bold">
+                    {reintData.totalReintegrated.toLocaleString()}
+                  </span>{' '}
+                  residents successfully reintegrated
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-8">No data available for this section.</p>
             )}
           </Card>
 

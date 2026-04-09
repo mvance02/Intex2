@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import ErrorAlert from '../../components/shared/ErrorAlert';
 import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
 const API = '';
@@ -21,6 +22,7 @@ interface DonationRecord {
 export default function DonorDonations() {
   const [donations, setDonations] = useState<DonationRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -29,7 +31,9 @@ export default function DonorDonations() {
         const data = await res.json() as { donations?: DonationRecord[] };
         setDonations(data.donations ?? []);
       }
-    } catch { /* ignore */ }
+    } catch {
+      setError('Unable to load donations. Please try again.');
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -37,6 +41,7 @@ export default function DonorDonations() {
   useEffect(() => { void fetchData(); }, [fetchData]);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading donations…" />;
+  if (error) return <ErrorAlert message={error} />;
 
   const totalPhp = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0);
 

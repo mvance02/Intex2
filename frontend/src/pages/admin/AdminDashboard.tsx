@@ -176,6 +176,12 @@ export default function AdminDashboard() {
       .finally(() => setSafehousesLoading(false));
   }, []);
 
+  const totalActivityPages = Math.max(1, Math.ceil(activity.length / ACTIVITY_PAGE_SIZE));
+
+  useEffect(() => {
+    setActivityPage((p) => Math.min(p, Math.max(1, totalActivityPages)));
+  }, [totalActivityPages]);
+
   useEffect(() => { fetchMetrics(); }, [fetchMetrics]);
   useEffect(() => { fetchActivity(); }, [fetchActivity]);
   useEffect(() => { fetchSafehouses(); }, [fetchSafehouses]);
@@ -248,7 +254,6 @@ export default function AdminDashboard() {
           <ErrorAlert message={activityError} onRetry={fetchActivity} />
         )}
         {!activityLoading && !activityError && (() => {
-          const totalPages = Math.max(1, Math.ceil(activity.length / ACTIVITY_PAGE_SIZE));
           const paged = activity.slice((activityPage - 1) * ACTIVITY_PAGE_SIZE, activityPage * ACTIVITY_PAGE_SIZE);
           return (
             <>
@@ -270,7 +275,7 @@ export default function AdminDashboard() {
                   </div>
                 ))}
               </div>
-              {totalPages > 1 && (
+              {totalActivityPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-3">
                   <button
                     onClick={() => setActivityPage((p) => Math.max(1, p - 1))}
@@ -280,11 +285,11 @@ export default function AdminDashboard() {
                     Previous
                   </button>
                   <span className="text-xs text-gray-500">
-                    {activityPage} / {totalPages}
+                    {activityPage} / {totalActivityPages}
                   </span>
                   <button
-                    onClick={() => setActivityPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={activityPage === totalPages}
+                    onClick={() => setActivityPage((p) => Math.min(totalActivityPages, p + 1))}
+                    disabled={activityPage === totalActivityPages}
                     className="px-3 py-1 text-xs border border-gray-300 text-gray-600 disabled:opacity-40"
                   >
                     Next

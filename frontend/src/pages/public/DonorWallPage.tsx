@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
+import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import type { DonorWallEntry } from '../../types/models';
 
 export default function DonorWallPage() {
@@ -34,9 +35,7 @@ export default function DonorWallPage() {
         </div>
 
         {loading && (
-          <div className="border border-slate-200 bg-white p-8 text-center text-slate-500">
-            Loading donor wall...
-          </div>
+          <LoadingSpinner size="lg" label="Loading donor wall…" />
         )}
 
         {!loading && error && (
