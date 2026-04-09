@@ -113,11 +113,11 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-teal-600 text-white text-sm font-semibold rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-sky-300 text-slate-900 text-sm font-semibold rounded-lg hover:bg-sky-200 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {isSubmitting && (
                 <span
-                  className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+                  className="h-4 w-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"
                   aria-hidden="true"
                 />
               )}
