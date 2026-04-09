@@ -12,7 +12,7 @@ import {
   Legend,
 } from 'recharts';
 import { apiFetch, displaySafehouseName } from '../../utils/api';
-import type { PublicImpactSnapshot, SafehouseSummaryItem } from '../../types/models';
+import type { SafehouseSummaryItem } from '../../types/models';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorAlert from '../../components/shared/ErrorAlert';
 
@@ -30,23 +30,27 @@ interface DonationTrendsResponse {
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const REPORTS_PAGE_SIZE = 4;
 
-const STORY_QUESTIONS = [
-  {
-    id: 'education',
-    prompt: 'Do you want to read a story about education and long-term growth?',
-    keywords: ['school', 'education', 'class', 'learning', 'study', 'training'],
-  },
-  {
-    id: 'healing',
-    prompt: 'Are you most interested in counseling and emotional healing stories?',
-    keywords: ['counsel', 'healing', 'therapy', 'mental', 'trauma', 'wellbeing'],
-  },
-  {
-    id: 'shelter',
-    prompt: 'Do you prefer stories focused on shelter, safety, and daily care?',
-    keywords: ['shelter', 'safe', 'housing', 'home', 'care', 'protection'],
-  },
-] as const;
+interface DemoBlogPost {
+  id: number;
+  title: string;
+  summary: string;
+  tags: string[];
+}
+
+const DEMO_BLOG_POSTS: DemoBlogPost[] = [
+  { id: 1, title: 'From Safe Bed to School Desk: Ana\'s First 90 Days', summary: 'A look at how stable housing and daily structure helped Ana return to class and rebuild confidence.', tags: ['education', 'school', 'shelter'] },
+  { id: 2, title: 'What Healing Looks Like in Week One of Counseling', summary: 'Our counselors share small but powerful signs of progress in trauma recovery.', tags: ['healing', 'counseling', 'trauma'] },
+  { id: 3, title: 'A Day Inside Hope Haven: Meals, Mentors, and Milestones', summary: 'Follow one full day of routines that create safety and consistency for girls in care.', tags: ['shelter', 'care', 'home'] },
+  { id: 4, title: 'Back to Learning: Catch-Up Classes That Change Outcomes', summary: 'How targeted tutoring supports girls who have missed years of school.', tags: ['education', 'learning', 'training'] },
+  { id: 5, title: 'When Trust Returns: The First Month of Emotional Recovery', summary: 'Stories from social workers on restoring trust and stability after crisis.', tags: ['healing', 'therapy', 'wellbeing'] },
+  { id: 6, title: 'Safety First: How Referrals Become Protection Plans', summary: 'An inside look at how our team moves quickly from referral to safe placement.', tags: ['protection', 'safe', 'shelter'] },
+  { id: 7, title: 'Small Wins in Class Become Big Wins in Life', summary: 'Why attendance and classroom confidence are early signals of long-term success.', tags: ['education', 'class', 'study'] },
+  { id: 8, title: 'The Role of Group Sessions in Trauma-Informed Care', summary: 'How peer support and guided sessions help girls process difficult experiences.', tags: ['healing', 'counsel', 'mental'] },
+  { id: 9, title: 'Creating Home: Why Predictable Routines Matter', summary: 'From evening check-ins to shared meals, routines create emotional safety.', tags: ['home', 'housing', 'care'] },
+  { id: 10, title: 'Learning Goals After Reintegration: Staying on Track', summary: 'How girls continue school momentum after transitioning to community placements.', tags: ['education', 'school', 'growth'] },
+  { id: 11, title: 'Counseling Myths We Hear Most Often', summary: 'Our clinical team answers common questions about therapy and long-term healing.', tags: ['healing', 'therapy', 'counseling'] },
+  { id: 12, title: 'What a Safer Tomorrow Starts With Today', summary: 'A practical guide to the first support steps after a high-risk referral.', tags: ['shelter', 'protection', 'safe'] },
+];
 
 function formatMonth(year: number, month: number) {
   return `${MONTH_LABELS[month - 1]} ${year}`;
@@ -54,12 +58,7 @@ function formatMonth(year: number, month: number) {
 
 export default function ImpactDashboard() {
   const [trends, setTrends] = useState<DonationTrendPoint[]>([]);
-  const [snapshots, setSnapshots] = useState<PublicImpactSnapshot[]>([]);
   const [safehouses, setSafehouses] = useState<SafehouseSummaryItem[]>([]);
-  const [storyStep, setStoryStep] = useState(0);
-  const [storyAnswers, setStoryAnswers] = useState<Record<string, boolean>>({});
-  const [storyError, setStoryError] = useState<string | null>(null);
-  const [recommendedSnapshotId, setRecommendedSnapshotId] = useState<number | null>(null);
   const [reportPage, setReportPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,17 +68,10 @@ export default function ImpactDashboard() {
     setError(null);
     Promise.all([
       apiFetch<DonationTrendsResponse>('/api/reports/donation-trends'),
-      apiFetch<PublicImpactSnapshot[]>('/api/publicimpactsnapshots'),
       apiFetch<SafehouseSummaryItem[]>('/api/dashboard/safehouse-summary'),
     ])
-      .then(([trendsRes, snapshotsRes, safehousesRes]) => {
-        const now = new Date();
+      .then(([trendsRes, safehousesRes]) => {
         setTrends(trendsRes.trends ?? []);
-        setSnapshots(
-          snapshotsRes.filter(
-            (s) => !s.snapshotDate || new Date(s.snapshotDate) <= now,
-          ),
-        );
         setSafehouses(safehousesRes.map((s) => ({ ...s, name: displaySafehouseName(s.name) })));
       })
       .catch((e: Error) => setError(e.message))
@@ -97,63 +89,9 @@ export default function ImpactDashboard() {
     donations: t.donationCount,
   }));
 
-  const sortedSnapshots = [...snapshots].sort((a, b) => {
-    const da = a.snapshotDate ? new Date(a.snapshotDate).getTime() : 0;
-    const db = b.snapshotDate ? new Date(b.snapshotDate).getTime() : 0;
-    return db - da;
-  });
-
-  const totalReportPages = Math.max(1, Math.ceil(sortedSnapshots.length / REPORTS_PAGE_SIZE));
+  const totalReportPages = Math.max(1, Math.ceil(DEMO_BLOG_POSTS.length / REPORTS_PAGE_SIZE));
   const reportStart = (reportPage - 1) * REPORTS_PAGE_SIZE;
-  const paginatedSnapshots = sortedSnapshots.slice(reportStart, reportStart + REPORTS_PAGE_SIZE);
-  const recommendedSnapshot = sortedSnapshots.find((s) => s.snapshotId === recommendedSnapshotId) ?? null;
-
-  function normalizeSnapshotText(snap: PublicImpactSnapshot) {
-    return `${snap.headline ?? ''} ${snap.summaryText ?? ''}`.toLowerCase();
-  }
-
-  function resetStoryFinder() {
-    setStoryStep(0);
-    setStoryAnswers({});
-    setStoryError(null);
-    setRecommendedSnapshotId(null);
-  }
-
-  function runStoryMatch(nextAnswers: Record<string, boolean>) {
-    const scored = sortedSnapshots.map((snap) => {
-      const text = normalizeSnapshotText(snap);
-      let score = 0;
-      for (const q of STORY_QUESTIONS) {
-        const answer = nextAnswers[q.id];
-        if (answer === undefined) continue;
-        const hasKeyword = q.keywords.some((k) => text.includes(k));
-        if (answer && hasKeyword) score += 2;
-        if (!answer && !hasKeyword) score += 1;
-      }
-      return { snap, score };
-    });
-
-    scored.sort((a, b) => b.score - a.score);
-    if (scored.length > 0 && scored[0].score > 0) {
-      setRecommendedSnapshotId(scored[0].snap.snapshotId);
-      setStoryError(null);
-    } else {
-      setRecommendedSnapshotId(null);
-      setStoryError('No exact match yet. Try different answers and we will find a better story fit.');
-    }
-  }
-
-  function handleStoryAnswer(answer: boolean) {
-    const question = STORY_QUESTIONS[storyStep];
-    const nextAnswers = { ...storyAnswers, [question.id]: answer };
-    setStoryAnswers(nextAnswers);
-
-    if (storyStep >= STORY_QUESTIONS.length - 1) {
-      runStoryMatch(nextAnswers);
-    } else {
-      setStoryStep((prev) => prev + 1);
-    }
-  }
+  const paginatedBlogs = DEMO_BLOG_POSTS.slice(reportStart, reportStart + REPORTS_PAGE_SIZE);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-16">
@@ -227,86 +165,24 @@ export default function ImpactDashboard() {
             </section>
           )}
 
-          {/* Story finder + paginated reports */}
-          {sortedSnapshots.length > 0 && (
+          {/* Paginated demo blog reports */}
+          {DEMO_BLOG_POSTS.length > 0 && (
             <section className="space-y-8">
-              <div className="border border-slate-200 bg-slate-50 p-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 mb-2">
-                  Story Finder
-                </p>
-                <h2 className="text-xl font-extrabold uppercase tracking-[0.04em] text-slate-900 mb-3">
-                  Find a Story That Resonates With You
-                </h2>
-
-                {recommendedSnapshot ? (
-                  <div className="space-y-3">
-                    <p className="text-sm text-slate-600">Based on your answers, start with this story:</p>
-                    <article className="border border-slate-200 bg-white p-4">
-                      <h3 className="text-base font-bold text-slate-900 mb-1">
-                        {recommendedSnapshot.headline?.replace(/Lighthouse\s+Sanctuary/gi, 'Hope Haven Sanctuary')}
-                      </h3>
-                      <p className="text-sm text-slate-600">
-                        {recommendedSnapshot.summaryText?.replace(/Lighthouse\s+Sanctuary/gi, 'Hope Haven Sanctuary')}
-                      </p>
-                    </article>
-                    <button
-                      type="button"
-                      onClick={resetStoryFinder}
-                      className="px-5 py-2 border border-slate-300 text-slate-700 text-sm font-semibold uppercase tracking-[0.08em] hover:bg-slate-100 transition-colors"
-                    >
-                      Try Again
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-sm text-slate-700">
-                      {STORY_QUESTIONS[storyStep]?.prompt}
-                    </p>
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => handleStoryAnswer(true)}
-                        className="px-5 py-2 border border-sky-300 bg-white text-sky-700 text-sm font-semibold uppercase tracking-[0.08em] hover:bg-sky-300 hover:text-slate-900 transition-colors"
-                      >
-                        Yes
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleStoryAnswer(false)}
-                        className="px-5 py-2 border border-slate-300 bg-white text-slate-700 text-sm font-semibold uppercase tracking-[0.08em] hover:bg-slate-100 transition-colors"
-                      >
-                        No
-                      </button>
-                    </div>
-                    {storyError && <p className="text-sm text-rose-700">{storyError}</p>}
-                  </div>
-                )}
-              </div>
-
               <div>
-                <h2 className="text-xl font-extrabold uppercase tracking-[0.04em] text-slate-900 mb-4">Impact Reports</h2>
+                <h2 className="text-xl font-extrabold uppercase tracking-[0.04em] text-slate-900 mb-4">Demo Blog Library</h2>
                 <div className="grid sm:grid-cols-2 gap-6">
-                  {paginatedSnapshots.map((snap) => (
+                  {paginatedBlogs.map((blog) => (
                     <article
-                      key={snap.snapshotId}
+                      key={blog.id}
                       className="bg-white border border-slate-200 shadow-sm p-6"
                     >
-                    {snap.snapshotDate && (
-                      <p className="text-xs text-slate-500 mb-2">
-                        {new Date(snap.snapshotDate).toLocaleDateString('en-PH', {
-                          year: 'numeric',
-                          month: 'long',
-                        })}
-                      </p>
-                    )}
+                    <p className="text-xs text-slate-500 mb-2 uppercase tracking-[0.08em]">Demo Post</p>
                     <h3 className="text-base font-bold text-slate-900 mb-2">
-                      {snap.headline?.replace(/Lighthouse\s+Sanctuary/gi, 'Hope Haven Sanctuary')}
+                      {blog.title}
                     </h3>
-                    {snap.summaryText && (
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {snap.summaryText.replace(/Lighthouse\s+Sanctuary/gi, 'Hope Haven Sanctuary')}
-                      </p>
-                    )}
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {blog.summary}
+                    </p>
                     </article>
                   ))}
                 </div>

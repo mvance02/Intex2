@@ -93,7 +93,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="you@hopehaven.org"
               />
             </div>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="••••••••"
               />
             </div>
@@ -130,7 +130,7 @@ export default function LoginPage() {
                     autoComplete="one-time-code"
                     value={twoFactorCode}
                     onChange={(e) => setTwoFactorCode(e.target.value)}
-                    className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="6-digit code"
                   />
                   <p className="mt-1 text-xs text-gray-400">Leave blank unless MFA is enabled on your account.</p>
@@ -146,7 +146,7 @@ export default function LoginPage() {
                     type="text"
                     value={recoveryCode}
                     onChange={(e) => setRecoveryCode(e.target.value)}
-                    className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="w-full px-3 py-2.5 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Use when you cannot access the authenticator app"
                   />
                 </div>
@@ -155,7 +155,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowMfa(true)}
-                className="mb-4 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+                className="mb-4 text-sm text-blue-600 hover:text-blue-700 transition-colors"
               >
                 Have an authenticator or recovery code?
               </button>
@@ -168,7 +168,7 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 border-gray-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
                 Keep me signed in across browser restarts
@@ -178,7 +178,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-teal-600 text-white text-sm font-semibold uppercase tracking-[0.1em] hover:bg-teal-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-blue-600 text-white text-sm font-semibold uppercase tracking-[0.1em] hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading && (
                 <span
@@ -229,7 +229,7 @@ export default function LoginPage() {
             Need an account?{' '}
             <Link
               to="/register"
-              className="inline-block ml-1 px-4 py-1.5 bg-teal-600 text-white text-sm font-semibold uppercase tracking-[0.08em] hover:bg-teal-700 transition-colors"
+              className="inline-block ml-1 px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold uppercase tracking-[0.08em] hover:bg-blue-700 transition-colors"
             >
               Register
             </Link>

@@ -64,8 +64,8 @@ function riskBar(score: number, tier: string) {
   const { bar } = TIER_STYLES[tier] ?? TIER_STYLES.Low;
   return (
     <div className="flex items-center gap-2">
-      <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${bar}`} style={{ width: `${pct}%` }} />
+      <div className="w-20 h-1.5 bg-gray-100 overflow-hidden">
+        <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-xs tabular-nums text-gray-600">{(score).toFixed(2)}</span>
     </div>
@@ -75,7 +75,7 @@ function riskBar(score: number, tier: string) {
 function tierBadge(tier: string) {
   const { badge } = TIER_STYLES[tier] ?? TIER_STYLES.Low;
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${badge}`}>
+    <span className={`inline-block px-2 py-0.5 text-xs font-semibold ${badge}`}>
       {tier}
     </span>
   );
@@ -163,11 +163,11 @@ export default function DonorRetentionRisk() {
 
       {/* Service-down banner */}
       {serviceDown && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex gap-3 items-start text-sm text-amber-800">
+        <div className="border border-amber-200 bg-amber-50 px-4 py-3 flex gap-3 items-start text-sm text-amber-800">
           <AlertTriangle size={16} className="shrink-0 mt-0.5" />
           <span>
             Donor risk service is offline. Start it with:{' '}
-            <code className="font-mono bg-amber-100 px-1 rounded">
+            <code className="font-mono bg-amber-100 px-1">
               uvicorn donor_retention_risk_api:app --port 8003
             </code>
           </span>
@@ -190,8 +190,8 @@ export default function DonorRetentionRisk() {
               Icon={Activity}
               label="Total Donors"
               value={stats.total_donors.toLocaleString()}
-              iconColor="text-teal-600"
-              iconBg="bg-teal-50"
+              iconColor="text-blue-600"
+              iconBg="bg-blue-50"
             />
             <KpiCard
               Icon={AlertTriangle}
@@ -222,7 +222,7 @@ export default function DonorRetentionRisk() {
       {stats && (
         <div className="grid sm:grid-cols-2 gap-4">
           {/* Tier bar chart */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white border border-gray-100 shadow-sm p-5">
             <h2 className="text-sm font-semibold text-gray-700 mb-4">Risk Distribution</h2>
             <div className="space-y-3">
               {(['Critical', 'High', 'Moderate', 'Low'] as const).map((t) => {
@@ -232,8 +232,8 @@ export default function DonorRetentionRisk() {
                 return (
                   <div key={t} className="flex items-center gap-3">
                     <span className={`w-16 text-xs font-semibold ${text}`}>{t}</span>
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${bar}`} style={{ width: `${pct}%` }} />
+                    <div className="flex-1 h-2 bg-gray-100 overflow-hidden">
+                      <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
                     </div>
                     <span className="text-xs text-gray-500 w-8 text-right">{count}</span>
                   </div>
@@ -243,13 +243,13 @@ export default function DonorRetentionRisk() {
           </div>
 
           {/* Playbook */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white border border-gray-100 shadow-sm p-5">
             <h2 className="text-sm font-semibold text-gray-700 mb-4">Outreach Playbook</h2>
             <div className="space-y-3">
               {PLAYBOOK.map(({ tier, range, color, dot, action }) => (
-                <div key={tier} className={`rounded-xl border-l-4 px-3 py-2 text-sm ${color}`}>
+                <div key={tier} className={`border-l-4 px-3 py-2 text-sm ${color}`}>
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+                    <span className={`w-2 h-2 shrink-0 ${dot}`} />
                     <span className="font-semibold text-gray-800">{tier}</span>
                     <span className="text-xs text-gray-400">{range}</span>
                   </div>
@@ -262,20 +262,20 @@ export default function DonorRetentionRisk() {
       )}
 
       {/* Donor table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+      <div className="bg-white border border-gray-100 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-700">Donor List — Highest Risk First</h2>
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Tier filter tabs */}
-            <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+            <div className="flex border border-gray-200 overflow-hidden text-xs font-medium">
               {TIERS.map((t) => (
                 <button
                   key={t}
                   onClick={() => setTierFilter(t)}
                   className={`px-3 py-1.5 transition-colors ${
                     tierFilter === t
-                      ? 'bg-teal-600 text-white'
+                      ? 'bg-blue-600 text-white'
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
@@ -288,7 +288,7 @@ export default function DonorRetentionRisk() {
             <button
               onClick={() => downloadCsv(donors)}
               disabled={donors.length === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
             >
               <Download size={13} />
               Export CSV
@@ -375,8 +375,8 @@ function KpiCard({
   iconBg: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
-      <div className={`p-2.5 rounded-xl shrink-0 ${iconBg}`}>
+    <div className="bg-white border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
+      <div className={`p-2.5 shrink-0 ${iconBg}`}>
         <Icon size={18} className={iconColor} aria-hidden="true" />
       </div>
       <div>

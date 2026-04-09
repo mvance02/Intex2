@@ -207,7 +207,7 @@ export default function HomeVisitations() {
         <div className="flex gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); openEdit(row); }}
-            className="px-3 py-1 text-xs border border-teal-600 text-teal-600 hover:bg-teal-50 font-medium"
+            className="px-3 py-1 text-xs border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium"
           >
             Edit
           </button>
@@ -232,7 +232,7 @@ export default function HomeVisitations() {
         </div>
         <button
           onClick={openCreate}
-          className="self-start sm:self-auto px-4 py-2 bg-teal-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-teal-700 transition-colors"
+          className="self-start sm:self-auto px-4 py-2 bg-blue-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-blue-700 transition-colors"
         >
           + Add Visit
         </button>
@@ -243,7 +243,7 @@ export default function HomeVisitations() {
         <select
           value={filterResidentId}
           onChange={(e) => handleResidentFilterChange(e.target.value)}
-          className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Residents</option>
           {residents.map((r) => (
@@ -255,7 +255,7 @@ export default function HomeVisitations() {
         <select
           value={filterVisitType}
           onChange={(e) => handleVisitTypeFilterChange(e.target.value)}
-          className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Visit Types</option>
           {VISIT_TYPES.map((t) => (
@@ -277,7 +277,7 @@ export default function HomeVisitations() {
           action={
             <button
               onClick={openCreate}
-              className="px-4 py-2 bg-teal-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-teal-700"
+              className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-blue-700"
             >
               Add Visit
             </button>
@@ -317,7 +317,7 @@ export default function HomeVisitations() {
                   residentId: e.target.value ? Number(e.target.value) : null,
                 }))
               }
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select resident…</option>
               {residents.map((r) => (
@@ -337,7 +337,7 @@ export default function HomeVisitations() {
               type="date"
               value={form.visitDate?.slice(0, 10) ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, visitDate: e.target.value || null }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -350,7 +350,7 @@ export default function HomeVisitations() {
               type="text"
               value={form.socialWorker ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, socialWorker: e.target.value || null }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -360,7 +360,7 @@ export default function HomeVisitations() {
             <select
               value={form.visitType ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, visitType: e.target.value || null }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select type…</option>
               {VISIT_TYPES.map((t) => (
@@ -376,7 +376,7 @@ export default function HomeVisitations() {
               type="text"
               value={form.locationVisited ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, locationVisited: e.target.value || null }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -391,7 +391,7 @@ export default function HomeVisitations() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, familyMembersPresent: e.target.value || null }))
               }
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -402,7 +402,7 @@ export default function HomeVisitations() {
               type="text"
               value={form.purpose ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, purpose: e.target.value || null }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -413,7 +413,7 @@ export default function HomeVisitations() {
               rows={4}
               value={form.observations ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, observations: e.target.value || null }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-y"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
             />
           </div>
 
@@ -427,7 +427,7 @@ export default function HomeVisitations() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, familyCooperationLevel: e.target.value || null }))
               }
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select level…</option>
               {COOPERATION_LEVELS.map((l) => (
@@ -443,7 +443,7 @@ export default function HomeVisitations() {
               type="text"
               value={form.visitOutcome ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, visitOutcome: e.target.value || null }))}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -456,7 +456,7 @@ export default function HomeVisitations() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, safetyConcernsNoted: e.target.checked }))
                 }
-                className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               Safety Concerns Noted
             </label>
@@ -467,7 +467,7 @@ export default function HomeVisitations() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, followUpNeeded: e.target.checked }))
                 }
-                className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               Follow-Up Needed
             </label>
@@ -485,7 +485,7 @@ export default function HomeVisitations() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, followUpNotes: e.target.value || null }))
                 }
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-y"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
               />
             </div>
           )}
@@ -502,7 +502,7 @@ export default function HomeVisitations() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-60 flex items-center gap-2"
+              className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center gap-2"
             >
               {saving && (
                 <span className="h-4 w-4 border-2 border-white border-t-transparent animate-spin" aria-hidden="true" />

@@ -211,17 +211,17 @@ export default function ProcessRecordings() {
       render: (row) => (
         <div className="flex flex-wrap gap-1">
           {row.progressNoted && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+            <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">
               ✓ Progress
             </span>
           )}
           {row.concernsFlagged && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+            <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">
               ⚠ Concern
             </span>
           )}
           {row.referralMade && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+            <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">
               ↗ Referral
             </span>
           )}
@@ -235,13 +235,13 @@ export default function ProcessRecordings() {
         <div className="flex gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); openEdit(row); }}
-            className="px-3 py-1 text-xs rounded-md border border-teal-600 text-teal-600 hover:bg-teal-50 font-medium"
+            className="px-3 py-1 text-xs border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium"
           >
             Edit
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setDeleteTarget(row); }}
-            className="px-3 py-1 text-xs rounded-md border border-red-300 text-red-600 hover:bg-red-50 font-medium"
+            className="px-3 py-1 text-xs border border-red-300 text-red-600 hover:bg-red-50 font-medium"
           >
             Delete
           </button>
@@ -262,7 +262,7 @@ export default function ProcessRecordings() {
         </div>
         <button
           onClick={openCreate}
-          className="self-start sm:self-auto px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors"
+          className="self-start sm:self-auto px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
         >
           + Add Session
         </button>
@@ -273,7 +273,7 @@ export default function ProcessRecordings() {
         <select
           value={filterResidentId}
           onChange={(e) => handleResidentFilterChange(e.target.value)}
-          className="flex-1 min-w-0 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Residents</option>
           {residents.map((r) => (
@@ -287,7 +287,7 @@ export default function ProcessRecordings() {
           placeholder="Filter by social worker…"
           value={socialWorkerInput}
           onChange={(e) => handleSocialWorkerInputChange(e.target.value)}
-          className="flex-1 min-w-0 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="flex-1 min-w-0 border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -304,7 +304,7 @@ export default function ProcessRecordings() {
           action={
             <button
               onClick={openCreate}
-              className="px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700"
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700"
             >
               Add Session
             </button>
@@ -344,7 +344,7 @@ export default function ProcessRecordings() {
                   residentId: e.target.value ? Number(e.target.value) : null,
                 }))
               }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select resident…</option>
               {residents.map((r) => (
@@ -364,7 +364,7 @@ export default function ProcessRecordings() {
               type="date"
               value={form.sessionDate?.slice(0, 10) ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, sessionDate: e.target.value || null }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -377,7 +377,7 @@ export default function ProcessRecordings() {
               type="text"
               value={form.socialWorker ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, socialWorker: e.target.value || null }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -387,7 +387,7 @@ export default function ProcessRecordings() {
             <select
               value={form.sessionType ?? ''}
               onChange={(e) => setForm((f) => ({ ...f, sessionType: e.target.value || null }))}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select type…</option>
               {SESSION_TYPES.map((t) => (
@@ -411,7 +411,7 @@ export default function ProcessRecordings() {
                   sessionDurationMinutes: e.target.value ? Number(e.target.value) : null,
                 }))
               }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -426,7 +426,7 @@ export default function ProcessRecordings() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, emotionalStateObserved: e.target.value || null }))
                 }
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select…</option>
                 {EMOTIONAL_STATES.map((s) => (
@@ -443,7 +443,7 @@ export default function ProcessRecordings() {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, emotionalStateEnd: e.target.value || null }))
                 }
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select…</option>
                 {EMOTIONAL_STATES.map((s) => (
@@ -464,7 +464,7 @@ export default function ProcessRecordings() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, sessionNarrative: e.target.value || null }))
               }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-y"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
             />
             <p className={`text-xs mt-1 ${narrativeLength < 20 ? 'text-red-500' : 'text-gray-400'}`}>
               {narrativeLength} / 20 characters minimum
@@ -482,7 +482,7 @@ export default function ProcessRecordings() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, interventionsApplied: e.target.value || null }))
               }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-y"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
             />
           </div>
 
@@ -497,7 +497,7 @@ export default function ProcessRecordings() {
               onChange={(e) =>
                 setForm((f) => ({ ...f, followUpActions: e.target.value || null }))
               }
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-y"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
             />
           </div>
 
@@ -508,7 +508,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.progressNoted}
                 onChange={(e) => setForm((f) => ({ ...f, progressNoted: e.target.checked }))}
-                className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               Progress Noted
             </label>
@@ -517,7 +517,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.concernsFlagged}
                 onChange={(e) => setForm((f) => ({ ...f, concernsFlagged: e.target.checked }))}
-                className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               Concerns Flagged
             </label>
@@ -526,7 +526,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.referralMade}
                 onChange={(e) => setForm((f) => ({ ...f, referralMade: e.target.checked }))}
-                className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                className="h-4 w-4border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               Referral Made
             </label>
@@ -537,17 +537,17 @@ export default function ProcessRecordings() {
             <button
               onClick={closeModal}
               disabled={saving}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+              className="px-4 py-2 text-sm border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 text-sm rounded-lg bg-teal-600 text-white font-medium hover:bg-teal-700 disabled:opacity-60 flex items-center gap-2"
+              className="px-4 py-2 text-sm bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-60 flex items-center gap-2"
             >
               {saving && (
-                <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                <span className="h-4 w-4 border-2 border-white border-t-transparent animate-spin" aria-hidden="true" />
               )}
               {editTarget ? 'Save Changes' : 'Create Session'}
             </button>

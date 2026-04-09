@@ -464,6 +464,51 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="bg-slate-50 py-24 px-6 border-y border-slate-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="border border-slate-200 bg-white p-7 sm:p-8 shadow-sm">
+            <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase text-center mb-3">
+              Most Important Outcome Metric
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 text-center">
+              {okrMetric?.metricName ?? '90-day Stable Reintegration Rate'}
+            </h2>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
+              <div className="sm:col-span-1 bg-slate-50 border border-slate-200 p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Current Rate</p>
+                <p className="text-4xl font-extrabold text-slate-900 mt-1">
+                  {okrMetric ? `${okrMetric.ratePercent.toFixed(1)}%` : '—'}
+                </p>
+              </div>
+
+              <div className="sm:col-span-2 bg-white border border-slate-200 p-4 flex flex-col justify-center">
+                <p className="text-sm text-slate-700 font-medium leading-relaxed">
+                  {okrMetric
+                    ? `${okrMetric.stableCount} of ${okrMetric.eligibleCount} girls were still safe and stable 90 days after leaving our care.`
+                    : 'We track whether girls remain safe and stable 90 days after leaving our care.'}
+                </p>
+
+                {okrMetric && (
+                  <p
+                    className={`text-sm mt-2 font-semibold ${
+                      okrMetric.deltaPoints >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                    }`}
+                  >
+                    {okrMetric.deltaPoints >= 0 ? 'Up ' : 'Down '}
+                    {Math.abs(okrMetric.deltaPoints).toFixed(1)} percentage points from the previous group
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 mt-4 text-center leading-relaxed">
+              “Safe and stable” means living in a safe placement 90 days after leaving shelter.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ------------------------------------------------------------------ */}
       {/* Donor Impact Translator                                             */}
       {/* ------------------------------------------------------------------ */}
@@ -743,30 +788,6 @@ export default function LandingPage() {
             >
               Give Now
             </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-slate-50 py-20 px-6 border-y border-slate-200">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 shadow-sm">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-center">
-              90-Day Stable Reintegration
-            </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 text-center">
-              Girls in safe, stable placement after leaving shelter
-            </p>
-
-            <div className="mt-10 text-center">
-              <p className="text-7xl sm:text-8xl font-extrabold leading-none text-slate-900 tabular-nums">
-                {okrMetric ? okrMetric.stableCount.toLocaleString() : '—'}
-              </p>
-              <p className="mt-3 text-sm font-medium text-slate-700">
-                {okrMetric
-                  ? `Safely reintegrated ${okrMetric.periodLabel}`
-                  : 'Safely reintegrated'}
-              </p>
-            </div>
           </div>
         </div>
       </section>

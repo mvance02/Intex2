@@ -54,7 +54,7 @@ function RiskBadge({ level }: { level: string | null }): React.ReactElement {
 function StatusBadge({ status }: { status: string | null }): React.ReactElement {
   if (!status) return <span className="text-gray-400">—</span>
   let cls = 'bg-gray-100 text-gray-600'
-  if (status === 'Active') cls = 'bg-teal-100 text-teal-700'
+  if (status === 'Active') cls = 'bg-blue-100 text-blue-700'
   else if (status === 'Reintegrated') cls = 'bg-blue-100 text-blue-700'
   return (
     <span className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.04em] ${cls}`}>
@@ -277,7 +277,7 @@ export default function CaseloadInventory() {
           type="date"
           value={dateFrom}
           onChange={(e) => { setDateFrom(e.target.value); setPage(1) }}
-          className="text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Admitted from date"
         />
         <span className="text-sm text-gray-400">to</span>
@@ -285,13 +285,13 @@ export default function CaseloadInventory() {
           type="date"
           value={dateTo}
           onChange={(e) => { setDateTo(e.target.value); setPage(1) }}
-          className="text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          className="text-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Admitted to date"
         />
         {(dateFrom || dateTo) && (
           <button
             onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
-            className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
+            className="text-xs text-blue-600 hover:text-blue-700 transition-colors"
           >
             Clear dates
           </button>
@@ -302,7 +302,7 @@ export default function CaseloadInventory() {
           <button
             onClick={() => fetchReadinessScores(residents)}
             disabled={predictionsLoading || residents.length === 0}
-            className="text-xs font-semibold uppercase tracking-[0.08em] px-4 py-2 bg-teal-600 text-white hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="text-xs font-semibold uppercase tracking-[0.08em] px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {predictionsLoading && (
               <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent animate-spin" />
