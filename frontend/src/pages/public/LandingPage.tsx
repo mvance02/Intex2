@@ -464,6 +464,30 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="bg-slate-50 py-20 px-6 border-y border-slate-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 shadow-sm">
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-center">
+              90-Day Stable Reintegration
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-600 text-center">
+              Girls in safe, stable placement after leaving shelter
+            </p>
+
+            <div className="mt-10 text-center">
+              <p className="text-7xl sm:text-8xl font-extrabold leading-none text-slate-900 tabular-nums">
+                {okrMetric ? okrMetric.stableCount.toLocaleString() : '—'}
+              </p>
+              <p className="mt-3 text-sm font-medium text-slate-700">
+                {okrMetric
+                  ? `Safely reintegrated ${okrMetric.periodLabel}`
+                  : 'Safely reintegrated'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ------------------------------------------------------------------ */}
       {/* Donor Impact Translator                                             */}
       {/* ------------------------------------------------------------------ */}
@@ -743,30 +767,6 @@ export default function LandingPage() {
             >
               Give Now
             </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-slate-50 py-20 px-6 border-y border-slate-200">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-10 shadow-sm">
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight text-center">
-              90-Day Stable Reintegration
-            </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 text-center">
-              Girls in safe, stable placement after leaving shelter
-            </p>
-
-            <div className="mt-10 text-center">
-              <p className="text-7xl sm:text-8xl font-extrabold leading-none text-slate-900 tabular-nums">
-                {okrMetric ? okrMetric.stableCount.toLocaleString() : '—'}
-              </p>
-              <p className="mt-3 text-sm font-medium text-slate-700">
-                {okrMetric
-                  ? `Safely reintegrated ${okrMetric.periodLabel}`
-                  : 'Safely reintegrated'}
-              </p>
-            </div>
           </div>
         </div>
       </section>
