@@ -3,11 +3,13 @@ import type { TwoFactorStatus } from '../types/TwofactorStatus';
 
 export interface ExternalAuthProvider { name: string; displayName: string; }
 
-// Auth calls MUST go through the same-origin Vercel proxy (/api/*)
+// Auth calls go through the same-origin Vercel proxy (/api/*)
 // so cookies are first-party and work on mobile browsers.
-// Direct cross-domain calls to Railway fail on mobile due to
-// third-party cookie blocking.
 const apiBaseUrl = '';
+
+// Google OAuth MUST go directly to Railway because the correlation
+// cookie and callback URL live on the Railway domain.
+const oauthBaseUrl = import.meta.env.VITE_API_URL ?? '';
 
 async function readApiError(res: Response, fallback: string): Promise<string> {
   const ct = res.headers.get('content-type') ?? '';
@@ -34,7 +36,7 @@ async function post2FA(payload: object): Promise<TwoFactorStatus> {
 }
 
 export function buildExternalLoginUrl(provider: string, returnPath = '/'): string {
-  return `${apiBaseUrl}/api/auth/external-login?${new URLSearchParams({ provider, returnPath })}`;
+  return `${oauthBaseUrl}/api/auth/external-login?${new URLSearchParams({ provider, returnPath })}`;
 }
 export async function getExternalProviders(): Promise<ExternalAuthProvider[]> {
   const r = await fetch(`${apiBaseUrl}/api/auth/providers`, { credentials: 'include' });
