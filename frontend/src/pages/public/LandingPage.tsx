@@ -464,92 +464,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-white py-10 px-6 border-b border-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <div className="rounded-2xl border border-teal-100 bg-gradient-to-b from-teal-50/60 to-white p-7 sm:p-8">
-            <p className="text-xs font-semibold tracking-[0.18em] uppercase text-teal-700 text-center mb-2">
-              Most Important Outcome Metric
-            </p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center">
-              {okrMetric?.metricName ?? '90-day Stable Reintegration Rate'}
-            </h2>
-
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
-              <div className="sm:col-span-1 rounded-xl bg-white border border-gray-100 p-4">
-                <p className="text-xs uppercase tracking-wide text-gray-500">Current Rate</p>
-                <p className="text-4xl font-extrabold text-teal-700 mt-1">
-                  {okrMetric ? `${okrMetric.ratePercent.toFixed(1)}%` : '—'}
-                </p>
-              </div>
-
-              <div className="sm:col-span-2 rounded-xl bg-white border border-gray-100 p-4 flex flex-col justify-center">
-                <p className="text-sm text-gray-700 font-medium leading-relaxed">
-                  {okrMetric
-                    ? `${okrMetric.stableCount} of ${okrMetric.eligibleCount} girls were still safe and stable 90 days after leaving our care.`
-                    : 'We track whether girls remain safe and stable 90 days after leaving our care.'}
-                </p>
-
-                {okrMetric && (
-                  <p
-                    className={`text-sm mt-2 font-semibold ${
-                      okrMetric.deltaPoints >= 0 ? 'text-teal-700' : 'text-amber-700'
-                    }`}
-                  >
-                    {okrMetric.deltaPoints >= 0 ? 'Up ' : 'Down '}
-                    {Math.abs(okrMetric.deltaPoints).toFixed(1)} percentage points from the previous group
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-500 mt-4 text-center leading-relaxed">
-              “Safe and stable” means living in a safe placement 90 days after leaving shelter.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-slate-50 py-24 px-6 border-y border-slate-200">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
-            <div>
-              <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase mb-3">
-                Donor Recognition
-              </p>
-              <h2 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900">
-                Wall of Donors
-              </h2>
-              <p className="text-slate-600 text-sm mt-2 max-w-xl">
-                Thank you to everyone who stands with our girls. See every name on the full wall.
-              </p>
-            </div>
-            <Link
-              to="/donor-wall"
-              className="inline-flex items-center justify-center shrink-0 px-6 py-3 border border-sky-300 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] hover:bg-sky-300 hover:text-slate-900 transition-colors"
-            >
-              View Full Wall
-            </Link>
-          </div>
-
-          {donorWallPreview.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {donorWallPreview.map((entry) => (
-                <div
-                  key={`${entry.displayName}-${entry.latestDonationDate ?? 'n/a'}`}
-                  className="border border-slate-200 bg-white px-4 py-4 text-center shadow-sm"
-                >
-                  <p className="font-semibold text-slate-800 text-sm truncate">{entry.displayName}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-600 max-w-xl">
-              Be the first to join our donor wall when you make a donation.
-            </p>
-          )}
-        </div>
-      </section>
-
       {/* ------------------------------------------------------------------ */}
       {/* Donor Impact Translator                                             */}
       {/* ------------------------------------------------------------------ */}
@@ -830,6 +744,92 @@ export default function LandingPage() {
               Give Now
             </button>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-24 px-6 border-y border-slate-200">
+        <div className="max-w-4xl mx-auto">
+          <div className="border border-slate-200 bg-white p-7 sm:p-8 shadow-sm">
+            <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase text-center mb-3">
+              Most Important Outcome Metric
+            </p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900 text-center">
+              {okrMetric?.metricName ?? '90-day Stable Reintegration Rate'}
+            </h2>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch text-center">
+              <div className="sm:col-span-1 bg-slate-50 border border-slate-200 p-4">
+                <p className="text-xs uppercase tracking-wide text-slate-500">Current Rate</p>
+                <p className="text-4xl font-extrabold text-slate-900 mt-1">
+                  {okrMetric ? `${okrMetric.ratePercent.toFixed(1)}%` : '—'}
+                </p>
+              </div>
+
+              <div className="sm:col-span-2 bg-white border border-slate-200 p-4 flex flex-col justify-center">
+                <p className="text-sm text-slate-700 font-medium leading-relaxed">
+                  {okrMetric
+                    ? `${okrMetric.stableCount} of ${okrMetric.eligibleCount} girls were still safe and stable 90 days after leaving our care.`
+                    : 'We track whether girls remain safe and stable 90 days after leaving our care.'}
+                </p>
+
+                {okrMetric && (
+                  <p
+                    className={`text-sm mt-2 font-semibold ${
+                      okrMetric.deltaPoints >= 0 ? 'text-emerald-700' : 'text-rose-700'
+                    }`}
+                  >
+                    {okrMetric.deltaPoints >= 0 ? 'Up ' : 'Down '}
+                    {Math.abs(okrMetric.deltaPoints).toFixed(1)} percentage points from the previous group
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 mt-4 text-center leading-relaxed">
+              “Safe and stable” means living in a safe placement 90 days after leaving shelter.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-24 px-6 border-y border-slate-200">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
+            <div>
+              <p className="text-slate-600 text-xs font-semibold tracking-[0.16em] uppercase mb-3">
+                Donor Recognition
+              </p>
+              <h2 className="text-3xl font-extrabold uppercase tracking-[0.05em] text-slate-900">
+                Wall of Donors
+              </h2>
+              <p className="text-slate-600 text-sm mt-2 max-w-xl">
+                Thank you to everyone who stands with our girls. See every name on the full wall.
+              </p>
+            </div>
+            <Link
+              to="/donor-wall"
+              className="inline-flex items-center justify-center shrink-0 px-6 py-3 border border-sky-300 bg-white text-sky-700 font-semibold uppercase text-sm tracking-[0.1em] hover:bg-sky-300 hover:text-slate-900 transition-colors"
+            >
+              View Full Wall
+            </Link>
+          </div>
+
+          {donorWallPreview.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {donorWallPreview.map((entry) => (
+                <div
+                  key={`${entry.displayName}-${entry.latestDonationDate ?? 'n/a'}`}
+                  className="border border-slate-200 bg-white px-4 py-4 text-center shadow-sm"
+                >
+                  <p className="font-semibold text-slate-800 text-sm truncate">{entry.displayName}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600 max-w-xl">
+              Be the first to join our donor wall when you make a donation.
+            </p>
+          )}
         </div>
       </section>
 
