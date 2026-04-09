@@ -82,10 +82,17 @@ export default function SocialDonationPredictor() {
   const [optError, setOptError] = useState<string | null>(null);
 
   // --- Weekly schedule state ---
+  const ALL_PLATFORMS = ['Facebook', 'Instagram', 'LinkedIn', 'TikTok', 'Twitter', 'WhatsApp', 'YouTube'] as const;
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([...ALL_PLATFORMS]);
   const [weeklyTarget, setWeeklyTarget] = useState<'donation_value' | 'referrals'>('donation_value');
   const [weeklyResult, setWeeklyResult] = useState<SocialWeeklyScheduleResult | null>(null);
   const [weeklyLoading, setWeeklyLoading] = useState(false);
   const [weeklyError, setWeeklyError] = useState<string | null>(null);
+
+  const togglePlatform = (p: string) =>
+    setSelectedPlatforms((prev) =>
+      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p],
+    );
 
   const runSocialPrediction = useCallback(async () => {
     setSocialLoading(true);
@@ -144,6 +151,7 @@ export default function SocialDonationPredictor() {
     try {
       const req: SocialWeeklyScheduleRequest = {
         optimize_for: weeklyTarget,
+        platforms: selectedPlatforms,
       };
       const result = await apiFetch<SocialWeeklyScheduleResult>('/api/predict/social/weekly-schedule', {
         method: 'POST',
@@ -157,7 +165,7 @@ export default function SocialDonationPredictor() {
     } finally {
       setWeeklyLoading(false);
     }
-  }, [weeklyTarget]);
+  }, [weeklyTarget, selectedPlatforms]);
 
   const tabClass = (key: TabKey) =>
     `px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.08em] transition-colors border-b-2 ${
@@ -205,27 +213,52 @@ export default function SocialDonationPredictor() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl">
-            <label className="text-sm text-gray-700">
-              Optimize for
-              <select
-                value={weeklyTarget}
-                onChange={(e) => setWeeklyTarget(e.target.value as 'donation_value' | 'referrals')}
-                className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
-              >
-                <option value="donation_value">Maximize Donation Value</option>
-                <option value="referrals">Maximize Referrals</option>
-              </select>
-            </label>
-            <div className="flex items-end">
-              <button
-                type="button"
-                onClick={runWeeklySchedule}
-                disabled={weeklyLoading}
-                className="w-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-white border border-sky-300 text-slate-900 hover:bg-sky-300 hover:text-slate-900 transition-colors disabled:opacity-60"
-              >
-                {weeklyLoading ? 'Generating schedule...' : 'Generate Weekly Schedule'}
-              </button>
+          <div className="space-y-4 max-w-2xl">
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Platforms to include</p>
+              <div className="flex flex-wrap gap-2">
+                {ALL_PLATFORMS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => togglePlatform(p)}
+                    className={`px-3 py-1.5 text-xs font-semibold border transition-colors ${
+                      selectedPlatforms.includes(p)
+                        ? 'bg-sky-600 text-white border-sky-600'
+                        : 'bg-white text-gray-500 border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              {selectedPlatforms.length < 2 && (
+                <p className="text-xs text-red-500 mt-1">Select at least 2 platforms</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="text-sm text-gray-700">
+                Optimize for
+                <select
+                  value={weeklyTarget}
+                  onChange={(e) => setWeeklyTarget(e.target.value as 'donation_value' | 'referrals')}
+                  className="mt-1 w-full border border-gray-300 px-3 py-2 text-sm"
+                >
+                  <option value="donation_value">Maximize Donation Value</option>
+                  <option value="referrals">Maximize Referrals</option>
+                </select>
+              </label>
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={runWeeklySchedule}
+                  disabled={weeklyLoading || selectedPlatforms.length < 2}
+                  className="w-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] bg-white border border-sky-300 text-slate-900 hover:bg-sky-300 hover:text-slate-900 transition-colors disabled:opacity-60"
+                >
+                  {weeklyLoading ? 'Generating schedule...' : 'Generate Weekly Schedule'}
+                </button>
+              </div>
             </div>
           </div>
 

@@ -103,10 +103,14 @@ class OptimizeRequest(BaseModel):
 
 
 class WeeklyScheduleRequest(BaseModel):
-    """Generate a diverse 7-day posting schedule across all platforms."""
+    """Generate a diverse 7-day posting schedule across selected platforms."""
     optimize_for: str = Field(
         default="donation_value",
         description="Target to maximize: 'donation_value' or 'referrals'",
+    )
+    platforms: list[str] | None = Field(
+        default=None,
+        description="Platforms to include. If omitted, all platforms are used.",
     )
     is_boosted: bool | None = Field(default=None)
     boost_budget_php: float | None = Field(default=None, ge=0)
@@ -413,9 +417,12 @@ def weekly_schedule(req: WeeklyScheduleRequest) -> dict[str, Any]:
     field_vals = meta.get("field_values", {})
     model = b["reg_referrals"] if req.optimize_for == "referrals" else b["reg_value"]
 
-    platforms = field_vals.get("platform", [
+    all_platforms = field_vals.get("platform", [
         "Facebook", "Instagram", "LinkedIn", "TikTok", "Twitter", "WhatsApp", "YouTube",
     ])
+    platforms = [p for p in req.platforms if p in all_platforms] if req.platforms else all_platforms
+    if not platforms:
+        platforms = all_platforms
     post_types = field_vals.get("post_type", ["FundraisingAppeal"])
     media_types = field_vals.get("media_type", ["Carousel"])
     content_topics = field_vals.get("content_topic", ["Education"])

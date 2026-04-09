@@ -457,6 +457,7 @@ export interface SocialOptimizeResult {
 
 export interface SocialWeeklyScheduleRequest {
   optimize_for: 'donation_value' | 'referrals';
+  platforms?: string[];
   is_boosted?: boolean | null;
   boost_budget_php?: number | null;
   features_resident_story?: boolean | null;
