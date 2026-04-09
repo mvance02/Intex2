@@ -90,6 +90,10 @@ public class SupportersController(HopeHavenDbContext db) : ControllerBase
     {
         var supporter = await db.Supporters.FindAsync(id);
         if (supporter is null) return NotFound();
+
+        var donations = db.Donations.Where(d => d.SupporterId == id);
+        db.Donations.RemoveRange(donations);
+
         db.Supporters.Remove(supporter);
         await db.SaveChangesAsync();
         return NoContent();
