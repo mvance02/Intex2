@@ -2,16 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
 const API = import.meta.env.VITE_API_URL ?? '';
-
-function recurringBadgeLabel(isRecurring: boolean, recurringFrequency: string | null | undefined): string | null {
-  if (!isRecurring) return null;
-  const f = (recurringFrequency || 'Weekly').toLowerCase();
-  if (f === 'monthly') return 'Monthly';
-  if (f === 'yearly') return 'Yearly';
-  return 'Weekly';
-}
 
 interface DonationRecord {
   donationId: number;
@@ -99,10 +92,10 @@ export default function DonorDonations() {
                     {d.donationDate ? new Date(d.donationDate + 'T00:00:00').toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3 text-gray-800 font-medium">
-                    {d.campaignName || d.donationType || 'Donation'}
+                    {primaryDonationLabel(d.campaignName, d.donationType, d.isRecurring)}
                     {d.isRecurring && (
                       <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                        {recurringBadgeLabel(d.isRecurring, d.recurringFrequency)}
+                        {recurringIntervalBadge(d.isRecurring, d.recurringFrequency, d.campaignName)}
                       </span>
                     )}
                   </td>

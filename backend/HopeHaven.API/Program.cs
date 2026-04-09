@@ -1,3 +1,4 @@
+using System.Text.Json;
 using HopeHaven.API.Data;
 using HopeHaven.API.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -102,8 +103,12 @@ builder.Services.AddMemoryCache();
 // ── Controllers + OpenAPI ──────────────────────────────────────────────────
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
+    {
         opts.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 builder.Services.AddOpenApi();
 
 // ── CORS ───────────────────────────────────────────────────────────────────
