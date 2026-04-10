@@ -52,8 +52,20 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
             options.ClientSecret = googleClientSecret;
             options.SignInScheme = IdentityConstants.ExternalScheme;
             options.CallbackPath = "/signin-google";
+            // Cross-site OAuth bounce requires SameSite=None on the correlation cookie
+            options.CorrelationCookie.SameSite     = SameSiteMode.None;
+            options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
         });
 }
+
+// External cookie (used between Google callback and final sign-in) must also
+// be SameSite=None so it survives the cross-site redirect chain.
+builder.Services.ConfigureExternalCookie(options =>
+{
+    options.Cookie.HttpOnly     = true;
+    options.Cookie.SameSite     = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
 // ── Authorization policies ───────────────────────────────────────────────────
 // DefaultPolicy uses the Identity Application cookie scheme.
