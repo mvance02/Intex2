@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import hopeHavenLogo from '../../assets/HopeHavenLogo2.jpg';
 
 const API = '';
 import {
@@ -194,6 +197,115 @@ function recurringThankYouPhrase(isRecurring: boolean, recurringFrequency: strin
   return ' weekly recurring';
 }
 
+function generateDonationReceipt(label: string, phpAmount: number, isRecurring: boolean, recurringFrequency: string | null) {
+  const doc = new jsPDF();
+  const usd = phpToUsd(phpAmount);
+  const receiptNo = `HH-${Date.now().toString(36).toUpperCase()}`;
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Header background
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, 210, 38, 'F');
+
+  // Logo
+  try {
+    const img = new Image();
+    img.src = hopeHavenLogo;
+    doc.addImage(img, 'JPEG', 14, 6, 26, 26);
+  } catch { /* logo optional */ }
+
+  // Header text
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DONATION RECEIPT', 46, 18);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Hope Haven Philippines  |  hopehaven.org', 46, 26);
+  doc.text('Protecting and rehabilitating survivors of abuse', 46, 31);
+
+  // Receipt details
+  doc.setTextColor(0, 0, 0);
+  let y = 50;
+
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text('Receipt #:', 140, y);
+  doc.text('Date:', 140, y + 6);
+  doc.setTextColor(0);
+  doc.setFont('helvetica', 'bold');
+  doc.text(receiptNo, 165, y);
+  doc.text(today, 165, y + 6);
+
+  // Donor info
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(0);
+  doc.text('Donor Information', 14, y);
+  y += 7;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(80);
+  doc.text('Thank you for your generous contribution to Hope Haven.', 14, y);
+  y += 12;
+
+  // Donation details table
+  const freq = isRecurring && recurringFrequency ? recurringFrequency : 'One-time';
+  autoTable(doc, {
+    startY: y,
+    head: [['Description', 'Type', 'Amount (PHP)', 'Amount (USD)']],
+    body: [[label, freq, formatPhp(phpAmount), formatUsd(usd)]],
+    theme: 'grid',
+    headStyles: { fillColor: [15, 23, 42], textColor: 255, fontSize: 9, fontStyle: 'bold' },
+    bodyStyles: { fontSize: 9 },
+    columnStyles: {
+      0: { cellWidth: 70 },
+      1: { cellWidth: 35, halign: 'center' },
+      2: { cellWidth: 40, halign: 'right' },
+      3: { cellWidth: 40, halign: 'right' },
+    },
+    margin: { left: 14, right: 14 },
+  });
+
+  y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 8;
+
+  // Total row
+  doc.setFillColor(240, 253, 244);
+  doc.rect(14, y, 182, 12, 'F');
+  doc.setDrawColor(200);
+  doc.rect(14, y, 182, 12, 'S');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(0);
+  doc.text('Total:', 120, y + 8);
+  doc.text(`${formatPhp(phpAmount)}  (${formatUsd(usd)})`, 145, y + 8);
+
+  y += 24;
+
+  // Note
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(120);
+  doc.text('This receipt confirms your donation to Hope Haven Philippines.', 14, y);
+  y += 4;
+  doc.text('Hope Haven is a registered nonprofit organization dedicated to protecting and rehabilitating', 14, y);
+  y += 4;
+  doc.text('child survivors of abuse in the Philippines. Please retain this receipt for your records.', 14, y);
+
+  // Footer
+  doc.setFillColor(248, 250, 252);
+  doc.rect(0, 270, 210, 27, 'F');
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Thank you for supporting Hope Haven!', 105, 280, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.text('This is a demonstration receipt. In production, this would serve as official documentation of your gift.', 105, 286, { align: 'center' });
+
+  doc.save(`HopeHaven_Receipt_${receiptNo}.pdf`);
+}
+
 interface ThankYouModalProps {
   isRecurring: boolean;
   recurringFrequency: string | null;
@@ -236,12 +348,21 @@ function ThankYouModal({ isRecurring, recurringFrequency, label, phpAmount, onCl
           This is a demonstration — no real payment was processed. In production, your gift would
           go directly to the girls at Hope Haven.
         </p>
-        <button
-          onClick={onClose}
-          className="w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
-        >
-          Close
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => generateDonationReceipt(label, phpAmount, isRecurring, recurringFrequency)}
+            className="w-full py-3 bg-slate-800 text-white font-semibold rounded-full hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowRight size={16} className="rotate-90" />
+            Download Receipt
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-teal-600 text-white font-semibold rounded-full hover:bg-teal-700 transition-colors"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );
