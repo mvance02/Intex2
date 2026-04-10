@@ -45,11 +45,6 @@ var googleClientId     = builder.Configuration["Authentication:Google:ClientId"]
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
 {
-    // Public-facing host (Vercel) — used to override the redirect_uri sent
-    // to Google so the OAuth callback comes back through the Vercel proxy
-    // (where the correlation cookie was set), not directly to Railway.
-    var publicBaseUrl = builder.Configuration["PublicBaseUrl"];
-
     builder.Services.AddAuthentication()
         .AddGoogle(options =>
         {
@@ -60,20 +55,6 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
             // Cross-site OAuth bounce requires SameSite=None on the correlation cookie
             options.CorrelationCookie.SameSite     = SameSiteMode.None;
             options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-
-            if (!string.IsNullOrEmpty(publicBaseUrl))
-            {
-                var publicCallback = publicBaseUrl.TrimEnd('/') + "/signin-google";
-                options.Events.OnRedirectToAuthorizationEndpoint = ctx =>
-                {
-                    var rewritten = System.Text.RegularExpressions.Regex.Replace(
-                        ctx.RedirectUri,
-                        @"redirect_uri=[^&]+",
-                        "redirect_uri=" + Uri.EscapeDataString(publicCallback));
-                    ctx.Response.Redirect(rewritten);
-                    return Task.CompletedTask;
-                };
-            }
         });
 }
 
@@ -198,6 +179,24 @@ catch (Exception ex)
 
 // ── Pipeline ───────────────────────────────────────────────────────────────
 app.UseForwardedHeaders(); // must be first — makes Railway's https:// visible to ASP.NET
+
+// Force Request.Host to the public Vercel domain so ASP.NET Core builds
+// OAuth redirect_uri values (and any other URLs) using the public hostname
+// the browser actually sees, not Railway's internal hostname. This is the
+// only way to make Google OAuth work end-to-end through the Vercel proxy:
+// both the initial /authorize redirect AND the token-exchange call must
+// use the same redirect_uri.
+var publicBaseUrl = app.Configuration["PublicBaseUrl"];
+if (!string.IsNullOrEmpty(publicBaseUrl) &&
+    Uri.TryCreate(publicBaseUrl, UriKind.Absolute, out var publicUri))
+{
+    app.Use(async (ctx, next) =>
+    {
+        ctx.Request.Host   = new HostString(publicUri.Host);
+        ctx.Request.Scheme = publicUri.Scheme;
+        await next();
+    });
+}
 
 if (app.Environment.IsDevelopment())
 {
