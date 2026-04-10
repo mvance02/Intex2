@@ -1,14 +1,29 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DataTable, { type Column } from '../../components/shared/DataTable'
 import Pagination from '../../components/shared/Pagination'
 import FilterBar from '../../components/shared/FilterBar'
 import SkeletonLoader from '../../components/shared/SkeletonLoader'
 import ErrorAlert from '../../components/shared/ErrorAlert'
+import Modal from '../../components/shared/Modal'
 import { HelpCircle } from 'lucide-react'
 import { apiFetch, displaySafehouseName } from '../../utils/api'
 import { useToast } from '../../contexts/ToastContext'
 import type { Resident, Safehouse, PaginatedResponse } from '../../types/models'
+
+interface ResidentFormState {
+  internalCode: string
+  safehouseId: string
+  caseCategory: string
+  caseStatus: string
+}
+
+const EMPTY_FORM: ResidentFormState = {
+  internalCode: '',
+  safehouseId: '',
+  caseCategory: '',
+  caseStatus: '',
+}
 
 const PAGE_SIZE = 20
 
@@ -67,6 +82,7 @@ function StatusBadge({ status }: { status: string | null }): React.ReactElement 
 
 function buildColumns(
   readiness: Map<number, ReadinessPrediction | 'loading'>,
+  onEdit: (r: Resident) => void,
 ): Column<Resident>[] {
   return [
     { key: 'caseControlNo', header: 'Case No', sortable: true },
@@ -102,6 +118,22 @@ function buildColumns(
       render: (r) =>
         r.dateOfAdmission ? new Date(r.dateOfAdmission).toLocaleDateString() : '—',
     },
+    {
+      key: 'actions',
+      header: 'Actions',
+      render: (r) => (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onEdit(r)
+          }}
+          className="text-xs font-semibold uppercase tracking-[0.06em] px-3 py-1 border border-sky-300 text-slate-700 hover:bg-sky-50 transition-colors"
+        >
+          Edit
+        </button>
+      ),
+    },
   ]
 }
 
@@ -132,6 +164,13 @@ export default function CaseloadInventory() {
     caseCategory: '',
     safehouseId: '',
   })
+
+  // Create / edit form state
+  const [showForm, setShowForm] = useState(false)
+  const [editTarget, setEditTarget] = useState<Resident | null>(null)
+  const [formState, setFormState] = useState<ResidentFormState>({ ...EMPTY_FORM })
+  const [formSaving, setFormSaving] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!statusTooltipOpen) return
@@ -236,6 +275,67 @@ export default function CaseloadInventory() {
     setPage(1)
   }, [])
 
+  const openCreate = useCallback(() => {
+    setEditTarget(null)
+    setFormState({ ...EMPTY_FORM })
+    setFormError(null)
+    setShowForm(true)
+  }, [])
+
+  const openEdit = useCallback((r: Resident) => {
+    setEditTarget(r)
+    setFormState({
+      internalCode: r.internalCode ?? '',
+      safehouseId: r.safehouseId != null ? String(r.safehouseId) : '',
+      caseCategory: r.caseCategory ?? '',
+      caseStatus: r.caseStatus ?? '',
+    })
+    setFormError(null)
+    setShowForm(true)
+  }, [])
+
+  const closeForm = useCallback(() => {
+    if (formSaving) return
+    setShowForm(false)
+    setEditTarget(null)
+    setFormError(null)
+  }, [formSaving])
+
+  const handleFormSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setFormSaving(true)
+    setFormError(null)
+    try {
+      const payload = {
+        internalCode: formState.internalCode.trim(),
+        safehouseId: formState.safehouseId ? Number(formState.safehouseId) : null,
+        caseCategory: formState.caseCategory || null,
+        caseStatus: formState.caseStatus || null,
+      }
+      if (editTarget) {
+        // PUT requires the full Resident object — merge edits over the existing record
+        await apiFetch(`/api/residents/${editTarget.residentId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ ...editTarget, ...payload }),
+        })
+        toast.success('Resident updated')
+      } else {
+        await apiFetch('/api/residents', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        })
+        toast.success('Resident created')
+      }
+      setShowForm(false)
+      setEditTarget(null)
+      fetchResidents()
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : 'Failed to save resident.')
+    } finally {
+      setFormSaving(false)
+    }
+  }
+
   const filterGroups = [
     {
       key: 'caseStatus',
@@ -278,9 +378,18 @@ export default function CaseloadInventory() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Caseload Inventory</h1>
-        <p className="text-sm text-gray-500 mt-1">Browse and filter all resident cases.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Caseload Inventory</h1>
+          <p className="text-sm text-gray-500 mt-1">Browse, create, update, and filter all resident cases.</p>
+        </div>
+        <button
+          type="button"
+          onClick={openCreate}
+          className="text-xs font-semibold uppercase tracking-[0.08em] px-4 py-2 bg-sky-300 text-slate-900 hover:bg-sky-200 transition-colors whitespace-nowrap"
+        >
+          + New Resident
+        </button>
       </div>
 
       <div className="flex items-start gap-2">
@@ -368,7 +477,7 @@ export default function CaseloadInventory() {
         <SkeletonLoader rows={8} columns={8} />
       ) : (
         <DataTable<Resident>
-          columns={buildColumns(readiness)}
+          columns={buildColumns(readiness, openEdit)}
           data={residents}
           rowKey={(r) => r.residentId}
           onRowClick={(r) => navigate(`/admin/residents/${r.residentId}`)}
@@ -376,6 +485,111 @@ export default function CaseloadInventory() {
       )}
 
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      <Modal
+        isOpen={showForm}
+        onClose={closeForm}
+        title={editTarget ? 'Edit Resident' : 'Add Resident'}
+        size="md"
+      >
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          {formError && (
+            <div role="alert" className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2">
+              {formError}
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="res-internal-code" className="block text-xs font-semibold uppercase tracking-[0.08em] text-gray-600 mb-1.5">
+              Internal Code <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="res-internal-code"
+              type="text"
+              required
+              value={formState.internalCode}
+              onChange={(e) => setFormState((p) => ({ ...p, internalCode: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              placeholder="e.g. HH-2026-001"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="res-safehouse" className="block text-xs font-semibold uppercase tracking-[0.08em] text-gray-600 mb-1.5">
+              Safehouse
+            </label>
+            <select
+              id="res-safehouse"
+              value={formState.safehouseId}
+              onChange={(e) => setFormState((p) => ({ ...p, safehouseId: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+            >
+              <option value="">— Select safehouse —</option>
+              {safehouses.map((s) => (
+                <option key={s.safehouseId} value={String(s.safehouseId)}>
+                  {displaySafehouseName(s.name) || `Safehouse ${s.safehouseId}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="res-case-category" className="block text-xs font-semibold uppercase tracking-[0.08em] text-gray-600 mb-1.5">
+              Case Category
+            </label>
+            <select
+              id="res-case-category"
+              value={formState.caseCategory}
+              onChange={(e) => setFormState((p) => ({ ...p, caseCategory: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+            >
+              <option value="">— Select category —</option>
+              <option value="Abandoned">Abandoned</option>
+              <option value="Foundling">Foundling</option>
+              <option value="Neglected">Neglected</option>
+              <option value="Surrendered">Surrendered</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="res-case-status" className="block text-xs font-semibold uppercase tracking-[0.08em] text-gray-600 mb-1.5">
+              Case Status
+            </label>
+            <select
+              id="res-case-status"
+              value={formState.caseStatus}
+              onChange={(e) => setFormState((p) => ({ ...p, caseStatus: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white"
+            >
+              <option value="">— Select status —</option>
+              <option value="Active">Active</option>
+              <option value="Closed">Closed</option>
+              <option value="Transferred">Transferred</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={closeForm}
+              disabled={formSaving}
+              className="text-xs font-semibold uppercase tracking-[0.08em] px-4 py-2 border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={formSaving || !formState.internalCode.trim()}
+              className="text-xs font-semibold uppercase tracking-[0.08em] px-4 py-2 bg-sky-300 text-slate-900 hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {formSaving && (
+                <span className="h-3.5 w-3.5 border-2 border-white border-t-transparent animate-spin" />
+              )}
+              {editTarget ? (formSaving ? 'Saving…' : 'Save Changes') : (formSaving ? 'Creating…' : 'Create Resident')}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }
