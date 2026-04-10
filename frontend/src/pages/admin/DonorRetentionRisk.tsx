@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { AlertTriangle, TrendingDown, ShieldCheck, Activity, Download } from 'lucide-react';
 import { apiFetch } from '../../utils/api';
+import { useToast } from '../../contexts/ToastContext';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorAlert from '../../components/shared/ErrorAlert';
 
@@ -106,6 +107,7 @@ function downloadCsv(donors: DonorRiskRow[]) {
 // ---------------------------------------------------------------------------
 
 export default function DonorRetentionRisk() {
+  const toast = useToast();
   const [stats, setStats] = useState<DonorRiskStats | null>(null);
   const [donors, setDonors] = useState<DonorRiskRow[]>([]);
   const [tierFilter, setTierFilter] = useState<TierFilter>('All');
@@ -124,8 +126,10 @@ export default function DonorRetentionRisk() {
     try {
       const data = await apiFetch<DonorRiskStats>('/api/donor-risk/stats');
       setStats(data);
+      toast.success('Risk analysis loaded');
     } catch (err) {
       setStatsError(err instanceof Error ? err.message : 'Could not load stats. Is the donor risk service running?');
+      toast.error('Unable to load risk data');
     } finally {
       setStatsLoading(false);
     }
@@ -140,6 +144,7 @@ export default function DonorRetentionRisk() {
       setDonors(data.donors);
     } catch (err) {
       setDonorsError(err instanceof Error ? err.message : 'Could not load donor list.');
+      toast.error('Unable to load donor list');
     } finally {
       setDonorsLoading(false);
     }
@@ -286,7 +291,7 @@ export default function DonorRetentionRisk() {
 
             {/* CSV download */}
             <button
-              onClick={() => downloadCsv(donors)}
+              onClick={() => { downloadCsv(donors); toast.success('CSV exported'); }}
               disabled={donors.length === 0}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors"
             >

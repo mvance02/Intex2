@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+// All API calls go through the same-origin Vercel proxy (/api/*)
+// so auth cookies are first-party and work on mobile browsers.
+const API_URL = '';
 
 /** Strip "Lighthouse " prefix from safehouse names for cleaner display */
 export function displaySafehouseName(name: string | null | undefined): string {

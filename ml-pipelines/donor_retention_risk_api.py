@@ -1,7 +1,10 @@
 """
 FastAPI service for the Donor Retention Risk dashboard.
+(2 of 3 integrated ML pipelines)
 
-Run from ml-pipelines/:
+Runs as part of the `determined-gentleness` Railway service.
+
+Run locally from ml-pipelines/:
     uvicorn donor_retention_risk_api:app --port 8003 --reload
 """
 from __future__ import annotations

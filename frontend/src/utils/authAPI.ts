@@ -3,7 +3,13 @@ import type { TwoFactorStatus } from '../types/TwofactorStatus';
 
 export interface ExternalAuthProvider { name: string; displayName: string; }
 
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? '';
+// Auth calls go through the same-origin Vercel proxy (/api/*)
+// so cookies are first-party and work on mobile browsers.
+const apiBaseUrl = '';
+
+// Google OAuth MUST go directly to Railway because the correlation
+// cookie and callback URL live on the Railway domain.
+const oauthBaseUrl = '';
 
 async function readApiError(res: Response, fallback: string): Promise<string> {
   const ct = res.headers.get('content-type') ?? '';
@@ -30,7 +36,7 @@ async function post2FA(payload: object): Promise<TwoFactorStatus> {
 }
 
 export function buildExternalLoginUrl(provider: string, returnPath = '/'): string {
-  return `${apiBaseUrl}/api/auth/external-login?${new URLSearchParams({ provider, returnPath })}`;
+  return `${oauthBaseUrl}/api/auth/external-login?${new URLSearchParams({ provider, returnPath })}`;
 }
 export async function getExternalProviders(): Promise<ExternalAuthProvider[]> {
   const r = await fetch(`${apiBaseUrl}/api/auth/providers`, { credentials: 'include' });
@@ -61,7 +67,8 @@ export async function loginUser(
   twoFactorCode?: string, twoFactorRecoveryCode?: string
 ): Promise<void> {
   const params = new URLSearchParams();
-  rememberMe ? params.set('useCookies', 'true') : params.set('useSessionCookies', 'true');
+  if (rememberMe) params.set('useCookies', 'true');
+  else params.set('useSessionCookies', 'true');
   const body: Record<string, string> = { email, password };
   if (twoFactorCode)         body.twoFactorCode         = twoFactorCode;
   if (twoFactorRecoveryCode) body.twoFactorRecoveryCode = twoFactorRecoveryCode;

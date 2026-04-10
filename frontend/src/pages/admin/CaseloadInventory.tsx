@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DataTable, { type Column } from '../../components/shared/DataTable'
 import Pagination from '../../components/shared/Pagination'
 import FilterBar from '../../components/shared/FilterBar'
 import SkeletonLoader from '../../components/shared/SkeletonLoader'
 import ErrorAlert from '../../components/shared/ErrorAlert'
+import { HelpCircle } from 'lucide-react'
 import { apiFetch, displaySafehouseName } from '../../utils/api'
+import { useToast } from '../../contexts/ToastContext'
 import type { Resident, Safehouse, PaginatedResponse } from '../../types/models'
 
 const PAGE_SIZE = 20
@@ -55,7 +57,7 @@ function StatusBadge({ status }: { status: string | null }): React.ReactElement 
   if (!status) return <span className="text-gray-400">—</span>
   let cls = 'bg-gray-100 text-gray-600'
   if (status === 'Active') cls = 'bg-sky-100 text-slate-700'
-  else if (status === 'Reintegrated') cls = 'bg-sky-100 text-slate-700'
+  else if (status === 'Transferred') cls = 'bg-amber-100 text-amber-700'
   return (
     <span className={`inline-block px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.04em] ${cls}`}>
       {status}
@@ -105,6 +107,7 @@ function buildColumns(
 
 export default function CaseloadInventory() {
   const navigate = useNavigate()
+  const toast = useToast()
 
   const [residents, setResidents] = useState<Resident[]>([])
   const [safehouses, setSafehouses] = useState<Safehouse[]>([])
@@ -115,6 +118,10 @@ export default function CaseloadInventory() {
   const [readiness, setReadiness] = useState<Map<number, ReadinessPrediction | 'loading'>>(new Map())
   const [predictionsLoaded, setPredictionsLoaded] = useState(false)
   const [predictionsLoading, setPredictionsLoading] = useState(false)
+  const [predictionError, setPredictionError] = useState<string | null>(null)
+
+  const [statusTooltipOpen, setStatusTooltipOpen] = useState(false)
+  const tooltipRef = useRef<HTMLDivElement>(null)
 
   const [search, setSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
@@ -127,6 +134,17 @@ export default function CaseloadInventory() {
   })
 
   useEffect(() => {
+    if (!statusTooltipOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        setStatusTooltipOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [statusTooltipOpen])
+
+  useEffect(() => {
     document.title = 'Caseload — Hope Haven'
     apiFetch<Safehouse[]>('/api/safehouses')
       .then(setSafehouses)
@@ -136,6 +154,7 @@ export default function CaseloadInventory() {
   const fetchReadinessScores = useCallback(async (items: Resident[]) => {
     if (items.length === 0) return
     setPredictionsLoading(true)
+    setPredictionError(null)
     // Mark all as loading immediately so the UI shows spinners
     setReadiness((prev) => {
       const next = new Map(prev)
@@ -159,13 +178,16 @@ export default function CaseloadInventory() {
         }
         return next
       })
+      toast.success('Readiness predictions loaded')
     } catch {
-      // ML service unavailable — clear loading states silently
+      // ML service unavailable — clear loading states and surface warning
       setReadiness((prev) => {
         const next = new Map(prev)
         items.forEach((r) => next.delete(r.residentId))
         return next
       })
+      setPredictionError('Readiness predictions are currently unavailable.')
+      toast.error('Readiness predictions unavailable')
     } finally {
       setPredictionsLoading(false)
       setPredictionsLoaded(true)
@@ -220,9 +242,8 @@ export default function CaseloadInventory() {
       label: 'Case Status',
       options: [
         { label: 'Active', value: 'Active' },
-        { label: 'Inactive', value: 'Inactive' },
         { label: 'Closed', value: 'Closed' },
-        { label: 'Reintegrated', value: 'Reintegrated' },
+        { label: 'Transferred', value: 'Transferred' },
       ],
     },
     {
@@ -262,13 +283,36 @@ export default function CaseloadInventory() {
         <p className="text-sm text-gray-500 mt-1">Browse and filter all resident cases.</p>
       </div>
 
-      <FilterBar
-        searchPlaceholder="Search by case no, code, or social worker…"
-        onSearch={handleSearch}
-        filters={filterGroups}
-        onFilterChange={handleFilterChange}
-        filterValues={filterValues}
-      />
+      <div className="flex items-start gap-2">
+        <div className="flex-1">
+          <FilterBar
+            searchPlaceholder="Search by case no, code, or social worker…"
+            onSearch={handleSearch}
+            filters={filterGroups}
+            onFilterChange={handleFilterChange}
+            filterValues={filterValues}
+          />
+        </div>
+        <div className="relative pt-1" ref={tooltipRef}>
+          <button
+            type="button"
+            onClick={() => setStatusTooltipOpen((v) => !v)}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Case status definitions"
+            title="Case status definitions"
+          >
+            <HelpCircle size={16} />
+          </button>
+          {statusTooltipOpen && (
+            <div className="absolute right-0 top-7 z-50 w-72 bg-white border border-gray-200 shadow-lg p-4 text-sm space-y-2">
+              <p className="font-semibold text-gray-800 text-xs uppercase tracking-wide mb-2">Case Status Definitions</p>
+              <p><span className="font-medium text-gray-900">Active</span> — Currently in care at a safehouse</p>
+              <p><span className="font-medium text-gray-900">Closed</span> — Case closed, no longer receiving services</p>
+              <p><span className="font-medium text-gray-900">Transferred</span> — Moved to a different safehouse or program</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Date admitted filter */}
       <div className="flex flex-wrap gap-3 items-center">
@@ -311,6 +355,12 @@ export default function CaseloadInventory() {
           </button>
         </div>
       </div>
+
+      {predictionError && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-2 mb-4">
+          {predictionError}
+        </div>
+      )}
 
       {error && <ErrorAlert message={error} onRetry={fetchResidents} />}
 

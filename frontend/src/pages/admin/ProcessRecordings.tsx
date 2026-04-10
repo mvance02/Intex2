@@ -76,7 +76,7 @@ export default function ProcessRecordings() {
   // Load residents once
   useEffect(() => {
     apiFetch<PaginatedResponse<Resident>>('/api/residents?pageSize=200')
-      .then((data) => setResidents(data.items))
+      .then((data) => setResidents([...data.items].sort((a, b) => a.residentId - b.residentId)))
       .catch(() => {/* non-critical */});
   }, []);
 
@@ -105,6 +105,7 @@ export default function ProcessRecordings() {
 
   const openEdit = (rec: ProcessRecording) => {
     setEditTarget(rec);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { recordingId: _id, ...rest } = rec;
     setForm(rest);
     setSaveError(null);
@@ -508,7 +509,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.progressNoted}
                 onChange={(e) => setForm((f) => ({ ...f, progressNoted: e.target.checked }))}
-                className="h-4 w-4border-gray-300 text-slate-700 focus:ring-sky-500"
+                className="h-4 w-4 border-gray-300 text-slate-700 focus:ring-sky-500"
               />
               Progress Noted
             </label>
@@ -517,7 +518,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.concernsFlagged}
                 onChange={(e) => setForm((f) => ({ ...f, concernsFlagged: e.target.checked }))}
-                className="h-4 w-4border-gray-300 text-slate-700 focus:ring-sky-500"
+                className="h-4 w-4 border-gray-300 text-slate-700 focus:ring-sky-500"
               />
               Concerns Flagged
             </label>
@@ -526,7 +527,7 @@ export default function ProcessRecordings() {
                 type="checkbox"
                 checked={form.referralMade}
                 onChange={(e) => setForm((f) => ({ ...f, referralMade: e.target.checked }))}
-                className="h-4 w-4border-gray-300 text-slate-700 focus:ring-sky-500"
+                className="h-4 w-4 border-gray-300 text-slate-700 focus:ring-sky-500"
               />
               Referral Made
             </label>

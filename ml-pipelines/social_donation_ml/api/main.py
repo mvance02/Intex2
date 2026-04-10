@@ -1,7 +1,10 @@
 """
 FastAPI service for the social → donation draft planner (admin tool).
+(3 of 3 integrated ML pipelines)
 
-Run from repo: uvicorn api.main:app --reload --port 8002
+Deployed on Railway as `sweet-essence`.
+
+Run locally: uvicorn api.main:app --reload --port 8002
 (App directory must be social_donation_ml so imports resolve.)
 """
 

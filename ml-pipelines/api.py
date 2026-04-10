@@ -1,10 +1,12 @@
 """
 FastAPI sidecar — Reintegration Readiness & Type Prediction
+(1 of 3 integrated ML pipelines)
 
-Run:  uvicorn api:app --host 0.0.0.0 --port 8001
-The .NET backend calls: POST http://localhost:8001/predict/{resident_id}
+Deployed on Railway as `determined-gentleness`.
+The .NET backend calls: POST /predict/{resident_id}
 
-Install: pip install fastapi uvicorn scikit-learn numpy pandas statsmodels shap
+Run locally:  uvicorn api:app --host 0.0.0.0 --port 8001
+Install:      pip install fastapi uvicorn scikit-learn numpy pandas statsmodels shap
 """
 import pickle
 import re

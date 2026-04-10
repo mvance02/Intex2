@@ -23,6 +23,11 @@ public class Donation
     [Column("is_recurring")]
     public bool IsRecurring { get; set; }
 
+    /// <summary>When <see cref="IsRecurring"/> is true: Weekly, Monthly, or Yearly.</summary>
+    [Column("recurring_frequency")]
+    [MaxLength(20)]
+    public string? RecurringFrequency { get; set; }
+
     [Column("campaign_name")]
     [MaxLength(200)]
     public string? CampaignName { get; set; }

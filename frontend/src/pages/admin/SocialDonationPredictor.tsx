@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../../utils/api';
+import { useToast } from '../../contexts/ToastContext';
 import type {
   SocialDraftPredictionRequest,
   SocialDraftPredictionResult,
@@ -45,7 +46,23 @@ function formatHour(hour: number): string {
 
 type TabKey = 'weekly' | 'optimizer' | 'manual';
 
+function FunnelBar({ label, value, detail, color }: { label: string; value: number; detail: string; color: string }) {
+  const [width, setWidth] = useState(0);
+  useEffect(() => { const t = setTimeout(() => setWidth(value), 100); return () => clearTimeout(t); }, [value]);
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs font-medium text-gray-500 w-28 text-right">{label}</span>
+      <div className="flex-1 bg-gray-100 rounded-full h-7 overflow-hidden">
+        <div className={`${color} h-full rounded-full transition-all duration-700 ease-out flex items-center px-3`} style={{ width: `${Math.max(width, 8)}%` }}>
+          <span className="text-xs font-semibold text-white truncate">{detail}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SocialDonationPredictor() {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<TabKey>('weekly');
 
   useEffect(() => { document.title = 'Social Donation Predictor — Hope Haven'; }, []);
@@ -111,10 +128,12 @@ export default function SocialDonationPredictor() {
       ]);
       setSocialResult(draftResult);
       setSocialSweep(sweepResult);
+      toast.success('Prediction complete');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to run social prediction.';
       setSocialError(message);
-      if (message.includes('503')) setServiceUnavailable(true);
+      toast.error('Prediction service unavailable');
+      if (message.includes('503') || message.includes('timed out') || message.includes('Failed to fetch')) setServiceUnavailable(true);
     } finally {
       setSocialLoading(false);
     }
@@ -135,10 +154,12 @@ export default function SocialDonationPredictor() {
         body: JSON.stringify(req),
       });
       setOptResult(result);
+      toast.success('Top strategies identified');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to run optimizer.';
       setOptError(message);
-      if (message.includes('503')) setServiceUnavailable(true);
+      toast.error('Prediction service unavailable');
+      if (message.includes('503') || message.includes('timed out') || message.includes('Failed to fetch')) setServiceUnavailable(true);
     } finally {
       setOptLoading(false);
     }
@@ -158,10 +179,12 @@ export default function SocialDonationPredictor() {
         body: JSON.stringify(req),
       });
       setWeeklyResult(result);
+      toast.success('Weekly schedule generated');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to generate schedule.';
       setWeeklyError(message);
-      if (message.includes('503')) setServiceUnavailable(true);
+      toast.error('Prediction service unavailable');
+      if (message.includes('503') || message.includes('timed out') || message.includes('Failed to fetch')) setServiceUnavailable(true);
     } finally {
       setWeeklyLoading(false);
     }
@@ -687,6 +710,15 @@ export default function SocialDonationPredictor() {
               Best posting hour: <span className="font-semibold">{socialSweep.best_post_hour}:00</span>
               {' '}({socialSweep.predicted_donation_referrals_at_best.toFixed(2)} predicted referrals)
             </p>
+          )}
+
+          {socialResult && (
+            <div className="mt-6 space-y-2">
+              <h4 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Predicted Impact Flow</h4>
+              <FunnelBar label="High Performer" value={Math.round(socialResult.high_performer_probability * 100)} detail={`${Math.round(socialResult.high_performer_probability * 100)}% probability`} color="bg-sky-500" />
+              <FunnelBar label="Referral Clicks" value={Math.min(100, Math.round(socialResult.predicted_donation_referrals * 15))} detail={`${socialResult.predicted_donation_referrals.toFixed(1)} referrals`} color="bg-sky-400" />
+              <FunnelBar label="Donation Value" value={Math.min(100, Math.round(socialResult.predicted_estimated_donation_value_php / 100))} detail={`₱${Math.round(socialResult.predicted_estimated_donation_value_php).toLocaleString()}`} color="bg-teal-500" />
+            </div>
           )}
         </section>
       )}

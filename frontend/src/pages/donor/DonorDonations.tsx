@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import ErrorAlert from '../../components/shared/ErrorAlert';
+import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
-const API = import.meta.env.VITE_API_URL ?? '';
+const API = '';
 
 interface DonationRecord {
   donationId: number;
@@ -11,6 +13,7 @@ interface DonationRecord {
   currencyCode: string | null;
   donationDate: string | null;
   isRecurring: boolean;
+  recurringFrequency?: string | null;
   campaignName: string | null;
   donationType: string | null;
   impactUnit: string | null;
@@ -19,6 +22,7 @@ interface DonationRecord {
 export default function DonorDonations() {
   const [donations, setDonations] = useState<DonationRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -27,7 +31,9 @@ export default function DonorDonations() {
         const data = await res.json() as { donations?: DonationRecord[] };
         setDonations(data.donations ?? []);
       }
-    } catch { /* ignore */ }
+    } catch {
+      setError('Unable to load donations. Please try again.');
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -35,6 +41,7 @@ export default function DonorDonations() {
   useEffect(() => { void fetchData(); }, [fetchData]);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading donations…" />;
+  if (error) return <ErrorAlert message={error} />;
 
   const totalPhp = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0);
 
@@ -90,10 +97,10 @@ export default function DonorDonations() {
                     {d.donationDate ? new Date(d.donationDate + 'T00:00:00').toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3 text-gray-800 font-medium">
-                    {d.campaignName || d.donationType || 'Donation'}
+                    {primaryDonationLabel(d.campaignName, d.donationType, d.isRecurring)}
                     {d.isRecurring && (
                       <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                        Weekly
+                        {recurringIntervalBadge(d.isRecurring, d.recurringFrequency, d.campaignName)}
                       </span>
                     )}
                   </td>

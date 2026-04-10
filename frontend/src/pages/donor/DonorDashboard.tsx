@@ -1,10 +1,41 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, Home, HeartPulse, GraduationCap, Utensils } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import ErrorAlert from '../../components/shared/ErrorAlert';
+import { portalSupporterTypeLabel } from '../../utils/supporterPortal';
+import { primaryDonationLabel, recurringIntervalBadge } from '../../utils/donationDisplay';
 
-const API = import.meta.env.VITE_API_URL ?? '';
+const API = '';
+
+function useCountUp(end: number, duration = 2000): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (end === 0) { setValue(0); return; }
+    const start = performance.now();
+    let raf: number;
+    function tick(now: number) {
+      const t = Math.min((now - start) / duration, 1);
+      setValue(Math.floor(t * end));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [end, duration]);
+  return value;
+}
+
+function ImpactCard({ Icon, value, label }: { Icon: React.ComponentType<{ size?: number; className?: string }>; value: number; label: string }) {
+  const animated = useCountUp(value);
+  return (
+    <div className="flex flex-col items-center gap-1 py-3">
+      <Icon size={24} className="text-teal-600" />
+      <span className="text-2xl font-bold text-gray-800">{animated.toLocaleString()}</span>
+      <span className="text-xs text-gray-500 text-center">{label}</span>
+    </div>
+  );
+}
 
 interface DonationRecord {
   donationId: number;
@@ -12,13 +43,20 @@ interface DonationRecord {
   currencyCode: string | null;
   donationDate: string | null;
   isRecurring: boolean;
+  recurringFrequency?: string | null;
   campaignName: string | null;
   donationType: string | null;
   impactUnit: string | null;
 }
 
 interface MyDonationsResponse {
-  supporter: { supporterId: number; displayName: string; email: string; createdAt: string | null } | null;
+  supporter: {
+    supporterId: number;
+    displayName: string;
+    email: string;
+    supporterType: string | null;
+    createdAt: string | null;
+  } | null;
   donations: DonationRecord[];
 }
 
@@ -26,12 +64,15 @@ export default function DonorDashboard() {
   const { authSession } = useAuth();
   const [data, setData] = useState<MyDonationsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch(`${API}/api/my-donations`, { credentials: 'include' });
       if (res.ok) setData(await res.json());
-    } catch { /* ignore */ }
+    } catch {
+      setError('Unable to load dashboard. Please try again.');
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -39,6 +80,7 @@ export default function DonorDashboard() {
   useEffect(() => { void fetchData(); }, [fetchData]);
 
   if (loading) return <LoadingSpinner size="lg" label="Loading dashboard…" />;
+  if (error) return <ErrorAlert message={error} />;
 
   const donations = data?.donations ?? [];
   const totalPhp = donations.reduce((sum, d) => sum + (d.amount ?? 0), 0);
@@ -56,7 +98,14 @@ export default function DonorDashboard() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Supporter type</p>
+          <p className="text-lg font-bold text-teal-700 mt-1 leading-snug">
+            {portalSupporterTypeLabel(data?.supporter?.supporterType)}
+          </p>
+          <p className="text-xs text-gray-400 mt-1">Updated when you donate</p>
+        </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Donated</p>
           <p className="text-2xl font-bold text-teal-700 mt-1">
@@ -75,6 +124,21 @@ export default function DonorDashboard() {
         </div>
       </div>
 
+      {/* Your Impact */}
+      {totalPhp > 0 && (
+        <div className="bg-gradient-to-r from-teal-50 to-sky-50 border border-teal-100 rounded-lg p-6 mb-8">
+          <h3 className="text-base font-semibold text-gray-800 mb-1">Your Impact</h3>
+          <p className="text-sm text-gray-500 mb-4">Your generosity could fund approximately:</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <ImpactCard Icon={Home} value={Math.floor(totalPhp / 504)} label="Days of Safe Housing" />
+            <ImpactCard Icon={HeartPulse} value={Math.floor(totalPhp / 1176)} label="Counseling Sessions" />
+            <ImpactCard Icon={GraduationCap} value={Math.floor(totalPhp / 3472)} label="Months of School" />
+            <ImpactCard Icon={Utensils} value={Math.floor(totalPhp / 280)} label="Days of Meals" />
+          </div>
+          <p className="text-xs text-gray-400 mt-4 text-center">Based on average program costs</p>
+        </div>
+      )}
+
       {/* Recent donations */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm mb-6">
         <h3 className="text-base font-semibold text-gray-800 mb-4">Recent Donations</h3>
@@ -86,10 +150,10 @@ export default function DonorDashboard() {
               <div key={d.donationId} className="flex items-center justify-between py-3">
                 <div>
                   <p className="text-sm font-medium text-gray-800">
-                    {d.campaignName || d.donationType || 'Donation'}
+                    {primaryDonationLabel(d.campaignName, d.donationType, d.isRecurring)}
                     {d.isRecurring && (
                       <span className="ml-2 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                        Recurring
+                        {recurringIntervalBadge(d.isRecurring, d.recurringFrequency, d.campaignName)}
                       </span>
                     )}
                   </p>

@@ -1,7 +1,9 @@
+using System.Text.Json;
 using HopeHaven.API.Data;
 using HopeHaven.API.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ── Trust Railway's reverse proxy so redirect URIs use https:// ───────────
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
@@ -33,6 +35,11 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
 
+// ── Data protection keys — persisted to DB so OAuth state survives redeploys ─
+builder.Services.AddDataProtection()
+    .SetApplicationName("HopeHaven")
+    .PersistKeysToDbContext<AuthIdentityDbContext>();
+
 // ── Google OAuth (only activates when user-secrets are configured) ───────────
 var googleClientId     = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
@@ -45,8 +52,20 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
             options.ClientSecret = googleClientSecret;
             options.SignInScheme = IdentityConstants.ExternalScheme;
             options.CallbackPath = "/signin-google";
+            // Cross-site OAuth bounce requires SameSite=None on the correlation cookie
+            options.CorrelationCookie.SameSite     = SameSiteMode.None;
+            options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
         });
 }
+
+// External cookie (used between Google callback and final sign-in) must also
+// be SameSite=None so it survives the cross-site redirect chain.
+builder.Services.ConfigureExternalCookie(options =>
+{
+    options.Cookie.HttpOnly     = true;
+    options.Cookie.SameSite     = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
 // ── Authorization policies ───────────────────────────────────────────────────
 // DefaultPolicy uses the Identity Application cookie scheme.
@@ -102,8 +121,12 @@ builder.Services.AddMemoryCache();
 // ── Controllers + OpenAPI ──────────────────────────────────────────────────
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
+    {
         opts.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        opts.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 builder.Services.AddOpenApi();
 
 // ── CORS ───────────────────────────────────────────────────────────────────
@@ -128,6 +151,19 @@ builder.Services.AddHttpClient("MLSocialService", c =>
 
 var app = builder.Build();
 
+// ── Auto-migrate Identity DB (creates DataProtectionKeys table if missing) ────
+try
+{
+    using var scope = app.Services.CreateScope();
+    var identityDb = scope.ServiceProvider.GetRequiredService<AuthIdentityDbContext>();
+    await identityDb.Database.MigrateAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "Identity DB migration skipped — database may be unreachable.");
+}
+
 // ── Seed Identity roles and default admin ─────────────────────────────────
 try
 {
@@ -143,6 +179,24 @@ catch (Exception ex)
 
 // ── Pipeline ───────────────────────────────────────────────────────────────
 app.UseForwardedHeaders(); // must be first — makes Railway's https:// visible to ASP.NET
+
+// Force Request.Host to the public Vercel domain so ASP.NET Core builds
+// OAuth redirect_uri values (and any other URLs) using the public hostname
+// the browser actually sees, not Railway's internal hostname. This is the
+// only way to make Google OAuth work end-to-end through the Vercel proxy:
+// both the initial /authorize redirect AND the token-exchange call must
+// use the same redirect_uri.
+var publicBaseUrl = app.Configuration["PublicBaseUrl"];
+if (!string.IsNullOrEmpty(publicBaseUrl) &&
+    Uri.TryCreate(publicBaseUrl, UriKind.Absolute, out var publicUri))
+{
+    app.Use(async (ctx, next) =>
+    {
+        ctx.Request.Host   = new HostString(publicUri.Host);
+        ctx.Request.Scheme = publicUri.Scheme;
+        await next();
+    });
+}
 
 if (app.Environment.IsDevelopment())
 {

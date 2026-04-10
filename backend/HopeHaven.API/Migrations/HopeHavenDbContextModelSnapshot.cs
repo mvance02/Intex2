@@ -74,6 +74,11 @@ namespace HopeHaven.API.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_recurring");
 
+                    b.Property<string>("RecurringFrequency")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("recurring_frequency");
+
                     b.Property<string>("DonorWallName")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")

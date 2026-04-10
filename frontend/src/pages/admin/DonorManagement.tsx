@@ -16,14 +16,15 @@ import type { Supporter, Donation, PaginatedResponse } from '../../types/models'
 const STATUS_OPTIONS = [
   { label: 'Active', value: 'Active' },
   { label: 'Inactive', value: 'Inactive' },
-  { label: 'Lapsed', value: 'Lapsed' },
 ];
 
 const TYPE_OPTIONS = [
-  { label: 'Individual', value: 'Individual' },
-  { label: 'Organization', value: 'Organization' },
-  { label: 'Church', value: 'Church' },
-  { label: 'Corporate', value: 'Corporate' },
+  { label: 'In-Kind Donor', value: 'InKindDonor' },
+  { label: 'Monetary Donor', value: 'MonetaryDonor' },
+  { label: 'Partner Organization', value: 'PartnerOrganization' },
+  { label: 'Skills Contributor', value: 'SkillsContributor' },
+  { label: 'Social Media Advocate', value: 'SocialMediaAdvocate' },
+  { label: 'Volunteer', value: 'Volunteer' },
 ];
 
 const FILTER_GROUPS = [
