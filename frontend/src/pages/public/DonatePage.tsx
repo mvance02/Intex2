@@ -254,7 +254,7 @@ function generateDonationReceipt(label: string, phpAmount: number, isRecurring: 
   autoTable(doc, {
     startY: y,
     head: [['Description', 'Type', 'Amount (PHP)', 'Amount (USD)']],
-    body: [[label, freq, formatPhp(phpAmount), formatUsd(usd)]],
+    body: [[label, freq, `PHP ${phpAmount.toLocaleString()}`, `USD ${usd.toFixed(2)}`]],
     theme: 'grid',
     headStyles: { fillColor: [15, 23, 42], textColor: 255, fontSize: 9, fontStyle: 'bold' },
     bodyStyles: { fontSize: 9 },
@@ -278,7 +278,7 @@ function generateDonationReceipt(label: string, phpAmount: number, isRecurring: 
   doc.setFontSize(10);
   doc.setTextColor(0);
   doc.text('Total:', 120, y + 8);
-  doc.text(`${formatPhp(phpAmount)}  (${formatUsd(usd)})`, 145, y + 8);
+  doc.text(`PHP ${phpAmount.toLocaleString()}  (USD ${usd.toFixed(2)})`, 145, y + 8);
 
   y += 24;
 
