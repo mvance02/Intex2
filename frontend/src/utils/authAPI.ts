@@ -9,7 +9,7 @@ const apiBaseUrl = '';
 
 // Google OAuth MUST go directly to Railway because the correlation
 // cookie and callback URL live on the Railway domain.
-const oauthBaseUrl = import.meta.env.VITE_API_URL ?? '';
+const oauthBaseUrl = '';
 
 async function readApiError(res: Response, fallback: string): Promise<string> {
   const ct = res.headers.get('content-type') ?? '';

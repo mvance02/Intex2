@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/signin-google",
+      "destination": "https://intex2-production.up.railway.app/signin-google"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://intex2-production.up.railway.app/api/:path*"
     },
