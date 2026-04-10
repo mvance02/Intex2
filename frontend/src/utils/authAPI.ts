@@ -76,8 +76,30 @@ export async function loginUser(
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     credentials: 'include', body: JSON.stringify(body),
   });
-  if (!r.ok) throw new Error(await readApiError(r,
-    'Unable to log in. If MFA is enabled, include an authenticator or recovery code.'));
+  if (!r.ok) {
+    // ASP.NET Core Identity returns ProblemDetails with `detail` set to a
+    // SignInResult code: "Failed", "RequiresTwoFactor", "LockedOut", or "NotAllowed".
+    // Translate each to a human-readable message.
+    let detail: string | undefined;
+    try {
+      const body = await r.clone().json();
+      if (typeof body?.detail === 'string') detail = body.detail;
+    } catch { /* non-JSON body — fall through */ }
+
+    if (detail === 'RequiresTwoFactor') {
+      throw new Error('Two-factor authentication is required. Enter your authenticator or recovery code.');
+    }
+    if (detail === 'LockedOut') {
+      throw new Error('This account is temporarily locked due to too many failed attempts. Please try again later.');
+    }
+    if (detail === 'NotAllowed') {
+      throw new Error('Sign-in is not allowed for this account. Please contact an administrator.');
+    }
+    if (r.status === 401 || detail === 'Failed') {
+      throw new Error('Incorrect email or password.');
+    }
+    throw new Error(await readApiError(r, 'Unable to sign in. Please try again.'));
+  }
 }
 export async function logoutUser(): Promise<void> {
   const r = await fetch(`${apiBaseUrl}/api/auth/logout`, {
