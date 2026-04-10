@@ -488,7 +488,7 @@ export default function ReportsAnalytics() {
                     <Line
                       type="monotone"
                       dataKey="amount"
-                      name="Total Amount (\u20b1)"
+                      name="Total Amount (₱)"
                       stroke={COLORS.primary}
                       strokeWidth={2}
                       dot={false}
