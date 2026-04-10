@@ -45,6 +45,11 @@ var googleClientId     = builder.Configuration["Authentication:Google:ClientId"]
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
 {
+    // Public-facing host (Vercel) — used to override the redirect_uri sent
+    // to Google so the OAuth callback comes back through the Vercel proxy
+    // (where the correlation cookie was set), not directly to Railway.
+    var publicBaseUrl = builder.Configuration["PublicBaseUrl"];
+
     builder.Services.AddAuthentication()
         .AddGoogle(options =>
         {
@@ -55,6 +60,20 @@ if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientS
             // Cross-site OAuth bounce requires SameSite=None on the correlation cookie
             options.CorrelationCookie.SameSite     = SameSiteMode.None;
             options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+
+            if (!string.IsNullOrEmpty(publicBaseUrl))
+            {
+                var publicCallback = publicBaseUrl.TrimEnd('/') + "/signin-google";
+                options.Events.OnRedirectToAuthorizationEndpoint = ctx =>
+                {
+                    var rewritten = System.Text.RegularExpressions.Regex.Replace(
+                        ctx.RedirectUri,
+                        @"redirect_uri=[^&]+",
+                        "redirect_uri=" + Uri.EscapeDataString(publicCallback));
+                    ctx.Response.Redirect(rewritten);
+                    return Task.CompletedTask;
+                };
+            }
         });
 }
 
