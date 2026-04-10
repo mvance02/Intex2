@@ -3,6 +3,7 @@ using HopeHaven.API.Data;
 using HopeHaven.API.Infrastructure;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,11 @@ builder.Services.AddDbContext<AuthIdentityDbContext>(options =>
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AuthIdentityDbContext>();
+
+// ── Data protection keys — persisted to DB so OAuth state survives redeploys ─
+builder.Services.AddDataProtection()
+    .SetApplicationName("HopeHaven")
+    .PersistKeysToDbContext<AuthIdentityDbContext>();
 
 // ── Google OAuth (only activates when user-secrets are configured) ───────────
 var googleClientId     = builder.Configuration["Authentication:Google:ClientId"];
@@ -132,6 +138,19 @@ builder.Services.AddHttpClient("MLSocialService", c =>
 
 
 var app = builder.Build();
+
+// ── Auto-migrate Identity DB (creates DataProtectionKeys table if missing) ────
+try
+{
+    using var scope = app.Services.CreateScope();
+    var identityDb = scope.ServiceProvider.GetRequiredService<AuthIdentityDbContext>();
+    await identityDb.Database.MigrateAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "Identity DB migration skipped — database may be unreachable.");
+}
 
 // ── Seed Identity roles and default admin ─────────────────────────────────
 try
