@@ -91,8 +91,24 @@ public class SupportersController(HopeHavenDbContext db) : ControllerBase
         var supporter = await db.Supporters.FindAsync(id);
         if (supporter is null) return NotFound();
 
-        var donations = db.Donations.Where(d => d.SupporterId == id);
-        db.Donations.RemoveRange(donations);
+        // Cascade: donations have child rows (allocations, in-kind items) that
+        // must be removed first to satisfy FK constraints.
+        var donationIds = await db.Donations
+            .Where(d => d.SupporterId == id)
+            .Select(d => d.DonationId)
+            .ToListAsync();
+
+        if (donationIds.Count > 0)
+        {
+            var allocations = db.DonationAllocations.Where(a => a.DonationId != null && donationIds.Contains(a.DonationId.Value));
+            db.DonationAllocations.RemoveRange(allocations);
+
+            var inKindItems = db.InKindDonationItems.Where(i => i.DonationId != null && donationIds.Contains(i.DonationId.Value));
+            db.InKindDonationItems.RemoveRange(inKindItems);
+
+            var donations = db.Donations.Where(d => donationIds.Contains(d.DonationId));
+            db.Donations.RemoveRange(donations);
+        }
 
         db.Supporters.Remove(supporter);
         await db.SaveChangesAsync();

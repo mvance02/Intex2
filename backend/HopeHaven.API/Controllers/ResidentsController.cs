@@ -106,6 +106,16 @@ public class ResidentsController(HopeHavenDbContext db) : ControllerBase
     {
         var resident = await db.Residents.FindAsync(id);
         if (resident is null) return NotFound();
+
+        // Cascade: remove all child case records before the resident so FK
+        // constraints on ResidentId are satisfied.
+        db.ProcessRecordings.RemoveRange(db.ProcessRecordings.Where(p => p.ResidentId == id));
+        db.HomeVisitations.RemoveRange(db.HomeVisitations.Where(h => h.ResidentId == id));
+        db.IncidentReports.RemoveRange(db.IncidentReports.Where(i => i.ResidentId == id));
+        db.InterventionPlans.RemoveRange(db.InterventionPlans.Where(p => p.ResidentId == id));
+        db.HealthWellbeingRecords.RemoveRange(db.HealthWellbeingRecords.Where(h => h.ResidentId == id));
+        db.EducationRecords.RemoveRange(db.EducationRecords.Where(e => e.ResidentId == id));
+
         db.Residents.Remove(resident);
         await db.SaveChangesAsync();
         return NoContent();

@@ -6,6 +6,7 @@ import FilterBar from '../../components/shared/FilterBar'
 import SkeletonLoader from '../../components/shared/SkeletonLoader'
 import ErrorAlert from '../../components/shared/ErrorAlert'
 import Modal from '../../components/shared/Modal'
+import DeleteConfirmDialog from '../../components/shared/DeleteConfirmDialog'
 import { HelpCircle } from 'lucide-react'
 import { apiFetch, displaySafehouseName } from '../../utils/api'
 import { useToast } from '../../contexts/ToastContext'
@@ -83,6 +84,7 @@ function StatusBadge({ status }: { status: string | null }): React.ReactElement 
 function buildColumns(
   readiness: Map<number, ReadinessPrediction | 'loading'>,
   onEdit: (r: Resident) => void,
+  onDelete: (r: Resident) => void,
 ): Column<Resident>[] {
   return [
     { key: 'caseControlNo', header: 'Case No', sortable: true },
@@ -122,16 +124,28 @@ function buildColumns(
       key: 'actions',
       header: 'Actions',
       render: (r) => (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            onEdit(r)
-          }}
-          className="text-xs font-semibold uppercase tracking-[0.06em] px-3 py-1 border border-sky-300 text-slate-700 hover:bg-sky-50 transition-colors"
-        >
-          Edit
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(r)
+            }}
+            className="text-xs font-semibold uppercase tracking-[0.06em] px-3 py-1 border border-sky-300 text-slate-700 hover:bg-sky-50 transition-colors"
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete(r)
+            }}
+            className="text-xs font-semibold uppercase tracking-[0.06em] px-3 py-1 border border-red-300 text-red-700 hover:bg-red-50 transition-colors"
+          >
+            Delete
+          </button>
+        </div>
       ),
     },
   ]
@@ -171,6 +185,10 @@ export default function CaseloadInventory() {
   const [formState, setFormState] = useState<ResidentFormState>({ ...EMPTY_FORM })
   const [formSaving, setFormSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+
+  // Delete dialog state
+  const [deleteTarget, setDeleteTarget] = useState<Resident | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => {
     if (!statusTooltipOpen) return
@@ -300,6 +318,30 @@ export default function CaseloadInventory() {
     setEditTarget(null)
     setFormError(null)
   }, [formSaving])
+
+  const openDelete = useCallback((r: Resident) => {
+    setDeleteTarget(r)
+  }, [])
+
+  const closeDelete = useCallback(() => {
+    if (deleteLoading) return
+    setDeleteTarget(null)
+  }, [deleteLoading])
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleteLoading(true)
+    try {
+      await apiFetch(`/api/residents/${deleteTarget.residentId}`, { method: 'DELETE' })
+      toast.success('Resident deleted')
+      setDeleteTarget(null)
+      fetchResidents()
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Delete failed')
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
 
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -477,7 +519,7 @@ export default function CaseloadInventory() {
         <SkeletonLoader rows={8} columns={8} />
       ) : (
         <DataTable<Resident>
-          columns={buildColumns(readiness, openEdit)}
+          columns={buildColumns(readiness, openEdit, openDelete)}
           data={residents}
           rowKey={(r) => r.residentId}
           onRowClick={(r) => navigate(`/admin/residents/${r.residentId}`)}
@@ -590,6 +632,14 @@ export default function CaseloadInventory() {
           </div>
         </form>
       </Modal>
+
+      <DeleteConfirmDialog
+        isOpen={deleteTarget !== null}
+        itemLabel={deleteTarget?.internalCode || deleteTarget?.caseControlNo || `Resident #${deleteTarget?.residentId ?? ''}`}
+        onConfirm={() => void handleDelete()}
+        onCancel={closeDelete}
+        loading={deleteLoading}
+      />
     </div>
   )
 }
